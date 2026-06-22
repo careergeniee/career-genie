@@ -119,7 +119,7 @@ export const ResumeForm = ({
                     <div className="col-span-2">
                         <label className={labelCls}>Full name</label>
                         <input className={inputCls} value={data.personal.fullName}
-                            onChange={(e) => setPersonal("fullName", e.target.value)} placeholder="Ayesha Khan" />
+                            onChange={(e) => setPersonal("fullName", e.target.value)} placeholder="Abdullah" />
                     </div>
                     <div className="col-span-2">
                         <label className={labelCls}>Professional title</label>

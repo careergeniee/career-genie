@@ -99,12 +99,12 @@ export const emptyResume = (name = "", email = ""): ResumeData => ({
 /** A filled-in sample so the preview is never blank on first open. */
 export const sampleResume = (): ResumeData => ({
     personal: {
-        fullName: "Ayesha Khan",
+        fullName: "Abdullah",
         title: "Frontend Developer",
-        email: "ayesha.khan@email.com",
+        email: "abdullah@email.com",
         phone: "+92 300 1234567",
         location: "Lahore, Pakistan",
-        website: "github.com/ayeshak",
+        website: "github.com/abdullah",
         summary:
             "Frontend developer with 2 years building responsive React apps. Passionate about accessible UI, clean code, and shipping fast.",
     },
@@ -134,7 +134,7 @@ export const sampleResume = (): ResumeData => ({
         {
             id: uid8(),
             name: "Career Genie",
-            link: "github.com/ayeshak/career-genie",
+            link: "github.com/abdullah/career-genie",
             description:
                 "AI-powered career platform with resume builder, mock interviews, and roadmaps.",
         },
