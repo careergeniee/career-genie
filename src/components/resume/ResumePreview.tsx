@@ -295,12 +295,12 @@ function Creative({ d }: { d: ResumeData }) {
 function Executive({ d }: { d: ResumeData }) {
     return (
         <div className="flex min-h-full text-[#1a1a1a]">
-            <div className="w-[38%] bg-[#0a2540] text-white p-8">
-                <h1 className="text-[26px] font-bold leading-tight text-white">
+            <div className="w-[42%] bg-[#0a2540] text-white p-8">
+                <h1 className="text-[22px] font-bold leading-tight text-white">
                     {d.personal.fullName || "Your Name"}
                 </h1>
                 {d.personal.title && (
-                    <p className="text-[#c9a227] text-[13px] mt-1 mb-6 font-semibold">{d.personal.title}</p>
+                    <p className="text-[#c9a227] text-[13px] mt-1 mb-7 font-semibold">{d.personal.title}</p>
                 )}
 
                 <ExecSideSec title="Contact">
@@ -334,7 +334,7 @@ function Executive({ d }: { d: ResumeData }) {
                 )}
             </div>
 
-            <div className="w-[62%] p-8 pt-9">
+            <div className="w-[58%] p-8 pt-10">
                 {d.personal.summary && (
                     <div className="mb-6 pb-5 border-b-2 border-[#c9a227]">
                         <p className="text-[13px] text-[#444] leading-relaxed">{d.personal.summary}</p>
