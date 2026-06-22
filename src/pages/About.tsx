@@ -2,10 +2,9 @@ import { Sparkles, Target, Eye, Heart, Users } from "lucide-react";
 import { GlowOrbs } from "@/components/GlowOrbs";
 
 const team = [
-  { name: "Aarav Mehta", role: "Founder & CEO", initials: "AM" },
-  { name: "Sara Khan", role: "Head of AI", initials: "SK" },
-  { name: "Liam Chen", role: "Lead Designer", initials: "LC" },
-  { name: "Zara Patel", role: "Career Coach", initials: "ZP" },
+  { name: "Meraj", role: "Developer", initials: "M" },
+  { name: "Taha", role: "Developer", initials: "T" },
+  { name: "Haroon", role: "Developer", initials: "H" },
 ];
 
 const About = () => {
@@ -44,7 +43,7 @@ const About = () => {
           <h2 className="font-display text-4xl md:text-5xl font-bold">Meet the <span className="text-gradient-gold">team</span></h2>
           <p className="text-muted-foreground mt-3">Builders, coaches, and dreamers behind the magic.</p>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid sm:grid-cols-3 max-w-3xl mx-auto gap-6">
           {team.map((m) => (
             <div key={m.name} className="glass-card-hover rounded-2xl p-6 text-center">
               <div className="w-20 h-20 rounded-full bg-gradient-gold mx-auto mb-4 flex items-center justify-center font-display text-2xl font-bold text-primary-foreground shadow-[0_0_30px_hsl(48_96%_53%_/_0.4)]">{m.initials}</div>
@@ -55,19 +54,6 @@ const About = () => {
         </div>
       </section>
 
-      <section className="container py-20 grid md:grid-cols-4 gap-6">
-        {[
-          { v: "50K+", l: "Careers launched" },
-          { v: "98%", l: "Satisfaction rate" },
-          { v: "120+", l: "Expert mentors" },
-          { v: "30+", l: "Countries served" },
-        ].map((s) => (
-          <div key={s.l} className="glass-card rounded-2xl p-6 text-center">
-            <div className="font-display text-4xl font-bold text-gradient-gold">{s.v}</div>
-            <div className="text-sm text-muted-foreground mt-1">{s.l}</div>
-          </div>
-        ))}
-      </section>
     </div>
   );
 };
