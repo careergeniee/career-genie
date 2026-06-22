@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-    Brain, Sparkles, ArrowRight, ArrowLeft, Loader2, ClipboardList,
+    Brain, ArrowRight, ArrowLeft, Loader2, ClipboardList,
     CheckCircle2, Gauge,
 } from "lucide-react";
+import genieLogo2 from "@/assets/genie-logo2.png";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -74,7 +75,7 @@ const AssessmentPage = () => {
                 {/* Header */}
                 <div className="mb-8">
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-card text-xs font-medium mb-4">
-                        <Sparkles className="w-3.5 h-3.5 text-primary" />
+                        <img src={genieLogo2} alt="" className="w-4 h-4 object-contain" />
                         <span className="text-muted-foreground">Career assessment</span>
                     </div>
                     <h1 className="font-display text-3xl md:text-4xl font-bold mb-2">
