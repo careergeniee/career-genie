@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Send, Plus, Sparkles, Mic, MicOff, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -40,9 +40,8 @@ const ChatPage = () => {
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
     const bottomRef = useRef<HTMLDivElement>(null);
-
-    const onTranscript = useMemo(() => (text: string) => setInput((prev) => prev ? prev + " " + text : text), []);
-    const { recording, transcribing, toggle: toggleVoice } = useVoiceRecorder(onTranscript);
+    const messagesRef = useRef(messages);
+    useEffect(() => { messagesRef.current = messages; }, [messages]);
 
     useEffect(() => {
         localStorage.setItem("cg_chat", JSON.stringify(messages.slice(-100)));
@@ -66,23 +65,17 @@ const ChatPage = () => {
         }
     };
 
-    const sendMessage = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!input.trim() || isTyping) return;
-
-        const userText = input.trim();
-        const userMsg: Message = { sender: "user", text: userText, time: getTime() };
-        setMessages((prev) => [...prev, userMsg]);
+    const doSend = useCallback(async (text: string) => {
+        if (!text.trim() || isTyping) return;
+        const userText = text.trim();
+        setMessages((prev) => [...prev, { sender: "user", text: userText, time: getTime() }]);
         setInput("");
         setIsTyping(true);
-
         try {
-            // Build conversation history for context
-            const history = messages.slice(-10).map((m) => ({
+            const history = messagesRef.current.slice(-10).map((m) => ({
                 role: m.sender === "user" ? "user" as const : "assistant" as const,
                 content: m.text,
             }));
-
             const completion = await groq.chat.completions.create({
                 model: "llama-3.3-70b-versatile",
                 messages: [
@@ -93,22 +86,39 @@ const ChatPage = () => {
                 max_tokens: 1024,
                 temperature: 0.7,
             });
-
             const reply = completion.choices[0]?.message?.content || "I couldn't generate a response. Try again!";
             setMessages((prev) => [...prev, { sender: "genie", text: reply, time: getTime() }]);
-        } catch (err: any) {
-            setMessages((prev) => [
-                ...prev,
-                {
-                    sender: "genie",
-                    text: "Something went wrong connecting to the AI. Check your API key in the .env file.",
-                    time: getTime(),
-                },
-            ]);
+        } catch {
+            setMessages((prev) => [...prev, {
+                sender: "genie",
+                text: "Something went wrong connecting to the AI. Check your API key in the .env file.",
+                time: getTime(),
+            }]);
         } finally {
             setIsTyping(false);
         }
-    };
+    }, [isTyping]);
+
+    const sendMessage = (e: React.FormEvent) => { e.preventDefault(); doSend(input); };
+
+    // Voice — auto-sends after transcription; press-and-hold on mobile
+    const onTranscript = useCallback((text: string) => { doSend(text); }, [doSend]);
+    const { recording, transcribing, toggle: toggleVoice, start: startVoice, stop: stopVoice } = useVoiceRecorder(onTranscript);
+
+    const handleMicPointerDown = useCallback((e: React.PointerEvent) => {
+        if (e.pointerType === "touch") {
+            e.preventDefault(); // prevents click from also firing
+            if (!recording && !transcribing) startVoice();
+        }
+    }, [recording, transcribing, startVoice]);
+
+    const handleMicPointerUp = useCallback((e: React.PointerEvent) => {
+        if (e.pointerType === "touch" && recording) stopVoice();
+    }, [recording, stopVoice]);
+
+    const handleMicPointerLeave = useCallback((e: React.PointerEvent) => {
+        if (e.pointerType === "touch" && recording) stopVoice();
+    }, [recording, stopVoice]);
 
     const displayName = user?.displayName || user?.email?.split("@")[0] || "You";
     const initials = displayName.slice(0, 2).toUpperCase();
@@ -208,10 +218,14 @@ const ChatPage = () => {
                     <button
                         type="button"
                         onClick={toggleVoice}
+                        onPointerDown={handleMicPointerDown}
+                        onPointerUp={handleMicPointerUp}
+                        onPointerLeave={handleMicPointerLeave}
+                        onPointerCancel={handleMicPointerLeave}
                         disabled={transcribing || isTyping}
-                        title={recording ? "Stop recording" : "Speak your message"}
+                        title={recording ? "Release to send" : "Hold to speak (mobile) · Click to toggle (desktop)"}
                         className={cn(
-                            "w-9 h-9 rounded-xl flex items-center justify-center transition-all shrink-0",
+                            "w-9 h-9 rounded-xl flex items-center justify-center transition-all shrink-0 select-none",
                             recording
                                 ? "bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse"
                                 : "bg-secondary text-muted-foreground hover:text-foreground border border-border/60 disabled:opacity-40"

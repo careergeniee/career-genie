@@ -14,6 +14,8 @@ interface InterviewSessionProps {
     evaluating: boolean;
     onSubmit: () => void;
     onToggleVoice: () => void;
+    onStartVoice: () => void;
+    onStopVoice: () => void;
     onQuit: () => void;
 }
 
@@ -22,7 +24,7 @@ const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "
 export const InterviewSession = ({
     session, qIndex, answer, setAnswer,
     listening, transcribing, timeLeft, evaluating,
-    onSubmit, onToggleVoice, onQuit,
+    onSubmit, onToggleVoice, onStartVoice, onStopVoice, onQuit,
 }: InterviewSessionProps) => {
     const progress = (qIndex / session.questions.length) * 100;
     const lowTime = timeLeft <= 20;
@@ -78,11 +80,21 @@ export const InterviewSession = ({
                     <span className="text-xs text-muted-foreground">
                         {answer.trim().split(/\s+/).filter(Boolean).length} words
                     </span>
-                    <button onClick={onToggleVoice}
+                    <button
+                        onClick={onToggleVoice}
+                        onPointerDown={(e) => {
+                            if (e.pointerType === "touch") {
+                                e.preventDefault();
+                                if (!listening && !transcribing) onStartVoice();
+                            }
+                        }}
+                        onPointerUp={(e) => { if (e.pointerType === "touch" && listening) onStopVoice(); }}
+                        onPointerLeave={(e) => { if (e.pointerType === "touch" && listening) onStopVoice(); }}
+                        onPointerCancel={(e) => { if (e.pointerType === "touch" && listening) onStopVoice(); }}
                         disabled={transcribing}
-                        title={listening ? "Stop recording" : "Speak your answer"}
+                        title={listening ? "Release to stop" : "Hold to speak (mobile) · Click to toggle (desktop)"}
                         className={cn(
-                            "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+                            "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all select-none",
                             listening
                                 ? "bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse"
                                 : transcribing

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import {
     MessageSquare, Loader2, ChevronRight, Play, Clock,
@@ -43,11 +43,11 @@ const InterviewPage = () => {
     const [reviewing, setReviewing] = useState<InterviewSession | null>(null);
 
     // voice input — cross-browser via MediaRecorder + Groq Whisper
-    const onTranscript = useMemo(
-        () => (text: string) => setAnswer((prev) => prev ? prev + " " + text : text),
+    const onTranscript = useCallback(
+        (text: string) => setAnswer((prev) => prev ? prev + " " + text : text),
         []
     );
-    const { recording: listening, transcribing, toggle: toggleVoice } = useVoiceRecorder(onTranscript);
+    const { recording: listening, transcribing, toggle: toggleVoice, start: startVoice, stop: stopVoice } = useVoiceRecorder(onTranscript);
 
     useEffect(() => saveData(KEY, sessions), [sessions]);
 
@@ -302,6 +302,8 @@ const InterviewPage = () => {
                 evaluating={evaluating}
                 onSubmit={submitAnswer}
                 onToggleVoice={toggleVoice}
+                onStartVoice={startVoice}
+                onStopVoice={stopVoice}
                 onQuit={quitToSetup}
             />
         );
