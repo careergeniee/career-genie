@@ -3,9 +3,9 @@ import genieLogo from "@/assets/genie-logo.png";
 import { GlowOrbs } from "@/components/GlowOrbs";
 
 const team = [
-  { name: "Meraj", role: "Developer", initials: "M" },
-  { name: "Taha", role: "Developer", initials: "T" },
-  { name: "Haroon", role: "Developer", initials: "H" },
+  { name: "Meraj", role: "Full Stack Developer", initials: "M", bio: "Architected the core AI pipeline and backend integration." },
+  { name: "Taha", role: "Full Stack Developer", initials: "T", bio: "Built the resume engine, interview prep, and career assessment." },
+  { name: "Haroon", role: "Full Stack Developer", initials: "H", bio: "Designed the UI system and crafted the user experience end-to-end." },
 ];
 
 const About = () => {
@@ -47,9 +47,12 @@ const About = () => {
         <div className="grid sm:grid-cols-3 max-w-3xl mx-auto gap-6">
           {team.map((m) => (
             <div key={m.name} className="glass-card-hover rounded-2xl p-6 text-center">
-              <div className="w-20 h-20 rounded-full bg-gradient-gold mx-auto mb-4 flex items-center justify-center font-display text-2xl font-bold text-primary-foreground shadow-[0_0_30px_hsl(48_96%_53%_/_0.4)]">{m.initials}</div>
-              <h3 className="font-display font-bold text-lg">{m.name}</h3>
-              <p className="text-sm text-muted-foreground">{m.role}</p>
+              <div className="w-20 h-20 rounded-full bg-gradient-gold mx-auto mb-5 flex items-center justify-center font-display text-3xl font-bold text-primary-foreground shadow-[0_0_30px_hsl(48_96%_53%_/_0.4)] ring-2 ring-offset-2 ring-offset-background ring-primary/40">
+                {m.initials}
+              </div>
+              <h3 className="font-display font-bold text-lg mb-1">{m.name}</h3>
+              <span className="inline-block text-xs text-primary font-medium bg-primary/10 px-2.5 py-0.5 rounded-full mb-3">{m.role}</span>
+              <p className="text-xs text-muted-foreground leading-relaxed">{m.bio}</p>
             </div>
           ))}
         </div>
