@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
-import { Bot, FileText, MessageSquare, Map, GraduationCap, Globe2, ArrowRight, TrendingUp, Award, Brain, ClipboardList, Target } from "lucide-react";
+import { Bot, FileText, MessageSquare, Map, GraduationCap, ArrowRight, TrendingUp, Award, Brain, ClipboardList, Target } from "lucide-react";
 import genieLogo2 from "@/assets/genie-logo2.png";
 import { Button } from "@/components/ui/button";
 import { GlowOrbs } from "@/components/GlowOrbs";
@@ -13,7 +13,6 @@ const services = [
     { label: "Interview Prep", path: "/dashboard/interview", icon: MessageSquare, active: true, desc: "Practice mock interviews" },
     { label: "Roadmap", path: "/dashboard/roadmap", icon: Map, active: true, desc: "Personalized career paths" },
     { label: "Senior Instructor", path: "/dashboard/instructor", icon: GraduationCap, active: true, desc: "Daily tasks, quizzes & 1:1 mentorship" },
-    { label: "3D Career Verse", path: "/dashboard/career-verse", icon: Globe2, active: false, desc: "Immersive career exploration" },
 ];
 
 const DashboardHome = () => {

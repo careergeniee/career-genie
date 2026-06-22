@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Bot, FileText, MessageSquare, Map, GraduationCap, Globe2, ArrowRight } from "lucide-react";
+import { Bot, FileText, MessageSquare, Map, GraduationCap, ArrowRight } from "lucide-react";
 import { GlowOrbs } from "@/components/GlowOrbs";
 
 const services = [
@@ -8,7 +8,6 @@ const services = [
   { name: "Interview Preparation", path: "/services/interview-prep", icon: MessageSquare, desc: "Mock interviews with realistic AI feedback and scoring.", color: "from-primary to-accent" },
   { name: "Roadmap Following", path: "/services/roadmap", icon: Map, desc: "Personalized, step-by-step paths to your target role.", color: "from-accent-glow to-primary" },
   { name: "Senior Instructor", path: "/services/instructor", icon: GraduationCap, desc: "Direct mentorship from industry experts who've been there.", color: "from-primary-glow to-accent-glow" },
-  { name: "3D Career Verse", path: "/services/career-verse", icon: Globe2, desc: "Step into immersive 3D worlds and explore careers like never before.", color: "from-accent to-primary-glow" },
 ];
 
 const Services = () => {
@@ -19,7 +18,7 @@ const Services = () => {
         <div className="container relative py-20 text-center">
           <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-4">All services</p>
           <h1 className="font-display text-5xl md:text-6xl font-bold mb-5">A complete <span className="text-gradient-gold">career toolkit</span></h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Six powerful tools, one unified platform — engineered to take you from where you are to where you want to be.</p>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Five powerful tools, one unified platform — engineered to take you from where you are to where you want to be.</p>
         </div>
       </section>
 

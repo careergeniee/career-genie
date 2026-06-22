@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Bot, FileText, MessageSquare, Map, GraduationCap, Globe2, ChevronDown } from "lucide-react";
+import { Menu, X, Bot, FileText, MessageSquare, Map, GraduationCap, ChevronDown } from "lucide-react";
 import genieLogo from "@/assets/genie-logo.png";
 import { cn } from "@/lib/utils";
 
@@ -11,7 +11,6 @@ const services = [
   { name: "Interview Preparation", path: "/services/interview-prep", icon: MessageSquare, desc: "Mock interviews with AI" },
   { name: "Roadmap Following", path: "/services/roadmap", icon: Map, desc: "Step-by-step paths" },
   { name: "Senior Instructor", path: "/services/instructor", icon: GraduationCap, desc: "Expert mentorship" },
-  { name: "3D Career Verse", path: "/services/career-verse", icon: Globe2, desc: "Immersive exploration" },
 ];
 
 export const Navbar = () => {

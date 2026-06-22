@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
-    Bot, FileText, MessageSquare, Map, GraduationCap, Globe2,
+    Bot, FileText, MessageSquare, Map, GraduationCap,
     LogOut, Settings, ChevronLeft, ChevronRight,
     LayoutDashboard, User, ClipboardList, Target, Menu, X
 } from "lucide-react";
@@ -20,7 +20,6 @@ const navItems = [
     { label: "Resume Builder", path: "/dashboard/resume", icon: FileText },
     { label: "Interview Prep", path: "/dashboard/interview", icon: MessageSquare },
     { label: "Roadmap", path: "/dashboard/roadmap", icon: Map },
-    { label: "3D Career Verse", path: "/dashboard/career-verse", icon: Globe2 },
 ];
 
 export const DashboardLayout = () => {
@@ -111,11 +110,6 @@ export const DashboardLayout = () => {
                                         isActive && "text-primary"
                                     )} />
                                     {!collapsed && <span className="truncate">{item.label}</span>}
-                                    {!collapsed && item.path === "/dashboard/career-verse" && (
-                                        <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-md bg-secondary text-muted-foreground font-medium">
-                                            Soon
-                                        </span>
-                                    )}
                                 </>
                             )}
                         </NavLink>
