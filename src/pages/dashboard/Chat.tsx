@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from "react";
-import { Send, Plus, Sparkles } from "lucide-react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { Send, Plus, Sparkles, Mic, MicOff, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { groq } from "@/lib/groq";
+import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 
 interface Message {
     sender: "user" | "genie";
@@ -39,6 +40,9 @@ const ChatPage = () => {
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
     const bottomRef = useRef<HTMLDivElement>(null);
+
+    const onTranscript = useMemo(() => (text: string) => setInput((prev) => prev ? prev + " " + text : text), []);
+    const { recording, transcribing, toggle: toggleVoice } = useVoiceRecorder(onTranscript);
 
     useEffect(() => {
         localStorage.setItem("cg_chat", JSON.stringify(messages.slice(-100)));
@@ -197,14 +201,32 @@ const ChatPage = () => {
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        placeholder="Ask about jobs, skills, career paths..."
+                        placeholder={recording ? "Listening…" : transcribing ? "Transcribing…" : "Ask about jobs, skills, career paths..."}
                         disabled={isTyping}
                         className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                     />
                     <button
+                        type="button"
+                        onClick={toggleVoice}
+                        disabled={transcribing || isTyping}
+                        title={recording ? "Stop recording" : "Speak your message"}
+                        className={cn(
+                            "w-9 h-9 rounded-xl flex items-center justify-center transition-all shrink-0",
+                            recording
+                                ? "bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse"
+                                : "bg-secondary text-muted-foreground hover:text-foreground border border-border/60 disabled:opacity-40"
+                        )}
+                    >
+                        {transcribing
+                            ? <Loader2 className="w-4 h-4 animate-spin" />
+                            : recording
+                                ? <MicOff className="w-4 h-4" />
+                                : <Mic className="w-4 h-4" />}
+                    </button>
+                    <button
                         type="submit"
                         disabled={isTyping || !input.trim()}
-                        className="w-9 h-9 rounded-xl bg-gradient-gold flex items-center justify-center disabled:opacity-40 hover:shadow-[0_0_20px_hsl(48_96%_53%_/_0.5)] transition-all"
+                        className="w-9 h-9 rounded-xl bg-gradient-gold flex items-center justify-center disabled:opacity-40 hover:shadow-[0_0_20px_hsl(48_96%_53%_/_0.5)] transition-all shrink-0"
                     >
                         <Send className="w-4 h-4 text-primary-foreground" />
                     </button>

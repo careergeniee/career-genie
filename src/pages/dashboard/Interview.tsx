@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import {
-    MessageSquare, Sparkles, Loader2, ChevronRight, Play,
-    History, Trophy, ArrowLeft, CheckCircle2, RotateCcw, Trash2,
+    MessageSquare, Loader2, ChevronRight, Play, Clock,
+    History, Trophy, ArrowLeft, RotateCcw, Trash2,
 } from "lucide-react";
 import { InterviewSession as InterviewSessionView } from "./InterviewSession";
 import { cn } from "@/lib/utils";
@@ -41,46 +42,12 @@ const InterviewPage = () => {
     // review (a finished past session)
     const [reviewing, setReviewing] = useState<InterviewSession | null>(null);
 
-    // voice input
-    const [listening, setListening] = useState(false);
-    const recognitionRef = useRef<SpeechRecognition | null>(null);
-    const voiceSupported = typeof window !== "undefined" &&
-        ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
-
-    const toggleVoice = useCallback(() => {
-        if (!voiceSupported) {
-            toast.error("Voice input is not supported in this browser. Use Chrome or Edge.");
-            return;
-        }
-        if (listening) {
-            recognitionRef.current?.stop();
-            return;
-        }
-        const SR: typeof SpeechRecognition =
-            (window as Window & { SpeechRecognition?: typeof SpeechRecognition }).SpeechRecognition ||
-            (window as Window & { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition;
-        const recognition = new SR();
-        recognition.lang = "en-US";
-        recognition.interimResults = true;
-        recognition.continuous = true;
-        recognitionRef.current = recognition;
-
-        let interim = "";
-        recognition.onresult = (event: SpeechRecognitionEvent) => {
-            let final = "";
-            interim = "";
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                const t = event.results[i][0].transcript;
-                if (event.results[i].isFinal) final += t + " ";
-                else interim += t;
-            }
-            if (final) setAnswer((prev) => prev + final);
-        };
-        recognition.onerror = () => { setListening(false); };
-        recognition.onend = () => { setListening(false); };
-        recognition.start();
-        setListening(true);
-    }, [listening, voiceSupported]);
+    // voice input — cross-browser via MediaRecorder + Groq Whisper
+    const onTranscript = useMemo(
+        () => (text: string) => setAnswer((prev) => prev ? prev + " " + text : text),
+        []
+    );
+    const { recording: listening, transcribing, toggle: toggleVoice } = useVoiceRecorder(onTranscript);
 
     useEffect(() => saveData(KEY, sessions), [sessions]);
 
@@ -330,7 +297,7 @@ const InterviewPage = () => {
                 answer={answer}
                 setAnswer={setAnswer}
                 listening={listening}
-                voiceSupported={voiceSupported}
+                transcribing={transcribing}
                 timeLeft={timeLeft}
                 evaluating={evaluating}
                 onSubmit={submitAnswer}

@@ -9,7 +9,7 @@ interface InterviewSessionProps {
     answer: string;
     setAnswer: React.Dispatch<React.SetStateAction<string>>;
     listening: boolean;
-    voiceSupported: boolean;
+    transcribing: boolean;
     timeLeft: number;
     evaluating: boolean;
     onSubmit: () => void;
@@ -21,7 +21,7 @@ const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "
 
 export const InterviewSession = ({
     session, qIndex, answer, setAnswer,
-    listening, voiceSupported, timeLeft, evaluating,
+    listening, transcribing, timeLeft, evaluating,
     onSubmit, onToggleVoice, onQuit,
 }: InterviewSessionProps) => {
     const progress = (qIndex / session.questions.length) * 100;
@@ -65,9 +65,10 @@ export const InterviewSession = ({
                     placeholder="Type your answer here — or use the mic to speak. Be specific and structured (situation, action, result)."
                     className="w-full min-h-[180px] bg-secondary/40 border border-border/60 rounded-2xl p-4 text-sm outline-none focus:border-primary/60 resize-y leading-relaxed"
                 />
-                {listening && (
+                {(listening || transcribing) && (
                     <div className="absolute bottom-3 left-4 flex items-center gap-1.5 text-xs text-red-400 animate-pulse">
-                        <span className="w-2 h-2 rounded-full bg-red-400" /> Listening…
+                        <span className="w-2 h-2 rounded-full bg-red-400" />
+                        {transcribing ? "Transcribing…" : "Listening…"}
                     </div>
                 )}
             </div>
@@ -77,19 +78,20 @@ export const InterviewSession = ({
                     <span className="text-xs text-muted-foreground">
                         {answer.trim().split(/\s+/).filter(Boolean).length} words
                     </span>
-                    {voiceSupported && (
-                        <button onClick={onToggleVoice}
-                            title={listening ? "Stop recording" : "Speak your answer"}
-                            className={cn(
-                                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
-                                listening
-                                    ? "bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse"
+                    <button onClick={onToggleVoice}
+                        disabled={transcribing}
+                        title={listening ? "Stop recording" : "Speak your answer"}
+                        className={cn(
+                            "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+                            listening
+                                ? "bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse"
+                                : transcribing
+                                    ? "bg-secondary text-muted-foreground border border-border/60 opacity-60"
                                     : "bg-secondary text-muted-foreground hover:text-foreground border border-border/60"
-                            )}>
-                            {listening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-                            {listening ? "Stop" : "Speak"}
-                        </button>
-                    )}
+                        )}>
+                        {listening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                        {listening ? "Stop" : transcribing ? "Processing…" : "Speak"}
+                    </button>
                 </div>
                 <button onClick={onSubmit} disabled={evaluating}
                     className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-gold text-primary-foreground font-semibold hover:shadow-[0_0_20px_hsl(48_96%_53%_/_0.5)] transition-all disabled:opacity-60">
