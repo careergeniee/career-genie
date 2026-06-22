@@ -1,13 +1,5 @@
-import { auth } from "@/lib/firebase";
-
-/**
- * Tiny user-scoped persistence layer built on localStorage.
- * Keys are namespaced by the signed-in user's uid so two accounts on the
- * same browser never see each other's resumes, interview sessions, or roadmaps.
- *
- * We use localStorage (same approach as the AI Chatbot) so the modules work
- * out of the box without needing Firestore security rules configured.
- */
+import { auth, db } from "@/lib/firebase";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 const uid = () => auth.currentUser?.uid || "guest";
 
@@ -29,6 +21,12 @@ export function saveData<T>(key: string, value: T): void {
     } catch {
         /* storage full / unavailable — fail silently */
     }
+    // Async mirror to Firestore — fire-and-forget, localStorage is always the primary
+    const userId = auth.currentUser?.uid;
+    if (userId) {
+        setDoc(doc(db, "users", userId), { [key]: JSON.stringify(value) }, { merge: true })
+            .catch(() => {});
+    }
 }
 
 export function removeData(key: string): void {
@@ -36,6 +34,23 @@ export function removeData(key: string): void {
         localStorage.removeItem(fullKey(key));
     } catch {
         /* noop */
+    }
+}
+
+/** Pull all user data from Firestore and hydrate localStorage. Called on login. */
+export async function initUserData(): Promise<void> {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return;
+    try {
+        const snap = await getDoc(doc(db, "users", userId));
+        if (snap.exists()) {
+            const remote = snap.data();
+            Object.entries(remote).forEach(([key, val]) => {
+                localStorage.setItem(`cg:${userId}:${key}`, val as string);
+            });
+        }
+    } catch {
+        // Firestore unavailable or rules not configured — localStorage still works
     }
 }
 

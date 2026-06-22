@@ -9,6 +9,7 @@ import {
     onAuthStateChanged,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { initUserData } from "@/lib/userStore";
 
 interface AuthContextType {
     user: User | null;
@@ -32,8 +33,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const unsub = onAuthStateChanged(auth, (u) => {
+        const unsub = onAuthStateChanged(auth, async (u) => {
             setUser(u);
+            if (u) {
+                // Hydrate localStorage from Firestore so data is available across devices
+                await initUserData();
+            }
             setLoading(false);
         });
         return unsub;
