@@ -44,12 +44,15 @@ export interface ResumeData {
     projects: ProjectItem[];
 }
 
-export type TemplateId = "modern" | "classic" | "minimal";
+export type TemplateId = "modern" | "classic" | "minimal" | "creative" | "executive" | "vibrant";
 
 export const TEMPLATES: { id: TemplateId; label: string; blurb: string }[] = [
     { id: "modern", label: "Modern", blurb: "Accent sidebar, bold name" },
     { id: "classic", label: "Classic", blurb: "Centered, serif, formal" },
     { id: "minimal", label: "Minimal", blurb: "Clean lines, lots of air" },
+    { id: "creative", label: "Creative", blurb: "Purple gradient, bold style" },
+    { id: "executive", label: "Executive", blurb: "Navy & gold, premium look" },
+    { id: "vibrant", label: "Vibrant", blurb: "Teal header, coral accents" },
 ];
 
 export const newEducation = (): EducationItem => ({

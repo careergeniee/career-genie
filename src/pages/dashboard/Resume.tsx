@@ -112,7 +112,7 @@ const ResumePage = () => {
                     </div>
                     <div>
                         <h1 className="font-display text-2xl font-bold">Resume Builder</h1>
-                        <p className="text-sm text-muted-foreground">Live preview · 3 templates · AI ATS check · PDF export</p>
+                        <p className="text-sm text-muted-foreground">Live preview · 6 templates · AI ATS check · PDF export</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
