@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 const inputCls =
     "w-full bg-secondary/50 border border-border/60 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-primary/60 transition-colors placeholder:text-muted-foreground/70";
 
-const SectionCard = ({ icon: Icon, title, children }: { icon: any; title: string; children: React.ReactNode }) => (
+const SectionCard = ({ icon: Icon, title, children }: { icon: React.ComponentType<{ className?: string }>; title: string; children: React.ReactNode }) => (
     <div className="glass-card rounded-2xl p-6">
         <div className="flex items-center gap-2 mb-5">
             <Icon className="w-4 h-4 text-primary" />

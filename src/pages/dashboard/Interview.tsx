@@ -42,7 +42,7 @@ const InterviewPage = () => {
 
     // voice input
     const [listening, setListening] = useState(false);
-    const recognitionRef = useRef<any>(null);
+    const recognitionRef = useRef<SpeechRecognition | null>(null);
     const voiceSupported = typeof window !== "undefined" &&
         ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
 
@@ -55,7 +55,9 @@ const InterviewPage = () => {
             recognitionRef.current?.stop();
             return;
         }
-        const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        const SR: typeof SpeechRecognition =
+            (window as Window & { SpeechRecognition?: typeof SpeechRecognition }).SpeechRecognition ||
+            (window as Window & { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition;
         const recognition = new SR();
         recognition.lang = "en-US";
         recognition.interimResults = true;
@@ -63,7 +65,7 @@ const InterviewPage = () => {
         recognitionRef.current = recognition;
 
         let interim = "";
-        recognition.onresult = (event: any) => {
+        recognition.onresult = (event: SpeechRecognitionEvent) => {
             let final = "";
             interim = "";
             for (let i = event.resultIndex; i < event.results.length; i++) {

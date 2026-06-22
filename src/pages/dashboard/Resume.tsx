@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
     FileText, Plus, Trash2, Download, Sparkles, User, GraduationCap,
     Briefcase, Wrench, FolderGit2, Loader2, X, RotateCcw, CheckCircle2,
@@ -22,7 +22,14 @@ const inputCls =
     "w-full bg-secondary/50 border border-border/60 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary/60 transition-colors placeholder:text-muted-foreground/70";
 const labelCls = "text-xs font-medium text-muted-foreground mb-1 block";
 
-const SectionCard = ({ icon: Icon, title, children, action }: any) => (
+interface SectionCardProps {
+    icon: React.ComponentType<{ className?: string }>;
+    title: string;
+    children: React.ReactNode;
+    action?: React.ReactNode;
+}
+
+const SectionCard = ({ icon: Icon, title, children, action }: SectionCardProps) => (
     <div className="glass-card rounded-2xl p-5">
         <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -106,13 +113,13 @@ const ResumePage = () => {
     ) =>
         setData((d) => ({
             ...d,
-            [list]: (d[list] as any[]).map((it) =>
+            [list]: (d[list] as Array<{ id: string } & Record<string, string>>).map((it) =>
                 it.id === id ? { ...it, [field]: value } : it
             ),
         }));
 
     const removeFrom = (list: "education" | "experience" | "projects", id: string) =>
-        setData((d) => ({ ...d, [list]: (d[list] as any[]).filter((it) => it.id !== id) }));
+        setData((d) => ({ ...d, [list]: (d[list] as Array<{ id: string }>).filter((it) => it.id !== id) }));
 
     const addSkill = () => {
         const s = skillInput.trim();

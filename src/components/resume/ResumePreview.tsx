@@ -1,4 +1,4 @@
-import { memo } from "react";
+import React, { memo } from "react";
 import { ResumeData, TemplateId } from "@/lib/resume";
 
 /* On-screen live preview rendered on white "paper". Mirrors ResumePDF so what
@@ -279,7 +279,7 @@ function Minimal({ d }: { d: ResumeData }) {
 }
 
 /* small helpers */
-const Section = ({ title, dark, children }: any) => (
+const Section = ({ title, dark, children }: { title: string; dark?: boolean; children: React.ReactNode }) => (
     <div className="mb-3">
         <p
             className={`text-[10px] font-bold uppercase tracking-wider mb-1.5 ${
@@ -291,7 +291,7 @@ const Section = ({ title, dark, children }: any) => (
         {children}
     </div>
 );
-const Block = ({ title, children }: any) => (
+const Block = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <div className="mb-3">
         <p className="text-[12px] font-bold uppercase tracking-wider text-[#1f6feb] mb-1.5">
             {title}
@@ -299,7 +299,7 @@ const Block = ({ title, children }: any) => (
         {children}
     </div>
 );
-const ClassicSec = ({ title, children }: any) => (
+const ClassicSec = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <div className="mb-2">
         <p className="text-[12px] font-bold uppercase tracking-wide border-b border-black pb-0.5 mb-1.5">
             {title}
@@ -307,7 +307,7 @@ const ClassicSec = ({ title, children }: any) => (
         {children}
     </div>
 );
-const MinSec = ({ title, children }: any) => (
+const MinSec = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <div className="mb-3">
         <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">
             {title}
