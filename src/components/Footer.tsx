@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Sparkles, Twitter, Linkedin, Github, Mail } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 export const Footer = () => {
   return (
@@ -15,13 +15,6 @@ export const Footer = () => {
           <p className="mt-4 text-sm text-muted-foreground max-w-sm">
             AI-powered career intelligence to help you discover, prepare for, and land your dream role.
           </p>
-          <div className="flex gap-3 mt-5">
-            {[Twitter, Linkedin, Github, Mail].map((Icon, i) => (
-              <a key={i} href="#" className="w-9 h-9 rounded-full glass-card flex items-center justify-center hover:text-primary hover:border-primary/60 transition" aria-label="social">
-                <Icon className="w-4 h-4" />
-              </a>
-            ))}
-          </div>
         </div>
         <div>
           <h3 className="font-semibold mb-4 text-sm">Product</h3>
