@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, Phone, MapPin, Send, MessageCircle, Twitter, Linkedin, Github, Loader2 } from "lucide-react";
+import { Mail, Phone, MapPin, Send, MessageCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -73,16 +73,6 @@ const Contact = () => {
               </div>
             </div>
           ))}
-          <div className="glass-card rounded-2xl p-6">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground mb-4">Follow us</p>
-            <div className="flex gap-3">
-              {[Twitter, Linkedin, Github].map((Icon, i) => (
-                <a key={i} href="#" className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition" aria-label="social">
-                  <Icon className="w-4 h-4" />
-                </a>
-              ))}
-            </div>
-          </div>
         </div>
 
         <form onSubmit={onSubmit} className="lg:col-span-3 glass-card rounded-2xl p-8 space-y-5">
