@@ -1,0 +1,19 @@
+digraph arch {
+  rankdir=TB; bgcolor="white"; pad=0.3; compound=true;
+  node [fontname="Helvetica", fontsize=10];
+  subgraph cluster_client {
+    label="Client (Browser)"; style="filled,rounded"; fillcolor="#f3f6fa"; fontname="Helvetica-Bold"; fontcolor="#0f2a4a";
+    react [label="React + Vite + TypeScript\n(Tailwind, shadcn/ui)", shape=box, style="filled", fillcolor="#e0a200", fontcolor="#0f2a4a"];
+    ls [label="localStorage\n(per-user data)", shape=cylinder, style="filled", fillcolor="#dde6f0"];
+  }
+  subgraph cluster_services {
+    label="Cloud Services"; style="filled,rounded"; fillcolor="#f3f6fa"; fontname="Helvetica-Bold"; fontcolor="#0f2a4a";
+    fb [label="Firebase\nAuthentication", shape=box, style="filled", fillcolor="#dde6f0"];
+    groq [label="Groq LLM API\n(llama-3.3-70b)", shape=box, style="filled", fillcolor="#dde6f0"];
+    ml [label="FastAPI ML Service\nRandom Forest", shape=box, style="filled", fillcolor="#0f2a4a", fontcolor="white"];
+  }
+  react -> ls [dir=both];
+  react -> fb [label="sign in / up", fontsize=8];
+  react -> groq [label="prompts", fontsize=8];
+  react -> ml [label="POST /predict", fontsize=8];
+}

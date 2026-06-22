@@ -1,0 +1,14 @@
+digraph context {
+  rankdir=LR; bgcolor="white"; pad=0.3;
+  node [fontname="Helvetica"]; edge [fontname="Helvetica", fontsize=9, color="#5b7aa3"];
+  sys [label="Career Genie\nSystem", shape=circle, style="filled", fillcolor="#e0a200", fontcolor="#0f2a4a", fontsize=13, fontname="Helvetica-Bold", width=1.6, fixedsize=true];
+  student [label="Student /\nUser", shape=box, style="filled", fillcolor="#0f2a4a", fontcolor="white", fontsize=10];
+  admin [label="Administrator", shape=box, style="filled", fillcolor="#0f2a4a", fontcolor="white", fontsize=10];
+  groq [label="Groq LLM API\n(External NLP)", shape=box, style="filled", fillcolor="#dde6f0", fontcolor="#0f2a4a", fontsize=10];
+  fb [label="Firebase\n(Auth / Identity)", shape=box, style="filled", fillcolor="#dde6f0", fontcolor="#0f2a4a", fontsize=10];
+  student -> sys [label="assessment, skills,\nresume, queries"];
+  sys -> student [label="career match,\nroadmap, feedback"];
+  admin -> sys [label="manage careers\n& skills"];
+  sys -> groq [label="prompts"]; groq -> sys [label="generated text"];
+  sys -> fb [label="credentials"]; fb -> sys [label="auth token"];
+}

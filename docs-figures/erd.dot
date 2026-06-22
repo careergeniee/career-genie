@@ -1,0 +1,28 @@
+digraph erd {
+  rankdir=LR; bgcolor="white"; pad=0.3;
+  node [shape=plaintext, fontname="Helvetica", fontsize=9];
+  user [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+    <tr><td bgcolor="#0f2a4a"><font color="white"><b>User</b></font></td></tr>
+    <tr><td align="left">uid (PK)</td></tr><tr><td align="left">email</td></tr>
+    <tr><td align="left">displayName</td></tr><tr><td align="left">emailVerified</td></tr></table>>];
+  ass [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+    <tr><td bgcolor="#e0a200"><b>Assessment</b></td></tr>
+    <tr><td align="left">uid (FK)</td></tr><tr><td align="left">personalityAnswers</td></tr>
+    <tr><td align="left">skillRatings</td></tr><tr><td align="left">completedAt</td></tr></table>>];
+  pred [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+    <tr><td bgcolor="#e0a200"><b>Prediction</b></td></tr>
+    <tr><td align="left">uid (FK)</td></tr><tr><td align="left">predictions[]</td></tr>
+    <tr><td align="left">topCareer</td></tr><tr><td align="left">source</td></tr></table>>];
+  road [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+    <tr><td bgcolor="#0f2a4a"><font color="white"><b>Roadmap</b></font></td></tr>
+    <tr><td align="left">uid (FK)</td></tr><tr><td align="left">goal</td></tr>
+    <tr><td align="left">phases[]</td></tr><tr><td align="left">completionDates[]</td></tr></table>>];
+  itv [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+    <tr><td bgcolor="#0f2a4a"><font color="white"><b>InterviewSession</b></font></td></tr>
+    <tr><td align="left">uid (FK)</td></tr><tr><td align="left">role, difficulty</td></tr>
+    <tr><td align="left">answers[]</td></tr><tr><td align="left">overallScore</td></tr></table>>];
+  edge [color="#0f2a4a", arrowhead=crow, fontsize=8];
+  user -> ass [label="1..1"]; user -> pred [label="1..1"];
+  user -> road [label="1..*"]; user -> itv [label="1..*"];
+  ass -> pred [label="feeds", style=dashed, arrowhead=vee];
+}

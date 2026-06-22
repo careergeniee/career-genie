@@ -1,0 +1,14 @@
+digraph pipeline {
+  rankdir=LR; bgcolor="white"; pad=0.3;
+  node [shape=box, style="filled,rounded", fontname="Helvetica", fontsize=10, fillcolor="#dde6f0", fontcolor="#0f2a4a", margin="0.18,0.12"];
+  edge [color="#0f2a4a", arrowsize=0.8];
+  a [label="Personality\nAssessment\n(12 items)"];
+  b [label="Skill\nAssessment\n(15 skills)"];
+  c [label="Feature Vector\n(21 features, 0..1)", fillcolor="#f5d488"];
+  d [label="Random Forest\nClassifier\n(FastAPI)", fillcolor="#e0a200", fontname="Helvetica-Bold"];
+  e [label="Ranked Careers\n+ Probabilities"];
+  f [label="Skill Gap\nAnalysis"];
+  g [label="LLM Explanation\n(Groq)"];
+  h [label="Career\nRoadmap"];
+  a -> c; b -> c; c -> d; d -> e; e -> f; e -> g; f -> h;
+}
