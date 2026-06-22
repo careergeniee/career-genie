@@ -3,9 +3,8 @@ import { Button } from "@/components/ui/button";
 import { GlowOrbs } from "@/components/GlowOrbs";
 import {
   Bot, FileText, MessageSquare, Map, GraduationCap, Brain,
-  ArrowRight, Sparkles, Zap, Mic, Wand2, BarChart3
+  ArrowRight, Sparkles, Zap, Mic, Wand2, BarChart3, Send, CheckCircle2
 } from "lucide-react";
-import genieHero from "@/assets/genie-hero.webp";
 
 const features = [
   {
@@ -79,17 +78,67 @@ const Index = () => {
             </div>
           </div>
 
+          {/* DASHBOARD MOCKUP */}
           <div className="relative animate-scale-in">
-            <div className="absolute inset-0 bg-gradient-purple opacity-30 blur-[100px] rounded-full" />
-            <div className="absolute inset-10 bg-primary/20 blur-[80px] rounded-full animate-glow-pulse" />
-            <img
-              src={genieHero}
-              alt="Career Genie holding glowing scroll of opportunities"
-              width={640}
-              height={640}
-              fetchpriority="high"
-              className="relative z-10 w-full max-w-lg mx-auto animate-float drop-shadow-[0_0_60px_hsl(48_96%_53%_/_0.3)]"
-            />
+            <div className="absolute inset-0 bg-primary/10 blur-[80px] rounded-3xl animate-glow-pulse" />
+            <div className="relative glass-card rounded-3xl p-5 shadow-2xl max-w-lg mx-auto border border-border">
+
+              {/* Browser chrome */}
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border">
+                <div className="flex gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-primary" />
+                </div>
+                <div className="flex-1 mx-2 bg-secondary rounded-full px-3 py-0.5 text-[10px] text-muted-foreground text-center">
+                  careergenie.app/dashboard/chat
+                </div>
+              </div>
+
+              {/* Chat messages */}
+              <div className="space-y-3 mb-4">
+                <div className="flex gap-2 items-end">
+                  <div className="w-7 h-7 rounded-full bg-gradient-gold flex items-center justify-center shrink-0">
+                    <Bot className="w-3.5 h-3.5 text-primary-foreground" />
+                  </div>
+                  <div className="bg-secondary rounded-2xl rounded-bl-sm px-3 py-2 text-xs text-foreground max-w-[80%] leading-relaxed">
+                    Hi! I'm your AI Career Mentor. What career path are you exploring today?
+                  </div>
+                </div>
+
+                <div className="flex gap-2 items-end justify-end">
+                  <div className="bg-primary rounded-2xl rounded-br-sm px-3 py-2 text-xs text-primary-foreground max-w-[80%] leading-relaxed">
+                    I'm a CS graduate interested in data science roles in Pakistan.
+                  </div>
+                </div>
+
+                <div className="flex gap-2 items-end">
+                  <div className="w-7 h-7 rounded-full bg-gradient-gold flex items-center justify-center shrink-0">
+                    <Bot className="w-3.5 h-3.5 text-primary-foreground" />
+                  </div>
+                  <div className="bg-secondary rounded-2xl rounded-bl-sm px-3 py-2 text-xs text-foreground max-w-[80%] leading-relaxed">
+                    Great choice! Data science is growing fast in Pakistan. Let me build you a personalized roadmap...
+                  </div>
+                </div>
+              </div>
+
+              {/* Input bar */}
+              <div className="flex items-center gap-2 bg-muted rounded-xl px-3 py-2 mb-3">
+                <span className="flex-1 text-xs text-muted-foreground">Ask anything about your career...</span>
+                <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                  <Send className="w-3 h-3 text-primary-foreground" />
+                </div>
+              </div>
+
+              {/* Feature pills */}
+              <div className="flex flex-wrap gap-2">
+                {["Resume Builder", "Interview Prep", "Career Roadmap"].map((f) => (
+                  <span key={f} className="inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full bg-primary/10 text-primary font-semibold border border-primary/20">
+                    <CheckCircle2 className="w-3 h-3" /> {f}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
