@@ -8,52 +8,49 @@ export const GenieLampLogo = ({
   <svg
     width={size}
     height={size}
-    viewBox="0 0 105 110"
+    viewBox="0 0 100 115"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
     aria-hidden="true"
   >
-    {/* 4-pointed star */}
+    {/* 4-pointed elongated star */}
     <path
-      d="M82 10 L84.5 19 L93.5 21.5 L84.5 24 L82 33 L79.5 24 L70.5 21.5 L79.5 19 Z"
+      d="M71 5 L74 15 L84 18 L74 21 L71 31 L68 21 L58 18 L68 15 Z"
       fill="currentColor"
     />
-    {/* Smoke wisp — S-curve from star down to spout */}
+
+    {/* Smoke ribbon — thick stroke, starts inside dome so dome covers the base cap */}
     <path
-      d="M74 33 C70 43 76 53 70 63 C64 73 69 79 63 87"
+      d="M38 60 C24 50 13 37 13 27 C13 17 23 11 37 11 C52 11 67 15 69 16"
       fill="none"
       stroke="currentColor"
-      strokeWidth="6.5"
+      strokeWidth="13"
       strokeLinecap="round"
     />
-    {/* Spout / nozzle */}
+
+    {/* Lamp body (main elliptical chamber) */}
+    <ellipse cx="44" cy="79" rx="30" ry="13" fill="currentColor" />
+
+    {/* Spout — filled wedge pointing upper-right */}
     <path
-      d="M60 87 L70 79 L76 70"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="6.5"
-      strokeLinecap="round"
-    />
-    {/* Knob on top of lamp */}
-    <circle cx="37" cy="70" r="5.5" fill="currentColor" />
-    {/* Lid — tapered surface */}
-    <path
-      d="M16 82 Q18 74 37 72 Q54 70 59 78 L59 83 Q53 77 37 77 Q20 77 16 83 Z"
+      d="M72 68 Q81 60 85 50 Q87 46 84 45 Q81 44 79 48 Q75 57 69 67 Z"
       fill="currentColor"
     />
-    <ellipse cx="37" cy="82" rx="21.5" ry="5" fill="currentColor" />
-    {/* Lamp body */}
-    <path
-      d="M59 82 Q65 95 58 103 Q47 110 29 109 Q12 108 7 99 Q3 90 8 84 Q14 78 36 77 Q52 76 59 82 Z"
-      fill="currentColor"
-    />
-    {/* Handle loop */}
-    <path
-      d="M11 87 Q2 92 4 102 Q6 111 17 107"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="6.5"
-      strokeLinecap="round"
-    />
+
+    {/* Dome lid — upper half-ellipse covering lamp body top */}
+    <path d="M16 66 A 28 14 0 0 0 72 66 Z" fill="currentColor" />
+
+    {/* Dome knob */}
+    <circle cx="44" cy="51" r="5.5" fill="currentColor" />
+
+    {/* Handle — circular ring with visible hole */}
+    <circle cx="15" cy="79" r="13" fill="currentColor" />
+    <circle cx="15" cy="79" r="7" fill="white" />
+
+    {/* Pedestal stem (narrow) */}
+    <rect x="38" y="92" width="12" height="9" rx="1" fill="currentColor" />
+
+    {/* Pedestal foot (wide base) */}
+    <rect x="28" y="101" width="32" height="8" rx="4" fill="currentColor" />
   </svg>
 );
