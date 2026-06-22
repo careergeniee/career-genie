@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Sparkles, Mail, Lock, User, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, User, ArrowRight, Eye, EyeOff } from "lucide-react";
+import genieLogo from "@/assets/genie-logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -77,9 +78,7 @@ const Signup = () => {
             <div className="relative hidden lg:flex items-center justify-center p-12 border-r border-border/60">
                 <div className="absolute inset-0 grid-bg opacity-30" />
                 <div className="relative text-center max-w-md space-y-4">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-gold flex items-center justify-center mx-auto shadow-[0_0_40px_hsl(48_96%_53%_/_0.5)]">
-                        <Sparkles className="w-10 h-10 text-primary-foreground" />
-                    </div>
+                    <img src={genieLogo} alt="Career Genie" className="w-20 h-20 object-contain mx-auto" />
                     <p className="font-display text-3xl font-bold">
                         Start your <span className="text-gradient-gold">career journey</span>
                     </p>
@@ -93,9 +92,7 @@ const Signup = () => {
             <div className="relative flex items-center justify-center p-6 sm:p-12">
                 <div className="w-full max-w-md">
                     <Link to="/" className="inline-flex items-center gap-2 mb-8">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-gold flex items-center justify-center">
-                            <Sparkles className="w-5 h-5 text-primary-foreground" />
-                        </div>
+                        <img src={genieLogo} alt="Career Genie" className="w-9 h-9 object-contain" />
                         <span className="font-display font-bold text-xl">
                             Career <span className="text-gradient-gold">Genie</span>
                         </span>

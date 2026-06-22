@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Sparkles, Mail, ArrowLeft } from "lucide-react";
+import { Mail, ArrowLeft } from "lucide-react";
+import genieLogo from "@/assets/genie-logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,9 +37,7 @@ const ForgotPassword = () => {
                     <ArrowLeft className="w-4 h-4" /> Back to login
                 </Link>
 
-                <div className="w-14 h-14 rounded-2xl bg-gradient-gold flex items-center justify-center mb-6">
-                    <Sparkles className="w-7 h-7 text-primary-foreground" />
-                </div>
+                <img src={genieLogo} alt="Career Genie" className="w-14 h-14 object-contain mb-6" />
 
                 {sent ? (
                     <div className="text-center">

@@ -2,10 +2,11 @@ import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
     Bot, FileText, MessageSquare, Map, GraduationCap, Globe2,
-    Sparkles, LogOut, Settings, ChevronLeft, ChevronRight,
+    LogOut, Settings, ChevronLeft, ChevronRight,
     LayoutDashboard, User, ClipboardList, Target
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import genieLogo from "@/assets/genie-logo.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { DailyTaskReminder } from "@/components/DailyTaskReminder";
@@ -49,9 +50,7 @@ export const DashboardLayout = () => {
                     "flex items-center gap-3 px-4 py-5 border-b border-border/60",
                     collapsed && "justify-center px-0"
                 )}>
-                    <div className="w-9 h-9 rounded-xl bg-gradient-gold flex items-center justify-center shrink-0 shadow-[0_0_20px_hsl(48_96%_53%_/_0.4)]">
-                        <Sparkles className="w-5 h-5 text-primary-foreground" strokeWidth={2.5} />
-                    </div>
+                    <img src={genieLogo} alt="Career Genie" className="w-9 h-9 object-contain shrink-0" />
                     {!collapsed && (
                         <span className="font-display font-bold text-lg tracking-tight">
                             Career <span className="text-gradient-gold">Genie</span>

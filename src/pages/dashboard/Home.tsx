@@ -1,6 +1,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
-import { Bot, FileText, MessageSquare, Map, GraduationCap, Globe2, ArrowRight, Sparkles, TrendingUp, Award, Brain, ClipboardList, Target } from "lucide-react";
+import { Bot, FileText, MessageSquare, Map, GraduationCap, Globe2, ArrowRight, TrendingUp, Award, Brain, ClipboardList, Target } from "lucide-react";
+import genieLogo from "@/assets/genie-logo.png";
 import { Button } from "@/components/ui/button";
 import { GlowOrbs } from "@/components/GlowOrbs";
 
@@ -27,7 +28,7 @@ const DashboardHome = () => {
                 {/* Header */}
                 <div className="mb-10">
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-card text-xs font-medium mb-4">
-                        <Sparkles className="w-3.5 h-3.5 text-primary" />
+                        <img src={genieLogo} alt="" className="w-3.5 h-3.5 object-contain" />
                         <span className="text-muted-foreground">Your career command center</span>
                     </div>
                     <h1 className="font-display text-4xl md:text-5xl font-bold mb-2">
