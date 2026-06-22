@@ -254,7 +254,7 @@ const Index = () => {
           <div className="absolute -top-20 -left-20 w-80 h-80 bg-primary/30 blur-[100px] rounded-full" />
           <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-accent/30 blur-[100px] rounded-full" />
           <div className="relative max-w-2xl mx-auto">
-            <img src={genieLogo2} alt="Career Genie" className="w-16 h-16 object-contain mx-auto mb-6" />
+            <img src={genieLogo2} alt="Career Genie" className="w-20 h-20 object-contain mx-auto mb-6" />
             <h2 className="font-display text-4xl md:text-5xl font-bold mb-4">
               Ready to <span className="text-gradient-gold">Start?</span>
             </h2>

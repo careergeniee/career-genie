@@ -43,7 +43,7 @@ const Login = () => {
       <div className="relative hidden lg:flex items-center justify-center p-12 border-r border-border/60">
         <div className="absolute inset-0 grid-bg opacity-30" />
         <div className="relative text-center max-w-md">
-          <img src={genieLogo} alt="Career Genie" className="w-20 h-20 object-contain mx-auto mb-6" />
+          <img src={genieLogo} alt="Career Genie" className="w-24 h-24 object-contain mx-auto mb-6" />
           <p className="font-display text-3xl font-bold mb-3">
             Your wish is our <span className="text-gradient-gold">command</span>
           </p>
@@ -57,7 +57,7 @@ const Login = () => {
       <div className="relative flex items-center justify-center p-6 sm:p-12">
         <div className="w-full max-w-md">
           <Link to="/" className="inline-flex items-center gap-2 mb-8 group">
-            <img src={genieLogo} alt="Career Genie" className="w-9 h-9 object-contain" />
+            <img src={genieLogo} alt="Career Genie" className="w-11 h-11 object-contain shrink-0" />
             <span className="font-display font-bold text-xl">
               Career <span className="text-gradient-gold">Genie</span>
             </span>

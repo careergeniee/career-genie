@@ -28,7 +28,7 @@ const DashboardHome = () => {
                 {/* Header */}
                 <div className="mb-10">
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-card text-xs font-medium mb-4">
-                        <img src={genieLogo2} alt="" className="w-5 h-5 object-contain" />
+                        <img src={genieLogo2} alt="" className="w-6 h-6 object-contain shrink-0" />
                         <span className="text-muted-foreground">Your career command center</span>
                     </div>
                     <h1 className="font-display text-4xl md:text-5xl font-bold mb-2">

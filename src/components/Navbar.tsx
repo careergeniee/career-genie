@@ -32,7 +32,7 @@ export const Navbar = () => {
         <Link to="/" className="flex items-center gap-2 group">
           <div className="relative">
             <div className="absolute inset-0 bg-primary/30 blur-xl group-hover:bg-primary/50 transition-all rounded-full" />
-            <img src={genieLogo} alt="Career Genie" className="relative w-10 h-10 object-contain drop-shadow-sm" />
+            <img src={genieLogo} alt="Career Genie" className="relative w-12 h-12 object-contain drop-shadow-sm shrink-0" />
           </div>
           <span className="font-display font-bold text-xl tracking-tight">
             Career <span className="text-gradient-gold">Genie</span>

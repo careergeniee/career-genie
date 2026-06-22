@@ -7,7 +7,7 @@ export const Footer = () => {
       <div className="container py-14 grid grid-cols-1 md:grid-cols-4 gap-10">
         <div className="md:col-span-2">
           <Link to="/" className="flex items-center gap-2">
-            <img src={genieLogo} alt="Career Genie" className="w-10 h-10 object-contain" />
+            <img src={genieLogo} alt="Career Genie" className="w-12 h-12 object-contain shrink-0" />
             <span className="font-display font-bold text-xl">Career <span className="text-gradient-gold">Genie</span></span>
           </Link>
           <p className="mt-4 text-sm text-muted-foreground max-w-sm">

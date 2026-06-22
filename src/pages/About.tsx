@@ -15,7 +15,7 @@ const About = () => {
         <GlowOrbs />
         <div className="container relative py-24 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card text-xs font-medium mb-6">
-            <img src={genieLogo} alt="" className="w-3.5 h-3.5 object-contain" /> About Career Genie
+            <img src={genieLogo} alt="" className="w-5 h-5 object-contain" /> About Career Genie
           </div>
           <h1 className="font-display text-5xl md:text-6xl font-bold mb-5">We make careers <span className="text-gradient-gold">magical</span></h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Career Genie was born from a simple belief: every person deserves a clear, confident path to a career they love. We blend AI with expert coaching to make that real.</p>

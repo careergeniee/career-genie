@@ -37,7 +37,7 @@ const ForgotPassword = () => {
                     <ArrowLeft className="w-4 h-4" /> Back to login
                 </Link>
 
-                <img src={genieLogo} alt="Career Genie" className="w-14 h-14 object-contain mb-6" />
+                <img src={genieLogo} alt="Career Genie" className="w-16 h-16 object-contain mb-6" />
 
                 {sent ? (
                     <div className="text-center">

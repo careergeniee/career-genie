@@ -50,7 +50,7 @@ export const DashboardLayout = () => {
                     "flex items-center gap-3 px-4 py-5 border-b border-border/60",
                     collapsed && "justify-center px-0"
                 )}>
-                    <img src={genieLogo} alt="Career Genie" className="w-9 h-9 object-contain shrink-0" />
+                    <img src={genieLogo} alt="Career Genie" className="w-11 h-11 object-contain shrink-0" />
                     {!collapsed && (
                         <span className="font-display font-bold text-lg tracking-tight">
                             Career <span className="text-gradient-gold">Genie</span>
