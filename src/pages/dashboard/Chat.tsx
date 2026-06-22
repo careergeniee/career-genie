@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { groq } from "@/lib/groq";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
-import genieLogo2 from "@/assets/genie-logo2.png";
+import genieLogo from "@/assets/genie-logo.png";
 
 interface Message {
     sender: "user" | "genie";
@@ -130,7 +130,7 @@ const ChatPage = () => {
             <div className="flex items-center justify-between px-6 py-4 border-b border-border/60 bg-card/40 backdrop-blur-sm shrink-0">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-gradient-gold flex items-center justify-center shadow-[0_0_20px_hsl(48_96%_53%_/_0.4)]">
-                        <img src={genieLogo2} alt="Genie" className="w-6 h-6 object-contain" />
+                        <img src={genieLogo} alt="Genie" className="w-6 h-6 object-contain" />
                     </div>
                     <div>
                         <h2 className="font-display font-bold">AI Career Mentor</h2>
@@ -159,7 +159,7 @@ const ChatPage = () => {
                                     ? "bg-gradient-gold text-primary-foreground"
                                     : "bg-secondary text-foreground"
                             )}>
-                                {msg.sender === "genie" ? <img src={genieLogo2} alt="Genie" className="w-5 h-5 object-contain" /> : initials}
+                                {msg.sender === "genie" ? <img src={genieLogo} alt="Genie" className="w-5 h-5 object-contain" /> : initials}
                             </div>
 
                             <div className={cn(
@@ -183,7 +183,7 @@ const ChatPage = () => {
                     {isTyping && (
                         <div className="flex items-end gap-3">
                             <div className="w-8 h-8 rounded-full bg-gradient-gold flex items-center justify-center">
-                                <img src={genieLogo2} alt="Genie" className="w-5 h-5 object-contain" />
+                                <img src={genieLogo} alt="Genie" className="w-5 h-5 object-contain" />
                             </div>
                             <div className="bg-card border border-border/60 rounded-2xl rounded-bl-sm px-4 py-3">
                                 <div className="flex gap-1">
