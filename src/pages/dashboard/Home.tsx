@@ -4,6 +4,11 @@ import { Bot, FileText, MessageSquare, Map, GraduationCap, ArrowRight, TrendingU
 import genieLogo2 from "@/assets/genie-logo2.png";
 import { Button } from "@/components/ui/button";
 import { GlowOrbs } from "@/components/GlowOrbs";
+import { loadData } from "@/lib/userStore";
+import { loadPrediction } from "@/lib/careerEngine";
+import { totalProgress } from "@/lib/roadmap";
+import type { Roadmap } from "@/lib/roadmap";
+import type { InterviewSession } from "@/lib/interview";
 
 const services = [
     { label: "Career Assessment", path: "/dashboard/assessment", icon: ClipboardList, active: true, desc: "Discover your best-fit careers" },
@@ -18,6 +23,15 @@ const services = [
 const DashboardHome = () => {
     const { user } = useAuth();
     const name = user?.displayName || user?.email?.split("@")[0] || "Explorer";
+
+    const roadmap = loadData<Roadmap | null>("roadmap", null);
+    const sessions = loadData<InterviewSession[]>("interview_sessions", []);
+    const prediction = loadPrediction();
+
+    const roadmapPct = roadmap ? Math.round(totalProgress(roadmap)) : null;
+    const sessionCount = sessions.length;
+    const lastScore = sessions[0]?.overallScore ?? null;
+    const topCareer = prediction?.topCareer ?? null;
 
     return (
         <div className="relative min-h-screen">
@@ -37,15 +51,16 @@ const DashboardHome = () => {
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-3 gap-4 mb-10">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
                     {[
-                        { icon: TrendingUp, label: "Goals hit", value: "0/5" },
-                        { icon: Award, label: "Skills added", value: "0" },
-                        { icon: Brain, label: "Interview score", value: "—" },
+                        { icon: TrendingUp, label: "Roadmap progress", value: roadmapPct !== null ? `${roadmapPct}%` : "—" },
+                        { icon: Brain, label: "Interview sessions", value: String(sessionCount) },
+                        { icon: Award, label: "Last score", value: lastScore !== null ? `${lastScore}/100` : "—" },
+                        { icon: Target, label: "Career match", value: topCareer ?? "Not taken yet" },
                     ].map((s) => (
                         <div key={s.label} className="glass-card rounded-2xl p-5 border border-border/60">
                             <s.icon className="w-5 h-5 text-primary mb-3" />
-                            <div className="font-display text-2xl font-bold">{s.value}</div>
+                            <div className="font-display text-xl font-bold truncate">{s.value}</div>
                             <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
                         </div>
                     ))}
