@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import {
-    Plus, Trash2, Sparkles, User, GraduationCap,
+    Plus, Trash2, User, GraduationCap,
     Briefcase, Wrench, FolderGit2, Loader2, X,
     CheckCircle2, AlertCircle, Target, Wand2,
 } from "lucide-react";
+import genieLogo3 from "@/assets/genie-logo3.png";
 import {
     ResumeData, TemplateId, TEMPLATES, AtsResult,
     newEducation, newExperience, newProject,
@@ -291,7 +292,7 @@ export const ResumeForm = ({
                         value={targetRole} onChange={(e) => setTargetRole(e.target.value)} />
                     <button onClick={onRunAts} disabled={scoring}
                         className="flex items-center gap-2 px-4 rounded-lg bg-gradient-gold text-primary-foreground text-sm font-semibold shrink-0 disabled:opacity-60">
-                        {scoring ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                        {scoring ? <Loader2 className="w-4 h-4 animate-spin" /> : <img src={genieLogo3} alt="" className="w-4 h-4 object-contain" />}
                         Check
                     </button>
                 </div>
