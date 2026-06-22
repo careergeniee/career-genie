@@ -47,12 +47,12 @@ export const DashboardLayout = () => {
             )}>
                 {/* Logo */}
                 <div className={cn(
-                    "flex items-center gap-3 px-4 py-5 border-b border-border/60",
+                    "flex items-center gap-1 px-4 py-5 border-b border-border/60",
                     collapsed && "justify-center px-0"
                 )}>
                     <img src={genieLogo} alt="Career Genie" className="w-11 h-11 object-contain shrink-0" />
                     {!collapsed && (
-                        <span className="font-display font-bold text-lg tracking-tight">
+                        <span className="font-display font-bold text-lg tracking-tight leading-none">
                             Career <span className="text-gradient-gold">Genie</span>
                         </span>
                     )}

@@ -29,12 +29,12 @@ export const Navbar = () => {
     <header className="fixed top-0 inset-x-0 z-50">
       <div className="absolute inset-0 bg-background/70 backdrop-blur-xl border-b border-border/60" />
       <nav className="container relative flex items-center justify-between h-[72px] py-3">
-        <Link to="/" className="flex items-center gap-2 group">
+        <Link to="/" className="flex items-center gap-1 group">
           <div className="relative">
             <div className="absolute inset-0 bg-primary/30 blur-xl group-hover:bg-primary/50 transition-all rounded-full" />
             <img src={genieLogo} alt="Career Genie" className="relative w-12 h-12 object-contain drop-shadow-sm shrink-0" />
           </div>
-          <span className="font-display font-bold text-xl tracking-tight">
+          <span className="font-display font-bold text-xl tracking-tight leading-none">
             Career <span className="text-gradient-gold">Genie</span>
           </span>
         </Link>

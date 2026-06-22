@@ -91,7 +91,7 @@ const Signup = () => {
             {/* Right - Form */}
             <div className="relative flex items-center justify-center p-6 sm:p-12">
                 <div className="w-full max-w-md">
-                    <Link to="/" className="inline-flex items-center gap-2 mb-8">
+                    <Link to="/" className="inline-flex items-center gap-1 mb-8">
                         <img src={genieLogo} alt="Career Genie" className="w-11 h-11 object-contain shrink-0" />
                         <span className="font-display font-bold text-xl">
                             Career <span className="text-gradient-gold">Genie</span>
