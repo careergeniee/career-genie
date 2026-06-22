@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Menu, X, Bot, FileText, MessageSquare, Map, GraduationCap, Globe2, ChevronDown } from "lucide-react";
+import { Menu, X, Bot, FileText, MessageSquare, Map, GraduationCap, Globe2, ChevronDown } from "lucide-react";
+import { GenieLampLogo } from "@/components/GenieLampLogo";
 import { cn } from "@/lib/utils";
 
 const services = [
@@ -30,10 +31,8 @@ export const Navbar = () => {
       <nav className="container relative flex items-center justify-between h-[72px] py-3">
         <Link to="/" className="flex items-center gap-2 group">
           <div className="relative">
-            <div className="absolute inset-0 bg-primary/40 blur-xl group-hover:bg-primary/60 transition-all" />
-            <div className="relative w-9 h-9 rounded-xl bg-gradient-gold flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-primary-foreground" strokeWidth={2.5} />
-            </div>
+            <div className="absolute inset-0 bg-primary/30 blur-xl group-hover:bg-primary/50 transition-all rounded-full" />
+            <GenieLampLogo size={38} className="relative text-primary drop-shadow-sm" />
           </div>
           <span className="font-display font-bold text-xl tracking-tight">
             Career <span className="text-gradient-gold">Genie</span>

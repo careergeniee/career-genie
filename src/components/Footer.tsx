@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Sparkles } from "lucide-react";
+import { GenieLampLogo } from "@/components/GenieLampLogo";
 
 export const Footer = () => {
   return (
@@ -7,9 +7,7 @@ export const Footer = () => {
       <div className="container py-14 grid grid-cols-1 md:grid-cols-4 gap-10">
         <div className="md:col-span-2">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-gradient-gold flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-primary-foreground" />
-            </div>
+            <GenieLampLogo size={38} className="text-primary" />
             <span className="font-display font-bold text-xl">Career <span className="text-gradient-gold">Genie</span></span>
           </Link>
           <p className="mt-4 text-sm text-muted-foreground max-w-sm">
