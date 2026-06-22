@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { groq } from "@/lib/groq";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
-import genieLogo from "@/assets/genie-logo3.jpeg";
+import genieLogo from "@/assets/genie-logo3.png";
 
 interface Message {
     sender: "user" | "genie";
