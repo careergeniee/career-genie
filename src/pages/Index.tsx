@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { GlowOrbs } from "@/components/GlowOrbs";
+import { GenieHero } from "@/components/GenieHero";
 import {
   Bot, FileText, Map, Brain,
-  ArrowRight, Sparkles, Zap, Mic, Wand2, BarChart3, Send, Check, MessageSquare, GraduationCap
+  ArrowRight, Sparkles, Zap, Mic, Wand2, BarChart3, MessageSquare, GraduationCap
 } from "lucide-react";
 
 const features = [
@@ -78,115 +79,9 @@ const Index = () => {
             </div>
           </div>
 
-          {/* MODULE COLLAGE */}
+          {/* GENIE HERO ANIMATION */}
           <div className="relative animate-scale-in">
-            <div className="absolute inset-0 bg-primary/10 blur-[70px] rounded-3xl animate-glow-pulse" />
-            <div className="relative grid grid-cols-2 gap-3 max-w-lg mx-auto">
-
-              {/* AI Chatbot */}
-              <div className="glass-card rounded-2xl p-3 shadow-lg border border-border">
-                <div className="flex items-center gap-1.5 mb-2 pb-2 border-b border-border">
-                  <div className="w-5 h-5 rounded-md bg-gradient-gold flex items-center justify-center shrink-0">
-                    <Bot className="w-3 h-3 text-primary-foreground" />
-                  </div>
-                  <span className="text-[11px] font-bold">AI Chatbot</span>
-                </div>
-                <div className="space-y-1.5">
-                  <div className="bg-secondary rounded-lg rounded-tl-none px-2 py-1.5 text-[9px] text-foreground leading-snug">
-                    What career suits a CS graduate in Pakistan?
-                  </div>
-                  <div className="bg-primary rounded-lg rounded-tr-none px-2 py-1.5 text-[9px] text-primary-foreground ml-3 leading-snug">
-                    Data Science & Software Engineering are top matches for your profile!
-                  </div>
-                  <div className="flex items-center gap-1.5 bg-muted rounded-lg px-2 py-1">
-                    <span className="flex-1 text-[8px] text-muted-foreground">Ask anything...</span>
-                    <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
-                      <Send className="w-2 h-2 text-primary-foreground" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Resume Builder */}
-              <div className="glass-card rounded-2xl p-3 shadow-lg border border-border">
-                <div className="flex items-center gap-1.5 mb-2 pb-2 border-b border-border">
-                  <div className="w-5 h-5 rounded-md bg-gradient-gold flex items-center justify-center shrink-0">
-                    <FileText className="w-3 h-3 text-primary-foreground" />
-                  </div>
-                  <span className="text-[11px] font-bold">Resume Builder</span>
-                </div>
-                <div className="bg-white rounded-lg p-2 shadow-sm border border-border/40">
-                  <div className="font-bold text-[9px] text-center text-foreground">Muhammad Taha</div>
-                  <div className="text-center text-[8px] text-muted-foreground mb-1.5">taha@email.com · Lahore</div>
-                  <div className="text-[8px] font-semibold text-foreground mb-0.5">Experience</div>
-                  <div className="text-[7px] text-muted-foreground mb-1 pl-1">Software Intern — TechCorp</div>
-                  <div className="text-[8px] font-semibold text-foreground mb-0.5">Skills</div>
-                  <div className="flex gap-1 flex-wrap pl-1">
-                    {["Python", "React", "SQL"].map((s) => (
-                      <span key={s} className="bg-primary/15 text-primary text-[7px] px-1 rounded">{s}</span>
-                    ))}
-                  </div>
-                </div>
-                <div className="mt-2 flex items-center gap-1.5">
-                  <div className="flex-1 bg-secondary rounded-full h-1.5">
-                    <div className="bg-primary rounded-full h-1.5 w-3/4" />
-                  </div>
-                  <span className="text-[9px] text-primary font-bold">ATS 78</span>
-                </div>
-              </div>
-
-              {/* Career Assessment */}
-              <div className="glass-card rounded-2xl p-3 shadow-lg border border-border">
-                <div className="flex items-center gap-1.5 mb-2 pb-2 border-b border-border">
-                  <div className="w-5 h-5 rounded-md bg-gradient-gold flex items-center justify-center shrink-0">
-                    <Brain className="w-3 h-3 text-primary-foreground" />
-                  </div>
-                  <span className="text-[11px] font-bold">Assessment</span>
-                </div>
-                <div className="text-[9px] text-foreground mb-2 leading-snug font-medium">
-                  I enjoy solving complex logical problems.
-                </div>
-                <div className="space-y-1">
-                  {["Disagree", "Neutral", "Agree", "Strongly Agree"].map((l, i) => (
-                    <div key={l} className={`rounded-md px-2 py-1 text-[8px] border ${i === 2 ? "bg-primary/15 border-primary text-primary font-semibold" : "border-border text-muted-foreground"}`}>
-                      {l}
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-2 flex items-center gap-1.5">
-                  <div className="flex-1 bg-secondary rounded-full h-1">
-                    <div className="bg-primary rounded-full h-1 w-2/5" />
-                  </div>
-                  <span className="text-[8px] text-muted-foreground">8/20</span>
-                </div>
-              </div>
-
-              {/* Career Roadmap */}
-              <div className="glass-card rounded-2xl p-3 shadow-lg border border-border">
-                <div className="flex items-center gap-1.5 mb-2 pb-2 border-b border-border">
-                  <div className="w-5 h-5 rounded-md bg-gradient-gold flex items-center justify-center shrink-0">
-                    <Map className="w-3 h-3 text-primary-foreground" />
-                  </div>
-                  <span className="text-[11px] font-bold">Career Roadmap</span>
-                </div>
-                <div className="space-y-1.5">
-                  {[
-                    { title: "Python Basics", done: true },
-                    { title: "Data Analysis", done: true },
-                    { title: "ML Fundamentals", done: false },
-                    { title: "Projects & Portfolio", done: false },
-                  ].map((p) => (
-                    <div key={p.title} className="flex items-center gap-1.5">
-                      <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 ${p.done ? "bg-primary" : "border border-border bg-secondary"}`}>
-                        {p.done && <Check className="w-2 h-2 text-primary-foreground" />}
-                      </div>
-                      <span className={`text-[9px] ${p.done ? "text-foreground font-medium line-through opacity-60" : "text-foreground"}`}>{p.title}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-            </div>
+            <GenieHero />
           </div>
         </div>
       </section>
