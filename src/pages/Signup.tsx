@@ -83,7 +83,7 @@ const Signup = () => {
                         Start your <span className="text-gradient-gold">career journey</span>
                     </p>
                     <p className="text-muted-foreground">
-                        Join 50,000+ professionals already using Career Genie to land their dream roles.
+                        Built for ambitious students and early-career professionals.
                     </p>
                 </div>
             </div>
