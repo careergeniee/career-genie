@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Bot, FileText, MessageSquare, Map, GraduationCap, Globe2, ChevronDown } from "lucide-react";
-import { GenieLampLogo } from "@/components/GenieLampLogo";
+import genieLogo from "@/assets/genie-logo.png";
 import { cn } from "@/lib/utils";
 
 const services = [
@@ -32,7 +32,7 @@ export const Navbar = () => {
         <Link to="/" className="flex items-center gap-2 group">
           <div className="relative">
             <div className="absolute inset-0 bg-primary/30 blur-xl group-hover:bg-primary/50 transition-all rounded-full" />
-            <GenieLampLogo size={38} className="relative text-primary drop-shadow-sm" />
+            <img src={genieLogo} alt="Career Genie" className="relative w-10 h-10 object-contain drop-shadow-sm" />
           </div>
           <span className="font-display font-bold text-xl tracking-tight">
             Career <span className="text-gradient-gold">Genie</span>
