@@ -13,6 +13,14 @@ dist
 dist-ssr
 *.local
 
+# ML model binary
+ml-service/career_model.pkl
+ml-service/__pycache__/
+ml-service/*.pyc
+
+# Lock files (using bun.lock)
+package-lock.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
