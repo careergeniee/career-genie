@@ -3,9 +3,9 @@ import genieLogo from "@/assets/genie-logo.png";
 import { GlowOrbs } from "@/components/GlowOrbs";
 
 const team = [
-  { name: "Meraj", role: "Full Stack Developer", initials: "M", bio: "Architected the core AI pipeline and backend integration." },
-  { name: "Taha", role: "Full Stack Developer", initials: "T", bio: "Built the resume engine, interview prep, and career assessment." },
-  { name: "Haroon", role: "Full Stack Developer", initials: "H", bio: "Designed the UI system and crafted the user experience end-to-end." },
+  { name: "Meraj ul Abdin", role: "Full Stack Developer", initials: "MA", bio: "Architected the core AI pipeline and backend integration." },
+  { name: "M. Taha Tariq", role: "Full Stack Developer", initials: "MT", bio: "Built the resume engine, interview prep, and career assessment." },
+  { name: "Haroon Shah Nawaz", role: "Full Stack Developer", initials: "HS", bio: "Designed the UI system and crafted the user experience end-to-end." },
 ];
 
 const About = () => {

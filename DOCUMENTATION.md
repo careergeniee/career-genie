@@ -12,9 +12,9 @@ Department of Software Engineering
 | Field | Details |
 |-------|---------|
 | **Project Title** | Career Genie — AI-Powered Career Guidance Platform |
-| **Submitted By** | Meraj [Last Name] · Muhammad Taha · Haroon [Last Name] |
+| **Submitted By** | Meraj ul Abdin · M. Taha Tariq · Haroon Shah Nawaz |
 | **Session** | 2022–2026 |
-| **Project Supervisor** | [Supervisor Name] |
+| **Project Supervisor** | Mustansar Ali Khan |
 | **Department** | Software Engineering |
 | **School** | School of Systems and Technology |
 | **Submission Date** | June 2026 |
@@ -29,11 +29,11 @@ Department of Software Engineering
 
 ## Final Approval
 
-This is to certify that the Final Year Project titled **"Career Genie — AI-Powered Career Guidance Platform"** submitted by **Meraj [Last Name]**, **Muhammad Taha**, and **Haroon [Last Name]** has been examined and approved as meeting the requirements for the degree of Bachelor of Science in Software Engineering at the University of Management and Technology, Lahore.
+This is to certify that the Final Year Project titled **"Career Genie — AI-Powered Career Guidance Platform"** submitted by **Meraj ul Abdin**, **M. Taha Tariq**, and **Haroon Shah Nawaz** has been examined and approved as meeting the requirements for the degree of Bachelor of Science in Software Engineering at the University of Management and Technology, Lahore.
 
 | Role | Name | Signature | Date |
 |------|------|-----------|------|
-| Project Supervisor | [Supervisor Name] | _________ | June 2026 |
+| Project Supervisor | Mustansar Ali Khan | _________ | June 2026 |
 | Internal Examiner | [Examiner Name] | _________ | June 2026 |
 | External Examiner | [Examiner Name] | _________ | June 2026 |
 | HoD, Software Engineering | [HoD Name] | _________ | June 2026 |
@@ -42,7 +42,7 @@ This is to certify that the Final Year Project titled **"Career Genie — AI-Pow
 
 ## Acknowledgments
 
-We extend our deepest gratitude to our project supervisor, **[Supervisor Name]**, for their invaluable guidance, constructive feedback, and consistent encouragement throughout the development of Career Genie. Their mentorship shaped both the technical depth and academic rigour of this project.
+We extend our deepest gratitude to our project supervisor, **Mustansar Ali Khan**, for their invaluable guidance, constructive feedback, and consistent encouragement throughout the development of Career Genie. Their mentorship shaped both the technical depth and academic rigour of this project.
 
 We thank the **Department of Software Engineering** at UMT Lahore for providing the academic foundation and computing resources that made this project possible.
 
@@ -120,6 +120,25 @@ Career Genie demonstrates that AI can democratize career guidance at scale — d
 12. [Appendix](#12-appendix)
     - 12.1 Glossary
     - 12.2 API References
+
+---
+
+## List of Figures
+
+| Figure | Description | Section |
+|--------|-------------|---------|
+| Figure 1 | Landing Page — Hero, Features, CTA sections | 3.3 |
+| Figure 2 | Login Page | 3.3 |
+| Figure 3 | Sign Up / Registration Page | 3.3 |
+| Figure 4 | Dashboard Home — Stats and Feature Grid | 3.3 |
+| Figure 5 | AI Career Chat — Chat Interface with Voice Input | 3.3 |
+| Figure 6 | Resume Builder — Form Editor and Live Preview | 3.3 |
+| Figure 7 | Career Assessment — Personality and Skill Rating | 3.3 |
+| Figure 8 | Career Path Prediction — Top-5 Results | 3.3 |
+| Figure 9 | Career Roadmap — Phase Timeline and Progress | 3.3 |
+| Figure 10 | Mock Interview Simulator — Setup and Active Session | 3.3 |
+| Figure 11 | Settings Page — Profile and Data Management | 3.3 |
+| Figure 12 | About Page — Team and Mission | 3.3 |
 
 ---
 
@@ -505,23 +524,87 @@ Stories are organized by Epic. Priority: **High** (must-have for MVP), **Medium*
 | US-047 | As a user, I want to clear individual data categories (chat, resume, interviews, assessment, prediction, roadmap) without clearing everything. | Medium | 2 | Sprint 6 |
 | US-048 | As a user, I want a "Clear All Data" option that wipes all my stored data after a confirmation dialog. | Low | 1 | Sprint 6 |
 
-### 3.3 Figma Prototype
+### 3.3 Application Screenshots
 
-High-fidelity UI designs were created in Figma prior to implementation. The prototype covers all major screens:
+The following screenshots were captured from the running Career Genie application. All screenshots are at 1440×900 viewport resolution. Full-resolution PNG files are in `docs/screenshots/`.
 
-- Landing Page (Hero, Features, CTA sections)
-- Login and Registration pages
-- Dashboard Home with stat cards and feature grid
-- AI Career Chat interface
-- Resume Builder (form + preview two-column layout)
-- Career Assessment questionnaire
-- Career Prediction results page
-- Skill Gap Analysis view
-- Career Roadmap (phase timeline + progress)
-- Mock Interview Simulator (setup, active Q&A, results)
-- Settings page
+---
 
-*Figma link: [Insert Figma Prototype URL here]*
+**Figure 1 — Landing Page**  
+![Landing Page](docs/screenshots/01-landing.png)
+
+---
+
+**Figure 2 — Login Page**  
+![Login Page](docs/screenshots/04-login.png)
+
+---
+
+**Figure 3 — Sign Up Page**  
+![Sign Up Page](docs/screenshots/05-signup.png)
+
+---
+
+**Figure 4 — Dashboard Home**  
+The dashboard displays live stats (Roadmap progress, Interview sessions, Last score, Career match) and quick-access cards for all 7 features.
+
+![Dashboard Home](docs/screenshots/06-dashboard-home.png)
+
+---
+
+**Figure 5 — AI Career Chat**  
+The AI Career Mentor interface with voice input support, powered by Llama 3.3-70b.
+
+![AI Career Chat](docs/screenshots/07-chat.png)
+
+---
+
+**Figure 6 — Resume Builder**  
+Two-column layout: form editor on the left, live HTML preview on the right. Six templates available via the template selector.
+
+![Resume Builder](docs/screenshots/08-resume-builder.png)
+
+---
+
+**Figure 7 — Career Assessment**  
+Personality Likert-scale questions and technical skill self-rating form that builds the feature vector for ML prediction.
+
+![Career Assessment](docs/screenshots/09-career-assessment.png)
+
+---
+
+**Figure 8 — Career Path Prediction**  
+Top-5 career match results with probability bars, confidence score, and algorithm attribution.
+
+![Career Prediction](docs/screenshots/10-career-prediction.png)
+
+---
+
+**Figure 9 — Career Roadmap**  
+AI-generated phase timeline with task completion checkboxes, resource links, progress bar, and daily streak counter.
+
+![Career Roadmap](docs/screenshots/11-career-roadmap.png)
+
+---
+
+**Figure 10 — Mock Interview Simulator**  
+Role and difficulty selection, AI-generated questions, 2-minute timer, voice input, and per-question scoring.
+
+![Mock Interview Simulator](docs/screenshots/12-interview-simulator.png)
+
+---
+
+**Figure 11 — Settings Page**  
+Profile management (display name edit, account metadata) and per-category data clearing.
+
+![Settings](docs/screenshots/13-settings.png)
+
+---
+
+**Figure 12 — About Page**  
+Team members, mission, vision, and values.
+
+![About Page](docs/screenshots/02-about.png)
 
 ---
 
@@ -553,18 +636,18 @@ High-fidelity UI designs were created in Figma prior to implementation. The prot
 
 | Task | Assigned To | Story Points | Status |
 |------|------------|-------------|--------|
-| Design Figma wireframes for all screens | Haroon | 8 | Done |
-| Set up React + TypeScript + Vite project | Taha | 2 | Done |
-| Configure Tailwind CSS and shadcn/ui | Haroon | 2 | Done |
-| Implement Firebase Authentication (register, login, logout) | Meraj | 5 | Done |
-| Build AuthContext with onAuthStateChanged | Meraj | 3 | Done |
-| Build landing page (Hero, Features, Highlights sections) | Haroon | 5 | Done |
-| Build Navbar with auth state | Haroon | 2 | Done |
-| Build DashboardLayout with sidebar navigation | Haroon | 3 | Done |
-| Build Dashboard Home page with stat cards | Taha | 3 | Done |
-| Build Settings page (profile edit, data clear) | Taha | 3 | Done |
-| Build userStore.ts (loadData / saveData) | Meraj | 2 | Done |
-| Set up React Router v6 with protected routes | Meraj | 2 | Done |
+| Design Figma wireframes for all screens | Haroon Shah Nawaz | 8 | Done |
+| Set up React + TypeScript + Vite project | M. Taha Tariq | 2 | Done |
+| Configure Tailwind CSS and shadcn/ui | Haroon Shah Nawaz | 2 | Done |
+| Implement Firebase Authentication (register, login, logout) | Meraj ul Abdin | 5 | Done |
+| Build AuthContext with onAuthStateChanged | Meraj ul Abdin | 3 | Done |
+| Build landing page (Hero, Features, Highlights sections) | Haroon Shah Nawaz | 5 | Done |
+| Build Navbar with auth state | Haroon Shah Nawaz | 2 | Done |
+| Build DashboardLayout with sidebar navigation | Haroon Shah Nawaz | 3 | Done |
+| Build Dashboard Home page with stat cards | M. Taha Tariq | 3 | Done |
+| Build Settings page (profile edit, data clear) | M. Taha Tariq | 3 | Done |
+| Build userStore.ts (loadData / saveData) | Meraj ul Abdin | 2 | Done |
+| Set up React Router v6 with protected routes | Meraj ul Abdin | 2 | Done |
 
 **Sprint 1 Velocity:** 40 story points
 
@@ -574,15 +657,15 @@ High-fidelity UI designs were created in Figma prior to implementation. The prot
 
 | Task | Assigned To | Story Points | Status |
 |------|------------|-------------|--------|
-| Design and implement 6 resume templates (HTML preview) | Haroon | 10 | Done |
-| Design and implement 6 resume templates (PDF via react-pdf) | Taha | 10 | Done |
-| Build ResumeForm (personal, education, experience, skills, projects) | Taha | 8 | Done |
-| Build live preview sync between form and preview | Taha | 4 | Done |
-| Implement PDF download (react-pdf blob + anchor download) | Taha | 4 | Done |
-| Implement AI ATS scoring (scoreResume function) | Meraj | 5 | Done |
-| Implement AI bullet rewriting (rewriteBullets function) | Meraj | 4 | Done |
-| Implement resume autosave to localStorage | Taha | 2 | Done |
-| Template selector UI with previews | Haroon | 3 | Done |
+| Design and implement 6 resume templates (HTML preview) | Haroon Shah Nawaz | 10 | Done |
+| Design and implement 6 resume templates (PDF via react-pdf) | M. Taha Tariq | 10 | Done |
+| Build ResumeForm (personal, education, experience, skills, projects) | M. Taha Tariq | 8 | Done |
+| Build live preview sync between form and preview | M. Taha Tariq | 4 | Done |
+| Implement PDF download (react-pdf blob + anchor download) | M. Taha Tariq | 4 | Done |
+| Implement AI ATS scoring (scoreResume function) | Meraj ul Abdin | 5 | Done |
+| Implement AI bullet rewriting (rewriteBullets function) | Meraj ul Abdin | 4 | Done |
+| Implement resume autosave to localStorage | M. Taha Tariq | 2 | Done |
+| Template selector UI with previews | Haroon Shah Nawaz | 3 | Done |
 
 **Sprint 2 Velocity:** 50 story points
 
@@ -592,17 +675,17 @@ High-fidelity UI designs were created in Figma prior to implementation. The prot
 
 | Task | Assigned To | Story Points | Status |
 |------|------------|-------------|--------|
-| Integrate Groq SDK and configure API client | Meraj | 2 | Done |
-| Build Chat page with message list and input form | Haroon | 5 | Done |
-| Implement AI response with conversation history (last 10 messages) | Meraj | 5 | Done |
-| Implement useVoiceRecorder hook (MediaRecorder + Groq Whisper) | Meraj | 5 | Done |
-| Implement press-and-hold mobile / click-to-toggle desktop voice UX | Meraj | 3 | Done |
-| Implement chat persistence in localStorage (last 100 messages) | Taha | 2 | Done |
-| Design Career Assessment UI (personality + skills sections) | Haroon | 4 | Done |
-| Implement personality questions (12+ Likert questions) | Taha | 5 | Done |
-| Implement skill self-rating section (20+ skills) | Taha | 3 | Done |
-| Build feature builder (traitScore, buildFeatures functions) | Meraj | 5 | Done |
-| Implement assessment save/load in localStorage | Meraj | 2 | Done |
+| Integrate Groq SDK and configure API client | Meraj ul Abdin | 2 | Done |
+| Build Chat page with message list and input form | Haroon Shah Nawaz | 5 | Done |
+| Implement AI response with conversation history (last 10 messages) | Meraj ul Abdin | 5 | Done |
+| Implement useVoiceRecorder hook (MediaRecorder + Groq Whisper) | Meraj ul Abdin | 5 | Done |
+| Implement press-and-hold mobile / click-to-toggle desktop voice UX | Meraj ul Abdin | 3 | Done |
+| Implement chat persistence in localStorage (last 100 messages) | M. Taha Tariq | 2 | Done |
+| Design Career Assessment UI (personality + skills sections) | Haroon Shah Nawaz | 4 | Done |
+| Implement personality questions (12+ Likert questions) | M. Taha Tariq | 5 | Done |
+| Implement skill self-rating section (20+ skills) | M. Taha Tariq | 3 | Done |
+| Build feature builder (traitScore, buildFeatures functions) | Meraj ul Abdin | 5 | Done |
+| Implement assessment save/load in localStorage | Meraj ul Abdin | 2 | Done |
 
 **Sprint 3 Velocity:** 41 story points
 
@@ -612,15 +695,15 @@ High-fidelity UI designs were created in Figma prior to implementation. The prot
 
 | Task | Assigned To | Story Points | Status |
 |------|------------|-------------|--------|
-| Train Random Forest model on career dataset | Meraj | 8 | Done |
-| Build FastAPI backend to serve predictions | Meraj | 5 | Done |
-| Implement predictCareers() with API call + timeout + retry | Meraj | 5 | Done |
-| Build local fallback scorer (cosine similarity + softmax) | Meraj | 8 | Done |
-| Implement confidence scoring and uncertainty flag | Meraj | 3 | Done |
-| Build Career Prediction results UI (top-5 chart + confidence) | Haroon | 5 | Done |
+| Train Random Forest model on career dataset | Meraj ul Abdin | 8 | Done |
+| Build FastAPI backend to serve predictions | Meraj ul Abdin | 5 | Done |
+| Implement predictCareers() with API call + timeout + retry | Meraj ul Abdin | 5 | Done |
+| Build local fallback scorer (cosine similarity + softmax) | Meraj ul Abdin | 8 | Done |
+| Implement confidence scoring and uncertainty flag | Meraj ul Abdin | 3 | Done |
+| Build Career Prediction results UI (top-5 chart + confidence) | Haroon Shah Nawaz | 5 | Done |
 | Build Skill Gap Analysis view (required vs. current skills) | Haroon + Taha | 5 | Done |
-| Implement analyzeSkillGap() function | Taha | 4 | Done |
-| Wire prediction and skill gap to localStorage persistence | Taha | 2 | Done |
+| Implement analyzeSkillGap() function | M. Taha Tariq | 4 | Done |
+| Wire prediction and skill gap to localStorage persistence | M. Taha Tariq | 2 | Done |
 
 **Sprint 4 Velocity:** 45 story points
 
@@ -630,20 +713,20 @@ High-fidelity UI designs were created in Figma prior to implementation. The prot
 
 | Task | Assigned To | Story Points | Status |
 |------|------------|-------------|--------|
-| Build Roadmap page UI (goal input, phase timeline) | Haroon | 5 | Done |
-| Implement generateRoadmap() with LLM structured JSON prompt | Meraj | 8 | Done |
-| Implement curated tech stacks for 10 career paths | Taha | 3 | Done |
-| Implement task completion toggle and progress bar | Taha | 3 | Done |
-| Implement streak calculation (currentStreak function) | Meraj | 3 | Done |
-| Build tech stack panel with known/unknown tech highlighting | Haroon | 3 | Done |
-| Build Interview Simulator setup page (role + difficulty selection) | Haroon | 3 | Done |
-| Implement generateQuestions() function | Taha | 5 | Done |
+| Build Roadmap page UI (goal input, phase timeline) | Haroon Shah Nawaz | 5 | Done |
+| Implement generateRoadmap() with LLM structured JSON prompt | Meraj ul Abdin | 8 | Done |
+| Implement curated tech stacks for 10 career paths | M. Taha Tariq | 3 | Done |
+| Implement task completion toggle and progress bar | M. Taha Tariq | 3 | Done |
+| Implement streak calculation (currentStreak function) | Meraj ul Abdin | 3 | Done |
+| Build tech stack panel with known/unknown tech highlighting | Haroon Shah Nawaz | 3 | Done |
+| Build Interview Simulator setup page (role + difficulty selection) | Haroon Shah Nawaz | 3 | Done |
+| Implement generateQuestions() function | M. Taha Tariq | 5 | Done |
 | Build active interview UI (question, answer, timer, voice) | Haroon + Taha | 5 | Done |
-| Implement 2-minute countdown timer logic | Taha | 2 | Done |
-| Implement evaluateAnswer() function | Taha | 5 | Done |
-| Build interview results page (per-question breakdown) | Haroon | 4 | Done |
-| Build past sessions list with delete | Taha | 3 | Done |
-| Wire voice input for interview (Web Speech API) | Meraj | 4 | Done |
+| Implement 2-minute countdown timer logic | M. Taha Tariq | 2 | Done |
+| Implement evaluateAnswer() function | M. Taha Tariq | 5 | Done |
+| Build interview results page (per-question breakdown) | Haroon Shah Nawaz | 4 | Done |
+| Build past sessions list with delete | M. Taha Tariq | 3 | Done |
+| Wire voice input for interview (Web Speech API) | Meraj ul Abdin | 4 | Done |
 
 **Sprint 5 Velocity:** 56 story points
 
@@ -654,14 +737,14 @@ High-fidelity UI designs were created in Figma prior to implementation. The prot
 | Task | Assigned To | Story Points | Status |
 |------|------------|-------------|--------|
 | End-to-end integration testing of all 10 features | All | 8 | Done |
-| Fix Executive template PDF sidebar wrapping and spacing | Taha | 3 | Done |
-| Apply consistent spacing improvements to all 6 PDF templates | Taha | 5 | Done |
-| Mobile responsiveness audit and fixes | Haroon | 5 | Done |
-| Performance audit (bundle size, Lighthouse score) | Meraj | 3 | Done |
-| TypeScript strict mode clean-up | Taha | 3 | Done |
+| Fix Executive template PDF sidebar wrapping and spacing | M. Taha Tariq | 3 | Done |
+| Apply consistent spacing improvements to all 6 PDF templates | M. Taha Tariq | 5 | Done |
+| Mobile responsiveness audit and fixes | Haroon Shah Nawaz | 5 | Done |
+| Performance audit (bundle size, Lighthouse score) | Meraj ul Abdin | 3 | Done |
+| TypeScript strict mode clean-up | M. Taha Tariq | 3 | Done |
 | Write FYP documentation | All | 8 | Done |
 | Prepare final demo presentation | All | 5 | Done |
-| Deploy to Vercel | Meraj | 2 | Done |
+| Deploy to Vercel | Meraj ul Abdin | 2 | Done |
 
 **Sprint 6 Velocity:** 42 story points
 
