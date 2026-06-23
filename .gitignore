@@ -31,3 +31,4 @@ package-lock.json
 *.njsproj
 *.sln
 *.sw?
+bun.lock
