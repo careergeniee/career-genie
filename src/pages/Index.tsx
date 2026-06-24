@@ -1,10 +1,9 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { GlowOrbs } from "@/components/GlowOrbs";
-import * as Accordion from "@radix-ui/react-accordion";
 import {
   Bot, FileText, Map, Brain, GraduationCap, MessageSquare,
-  ArrowRight, Sparkles, Zap, Plus, Minus, Quote, Star,
+  ArrowRight, Sparkles, Zap,
 } from "lucide-react";
 import genieLogo from "@/assets/genie-logo.png";
 
@@ -22,50 +21,6 @@ const stats = [
   { value: "100%", label: "Free Forever" },
   { value: "4.9★", label: "Student Rating" },
   { value: "∞", label: "Career Paths" },
-];
-
-const faqCategories = [
-  {
-    emoji: "🆓",
-    title: "Pricing & Access",
-    faqs: [
-      { q: "Is Career Genie completely free to use?", a: "Yes — all six AI tools are included for free. No subscription, no hidden fees. Create an account and get full access instantly." },
-      { q: "Is there a premium tier planned?", a: "We plan to keep the core tools free forever. Career Genie is built for Pakistani students who shouldn't have to pay for career guidance." },
-    ],
-  },
-  {
-    emoji: "🤖",
-    title: "About the AI",
-    faqs: [
-      { q: "How does the AI Career Chatbot work?", a: "It's powered by Llama 3.3 via Groq. Ask it anything — career advice, job market questions, skill guidance — and get instant, expert responses." },
-      { q: "Can I use Interview Prep with voice input?", a: "Absolutely. Speak your answers using your microphone. The AI listens, transcribes, and gives you detailed feedback and scoring on your response." },
-    ],
-  },
-  {
-    emoji: "🎓",
-    title: "Getting Started",
-    faqs: [
-      { q: "Who is Career Genie built for?", a: "Career Genie is built for Pakistani students and fresh graduates who want AI-powered guidance to discover, prepare for, and land the right career." },
-      { q: "Do I need an account to use the tools?", a: "Yes — a free account lets you save your progress, resumes, and roadmaps. Sign up in under a minute with your email." },
-    ],
-  },
-];
-
-const testimonials = [
-  {
-    quote: "Career Genie's AI chatbot helped me figure out exactly which career path to take after graduation. The roadmap it generated was spot-on and I followed it to land my first dev job.",
-    name: "Ahmed Raza",
-    role: "Software Engineer, Lahore",
-    initials: "AR",
-    stars: 5,
-  },
-  {
-    quote: "The resume builder is insane. It rewrote my bullet points and my ATS score went from 42 to 89. Got three interview calls the same week I updated my CV.",
-    name: "Sana Malik",
-    role: "Data Analyst, Karachi",
-    initials: "SM",
-    stars: 5,
-  },
 ];
 
 const Index = () => {
@@ -216,80 +171,6 @@ const Index = () => {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── TESTIMONIALS ── */}
-      <section className="container pb-24">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Success Stories</p>
-          <h2 className="font-display text-4xl md:text-5xl font-bold">
-            Students who{" "}
-            <span className="text-gradient-gold">made it happen</span>
-          </h2>
-        </div>
-        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          {testimonials.map((t) => (
-            <div key={t.name} className="rounded-2xl border border-border bg-background p-8 flex flex-col gap-5 hover:border-primary/50 hover:shadow-md transition-all duration-300">
-              <div className="flex gap-0.5">
-                {Array.from({ length: t.stars }).map((_, i) => (
-                  <Star key={i} className="w-4 h-4 text-primary fill-primary" />
-                ))}
-              </div>
-              <Quote className="w-7 h-7 text-primary/25" />
-              <p className="text-sm text-muted-foreground leading-relaxed flex-1">"{t.quote}"</p>
-              <div className="flex items-center gap-3 pt-2 border-t border-border">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center font-display font-bold text-sm text-white shrink-0">
-                  {t.initials}
-                </div>
-                <div>
-                  <div className="font-semibold text-sm">{t.name}</div>
-                  <div className="text-xs text-muted-foreground">{t.role}</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── FAQ ── */}
-      <section className="relative py-24 overflow-hidden bg-secondary/20">
-        <div className="container">
-          <div className="text-center mb-14">
-            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">FAQ</p>
-            <h2 className="font-display text-4xl font-bold">
-              Common <span className="text-gradient-gold">questions</span>
-            </h2>
-          </div>
-
-          <div className="max-w-3xl mx-auto grid gap-8">
-            {faqCategories.map((cat) => (
-              <div key={cat.title}>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xl">{cat.emoji}</span>
-                  <h3 className="font-display font-bold text-sm uppercase tracking-widest text-muted-foreground">{cat.title}</h3>
-                </div>
-                <Accordion.Root type="single" collapsible className="space-y-2">
-                  {cat.faqs.map((faq, i) => (
-                    <Accordion.Item
-                      key={i}
-                      value={`${cat.title}-${i}`}
-                      className="rounded-xl border border-border bg-background overflow-hidden"
-                    >
-                      <Accordion.Trigger className="w-full flex items-center justify-between px-5 py-4 text-left text-sm font-semibold group hover:text-primary transition-colors [&[data-state=open]]:text-primary">
-                        {faq.q}
-                        <Plus className="w-4 h-4 shrink-0 ml-4 text-muted-foreground group-data-[state=open]:hidden" />
-                        <Minus className="w-4 h-4 shrink-0 ml-4 hidden group-data-[state=open]:block text-primary" />
-                      </Accordion.Trigger>
-                      <Accordion.Content className="px-5 pb-4 text-sm text-muted-foreground leading-relaxed data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up overflow-hidden border-t border-border/60 pt-3">
-                        {faq.a}
-                      </Accordion.Content>
-                    </Accordion.Item>
-                  ))}
-                </Accordion.Root>
-              </div>
-            ))}
           </div>
         </div>
       </section>
