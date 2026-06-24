@@ -19,8 +19,8 @@ const tools = [
 const stats = [
   { value: "6", label: "AI Tools" },
   { value: "100%", label: "Free Forever" },
-  { value: "4.9★", label: "Student Rating" },
   { value: "∞", label: "Career Paths" },
+  { value: "0₨", label: "Cost to You" },
 ];
 
 const Index = () => {

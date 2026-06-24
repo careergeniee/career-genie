@@ -55,7 +55,7 @@ const RoadmapPage = () => {
             setRoadmap(r);
             toast.success("Your personalized roadmap is ready");
         } catch {
-            toast.error("AI request failed. Check your API key and try again.");
+            toast.error("Couldn't generate your roadmap. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -87,10 +87,17 @@ const RoadmapPage = () => {
     };
 
     const reset = () => {
-        if (window.confirm("Delete this roadmap and start over?")) {
-            removeData(KEY);
-            setRoadmap(null);
-        }
+        toast("Delete this roadmap?", {
+            description: "Your progress will be lost and you'll start over.",
+            action: {
+                label: "Yes, delete",
+                onClick: () => {
+                    removeData(KEY);
+                    setRoadmap(null);
+                },
+            },
+            cancel: { label: "Cancel", onClick: () => {} },
+        });
     };
 
     /* ================= SETUP ================= */

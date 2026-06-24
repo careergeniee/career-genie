@@ -7,12 +7,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/Layout";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { Globe2 } from "lucide-react";
 
 const DashboardLayout = lazy(() =>
   import("@/components/DashboardLayout").then((m) => ({ default: m.DashboardLayout }))
 );
-const ComingSoon = lazy(() => import("@/pages/dashboard/ComingSoon"));
 
 const Index = lazy(() => import("./pages/Index"));
 const Services = lazy(() => import("./pages/Services"));
@@ -89,7 +87,6 @@ const App = () => (
                 <Route path="resume" element={<ResumePage />} />
                 <Route path="interview" element={<InterviewPage />} />
                 <Route path="roadmap" element={<RoadmapPage />} />
-                <Route path="career-verse" element={<ComingSoon title="3D Career Verse" desc="Immersive 3D career exploration environments." Icon={Globe2} />} />
                 <Route path="settings" element={<SettingsPage />} />
               </Route>
 

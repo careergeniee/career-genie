@@ -95,7 +95,7 @@ const CareersPage = () => {
                     <Target className="w-12 h-12 text-primary mx-auto mb-4" />
                     <h2 className="font-display text-2xl font-bold mb-2">No career match yet</h2>
                     <p className="text-muted-foreground mb-6">
-                        Take the quick assessment and our ML model will predict the careers
+                        Take the quick assessment and our AI will predict the careers
                         that fit you best.
                     </p>
                     <Button variant="hero" size="lg" onClick={() => navigate("/dashboard/assessment")}>

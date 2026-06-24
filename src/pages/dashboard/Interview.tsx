@@ -93,7 +93,7 @@ const InterviewPage = () => {
             setView("active");
             startTimer();
         } catch {
-            toast.error("AI request failed. Check your API key and try again.");
+            toast.error("Couldn't generate questions. Please try again.");
         } finally {
             setStarting(false);
         }
@@ -123,7 +123,7 @@ const InterviewPage = () => {
                 startTimer();
             }
         } catch {
-            toast.error("Could not evaluate the answer. Try submitting again.");
+            toast.error("Couldn't score your answer. Please try submitting again.");
         } finally {
             setEvaluating(false);
         }

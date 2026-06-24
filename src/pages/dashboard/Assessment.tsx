@@ -55,11 +55,7 @@ const AssessmentPage = () => {
             const result = await predictCareers(features);
             saveAssessment(assessment);
             savePrediction(result);
-            toast.success(
-                result.source === "ml-api"
-                    ? "Career match ready (ML model)"
-                    : "Career match ready"
-            );
+            toast.success("Career match ready");
             navigate("/dashboard/careers");
         } catch {
             toast.error("Could not generate your career match. Please try again.");
@@ -82,8 +78,8 @@ const AssessmentPage = () => {
                         Find your <span className="text-gradient-gold">best-fit career</span>
                     </h1>
                     <p className="text-muted-foreground">
-                        Answer a short personality questionnaire and rate your skills. Our ML
-                        model predicts the careers that match you best.
+                        Answer a short personality questionnaire and rate your skills. Our AI
+                        predicts the careers that match you best.
                     </p>
                 </div>
 

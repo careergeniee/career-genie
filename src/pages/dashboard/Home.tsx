@@ -103,7 +103,7 @@ const DashboardHome = () => {
                     <div className="relative">
                         <ClipboardList className="w-10 h-10 text-primary mx-auto mb-4" />
                         <h3 className="font-display text-2xl font-bold mb-2">Start with your Career Assessment</h3>
-                        <p className="text-muted-foreground mb-5">Answer a few questions and let the ML model find careers that fit you.</p>
+                        <p className="text-muted-foreground mb-5">Answer a few questions and let the AI find careers that fit you.</p>
                         <Button asChild variant="hero" size="lg">
                             <Link to="/dashboard/assessment">Take the assessment <ArrowRight className="w-4 h-4" /></Link>
                         </Button>

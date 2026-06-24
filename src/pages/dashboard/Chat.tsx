@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Send, Plus, Mic, MicOff, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { groq } from "@/lib/groq";
@@ -53,17 +54,22 @@ const ChatPage = () => {
     }, [messages, isTyping]);
 
     const startNewChat = () => {
-        if (window.confirm("Start a new session? This will clear the current conversation.")) {
-            const reset: Message[] = [
-                {
-                    sender: "genie",
-                    text: "Fresh start! What career goal would you like to work on today?",
-                    time: getTime(),
+        toast("Clear this conversation?", {
+            description: "This will start a fresh session.",
+            action: {
+                label: "Yes, clear",
+                onClick: () => {
+                    const reset: Message[] = [{
+                        sender: "genie",
+                        text: "Fresh start! What career goal would you like to work on today?",
+                        time: getTime(),
+                    }];
+                    setMessages(reset);
+                    localStorage.removeItem("cg_chat");
                 },
-            ];
-            setMessages(reset);
-            localStorage.removeItem("cg_chat");
-        }
+            },
+            cancel: { label: "Cancel", onClick: () => {} },
+        });
     };
 
     const doSend = useCallback(async (text: string) => {
@@ -92,7 +98,7 @@ const ChatPage = () => {
         } catch {
             setMessages((prev) => [...prev, {
                 sender: "genie",
-                text: "Something went wrong connecting to the AI. Check your API key in the .env file.",
+                text: "Sorry, I couldn't connect right now. Please try again in a moment.",
                 time: getTime(),
             }]);
         } finally {
