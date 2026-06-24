@@ -4,7 +4,7 @@ import { GlowOrbs } from "@/components/GlowOrbs";
 import * as Accordion from "@radix-ui/react-accordion";
 import {
   Bot, FileText, Map, Brain, GraduationCap, MessageSquare,
-  ArrowRight, Sparkles, Zap, Plus, Minus, Quote, Star, Check,
+  ArrowRight, Sparkles, Zap, Plus, Minus, Quote, Star,
 } from "lucide-react";
 import genieLogo from "@/assets/genie-logo.png";
 
@@ -15,34 +15,6 @@ const tools = [
   { emoji: "🗺️", title: "Career Roadmap", desc: "Get a personalized step-by-step plan for your chosen career path.", stat: "Step-by-Step", path: "/dashboard/roadmap" },
   { emoji: "🎓", title: "AI Instructor", desc: "Learn career-relevant topics through an adaptive AI instructor.", stat: "Learn Anything", path: "/dashboard/instructor" },
   { emoji: "🧠", title: "Career Assessment", desc: "Discover which careers best match your strengths, skills, and interests.", stat: "Find Your Path", path: "/dashboard/assessment" },
-];
-
-const bundles = [
-  {
-    emoji: "🌟",
-    title: "Discover",
-    subtitle: "Find your direction",
-    tools: ["AI Career Chatbot", "Career Assessment"],
-    features: ["Career path discovery", "Pakistan job market insights", "Strength & interest analysis", "Instant AI responses"],
-    path: "/dashboard/chat",
-  },
-  {
-    emoji: "⚡",
-    title: "Build",
-    subtitle: "Prepare to compete",
-    tools: ["Resume Builder", "Interview Preparation"],
-    features: ["ATS score checker", "AI bullet point rewriter", "Voice interview practice", "Unlimited mock sessions"],
-    path: "/dashboard/resume",
-    featured: true,
-  },
-  {
-    emoji: "🚀",
-    title: "Grow",
-    subtitle: "Accelerate your progress",
-    tools: ["Career Roadmap", "AI Instructor"],
-    features: ["Personalized step-by-step plan", "Milestone tracking", "Adaptive AI lessons", "Career-relevant content"],
-    path: "/dashboard/roadmap",
-  },
 ];
 
 const stats = [
@@ -115,7 +87,7 @@ const Index = () => {
           </h1>
 
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-            Six AI tools. One platform. Built for Pakistani students who want to discover their path, build a standout profile, and land the career they deserve.
+            Built for Pakistani students who want to discover their path, build a standout profile, and land the career they deserve.
           </p>
 
           <div className="flex flex-wrap gap-4 justify-center mb-16">
@@ -177,74 +149,6 @@ const Index = () => {
               </div>
             </Link>
           ))}
-        </div>
-      </section>
-
-      {/* ── FEATURE BUNDLES ── */}
-      <section className="relative py-24 overflow-hidden bg-secondary/20">
-        <div className="absolute inset-0 grid-bg opacity-20" />
-        <GlowOrbs />
-        <div className="container relative">
-          <div className="text-center max-w-2xl mx-auto mb-14">
-            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">What you get</p>
-            <h2 className="font-display text-4xl md:text-5xl font-bold">
-              Everything included,{" "}
-              <span className="text-gradient-gold">always free</span>
-            </h2>
-            <p className="text-muted-foreground mt-4 text-sm leading-relaxed">
-              No tiers, no paywalls. Here's how the tools group together to move you forward.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {bundles.map((b) => (
-              <div
-                key={b.title}
-                className={`relative rounded-2xl p-8 flex flex-col gap-6 border transition-all duration-300 hover:-translate-y-1 ${
-                  b.featured
-                    ? "bg-foreground text-background border-foreground shadow-2xl"
-                    : "bg-background border-border hover:border-primary/60 hover:shadow-lg"
-                }`}
-              >
-                {b.featured && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-4 py-1 rounded-full">
-                    Most popular
-                  </div>
-                )}
-                <div>
-                  <span className="text-4xl block mb-4">{b.emoji}</span>
-                  <h3 className={`font-display text-2xl font-bold mb-1 ${b.featured ? "text-background" : ""}`}>{b.title}</h3>
-                  <p className={`text-sm ${b.featured ? "text-background/70" : "text-muted-foreground"}`}>{b.subtitle}</p>
-                </div>
-
-                <div className={`text-xs font-semibold uppercase tracking-widest pb-3 border-b ${b.featured ? "border-background/20 text-background/60" : "border-border text-muted-foreground"}`}>
-                  Includes
-                </div>
-
-                <ul className="space-y-2.5">
-                  {b.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2.5 text-sm">
-                      <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${b.featured ? "bg-primary" : "bg-primary/15"}`}>
-                        <Check className={`w-2.5 h-2.5 ${b.featured ? "text-white" : "text-primary"}`} />
-                      </div>
-                      <span className={b.featured ? "text-background/90" : "text-foreground/80"}>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="mt-auto pt-2">
-                  <Button
-                    asChild
-                    variant={b.featured ? "outline" : "hero"}
-                    size="sm"
-                    className={`w-full ${b.featured ? "border-background/30 text-background hover:bg-background/10" : ""}`}
-                  >
-                    <Link to={b.path}>{b.featured ? "Start building →" : `${b.title === "Discover" ? "Start discovering →" : "Start growing →"}`}</Link>
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
