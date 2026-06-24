@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { GlowOrbs } from "@/components/GlowOrbs";
 import {
   Bot, FileText, Map, Brain, GraduationCap, MessageSquare,
-  ArrowRight, Sparkles, Zap,
+  ArrowRight, Sparkles, Zap, Search, Layers, Trophy,
 } from "lucide-react";
 import genieLogo from "@/assets/genie-logo.png";
 
@@ -37,12 +37,12 @@ const Index = () => {
           </div>
 
           <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight mb-6">
-            Your smartest move<br />
-            <span className="text-gradient-gold">starts right here.</span>
+            Pakistan's AI platform<br />
+            <span className="text-gradient-gold">for career success.</span>
           </h1>
 
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-            Built for Pakistani students who want to discover their path, build a standout profile, and land the career they deserve.
+            Discover your path, build a standout profile, and land the career you deserve — with six AI tools built specifically for Pakistani students.
           </p>
 
           <div className="flex flex-wrap gap-4 justify-center mb-16">
@@ -104,6 +104,32 @@ const Index = () => {
               </div>
             </Link>
           ))}
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ── */}
+      <section className="border-y border-border bg-secondary/20">
+        <div className="container py-0">
+          <div className="grid grid-cols-3 divide-x divide-border">
+            {[
+              { icon: Search, step: "01", title: "Discover", desc: "Find the right career path for your skills and interests." },
+              { icon: Layers, step: "02", title: "Build", desc: "Create a winning resume and ace your interviews with AI." },
+              { icon: Trophy, step: "03", title: "Land", desc: "Follow your roadmap and get the job you've been working toward." },
+            ].map((s) => (
+              <div key={s.step} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 py-8 px-6">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <s.icon className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="text-xs font-bold text-primary/50">{s.step}</span>
+                    <span className="font-display font-bold text-sm">{s.title}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed hidden sm:block">{s.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
