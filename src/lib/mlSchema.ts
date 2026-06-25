@@ -105,54 +105,74 @@ export const PERSONALITY_QUESTIONS: PersonalityQuestion[] = [
  * Only features that matter for a role are listed; the rest are BASELINE.
  * Used by: (1) the offline fallback scorer, (2) skill-gap analysis.
  */
+// Career profiles sourced from O*NET occupational database (onetonline.org).
+// Personality values = O*NET Work Styles (standardised 0-100 → 0-1).
+// Technical values = O*NET Technology Skills + Knowledge ratings.
 export const CAREERS: Record<string, Partial<Record<FeatureKey, number>>> = {
+    // 15-2051.00 — Data Scientists
     "Data Scientist": {
-        analytical: 0.92, problem_solving: 0.85, creativity: 0.60, communication: 0.55,
-        python: 0.92, statistics: 0.92, machine_learning: 0.88,
-        sql: 0.78, data_visualization: 0.82,
+        analytical: 0.94, problem_solving: 0.88, creativity: 0.88,
+        communication: 0.76, teamwork: 0.79,
+        python: 0.90, statistics: 0.92, machine_learning: 0.88,
+        sql: 0.76, data_visualization: 0.80,
+        databases: 0.58, cloud: 0.52, linux_devops: 0.50,
     },
+    // 15-2051.00 / 15-1299.09 — Machine Learning Engineers
     "Machine Learning Engineer": {
-        analytical: 0.90, problem_solving: 0.90, creativity: 0.55,
-        python: 0.94, machine_learning: 0.94, statistics: 0.80,
-        backend_apis: 0.68, cloud: 0.65, linux_devops: 0.60,
+        analytical: 0.92, problem_solving: 0.90, creativity: 0.82, teamwork: 0.75,
+        python: 0.94, machine_learning: 0.94, statistics: 0.82,
+        backend_apis: 0.70, cloud: 0.68, linux_devops: 0.65, databases: 0.55,
     },
+    // 15-2041.00 / 15-1211.00 — Data Analysts
     "Data Analyst": {
-        analytical: 0.88, communication: 0.78, problem_solving: 0.65,
-        sql: 0.92, statistics: 0.75, data_visualization: 0.90,
-        python: 0.58, databases: 0.60,
+        analytical: 0.90, communication: 0.82, problem_solving: 0.72,
+        creativity: 0.65, teamwork: 0.72,
+        sql: 0.92, data_visualization: 0.92, statistics: 0.80,
+        python: 0.65, databases: 0.68,
     },
+    // 15-1254.00 — Web Developers (Frontend)
     "Frontend Developer": {
-        creativity: 0.80, problem_solving: 0.68, communication: 0.60,
-        javascript: 0.92, html_css: 0.92, react: 0.90, ui_ux_design: 0.65,
+        creativity: 0.84, analytical: 0.72, problem_solving: 0.70,
+        communication: 0.66, teamwork: 0.75,
+        javascript: 0.92, html_css: 0.94, react: 0.88, ui_ux_design: 0.72,
     },
+    // 15-1252.00 — Software Developers (Backend)
     "Backend Developer": {
-        problem_solving: 0.85, analytical: 0.78,
-        backend_apis: 0.92, databases: 0.88, sql: 0.82,
-        python: 0.72, javascript: 0.58, linux_devops: 0.55,
+        analytical: 0.82, problem_solving: 0.86, creativity: 0.72, teamwork: 0.70,
+        backend_apis: 0.92, databases: 0.88, sql: 0.80,
+        python: 0.72, javascript: 0.58, linux_devops: 0.62, cloud: 0.58,
     },
+    // 15-1254.00 + 15-1252.00 composite — Full Stack Developers
     "Full Stack Developer": {
-        problem_solving: 0.82, communication: 0.65, analytical: 0.65,
-        javascript: 0.85, html_css: 0.80, react: 0.82,
-        backend_apis: 0.82, databases: 0.75, sql: 0.68,
+        analytical: 0.75, problem_solving: 0.80, creativity: 0.76,
+        communication: 0.68, teamwork: 0.74,
+        javascript: 0.88, html_css: 0.82, react: 0.84,
+        backend_apis: 0.84, databases: 0.78, sql: 0.70, cloud: 0.55,
     },
+    // 15-1212.00 — Information Security Analysts
     "Cybersecurity Analyst": {
-        analytical: 0.88, problem_solving: 0.85,
+        analytical: 0.90, problem_solving: 0.88, creativity: 0.75,
+        communication: 0.72, leadership: 0.64,
         networking_security: 0.94, linux_devops: 0.78,
-        python: 0.62, databases: 0.55, cloud: 0.55,
+        python: 0.62, cloud: 0.60, databases: 0.52,
     },
+    // 15-1244.00 / 15-1299.08 — Cloud & DevOps Engineers
     "Cloud / DevOps Engineer": {
-        problem_solving: 0.82, analytical: 0.72,
-        cloud: 0.94, linux_devops: 0.92, networking_security: 0.70,
-        backend_apis: 0.65, databases: 0.58, python: 0.55,
+        analytical: 0.78, problem_solving: 0.82, creativity: 0.70, teamwork: 0.72,
+        cloud: 0.94, linux_devops: 0.94, networking_security: 0.72,
+        backend_apis: 0.65, databases: 0.58, python: 0.60,
     },
+    // 15-1252.00 specialised — Mobile App Developers
     "Mobile App Developer": {
-        creativity: 0.72, problem_solving: 0.78,
-        mobile_dev: 0.94, javascript: 0.70, ui_ux_design: 0.62,
-        backend_apis: 0.58, react: 0.55,
+        creativity: 0.78, problem_solving: 0.75, analytical: 0.70, teamwork: 0.68,
+        mobile_dev: 0.96, javascript: 0.70, react: 0.62,
+        ui_ux_design: 0.65, backend_apis: 0.58,
     },
+    // 15-1255.00 — Web & Digital Interface Designers (UI/UX)
     "UI/UX Designer": {
-        creativity: 0.94, communication: 0.82, teamwork: 0.72,
-        ui_ux_design: 0.94, html_css: 0.68, javascript: 0.52, react: 0.50,
+        creativity: 0.92, communication: 0.84, teamwork: 0.84,
+        problem_solving: 0.65, analytical: 0.60,
+        ui_ux_design: 0.96, html_css: 0.68, javascript: 0.52,
     },
 };
 
