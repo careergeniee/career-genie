@@ -43,7 +43,7 @@ export type FeatureKey = PersonalityKey | SkillKey;
 /** Identical order to career_data.py FEATURE_ORDER. */
 export const FEATURE_ORDER: FeatureKey[] = [...PERSONALITY, ...SKILLS];
 
-export const BASELINE = 0.22;
+export const BASELINE = 0.10;
 
 /** Human-readable labels + grouping for the skill self-rating UI. */
 export const SKILL_META: Record<
@@ -107,50 +107,52 @@ export const PERSONALITY_QUESTIONS: PersonalityQuestion[] = [
  */
 export const CAREERS: Record<string, Partial<Record<FeatureKey, number>>> = {
     "Data Scientist": {
-        analytical: 0.9, problem_solving: 0.85, creativity: 0.55,
-        python: 0.9, statistics: 0.9, machine_learning: 0.85,
-        sql: 0.75, data_visualization: 0.8,
+        analytical: 0.92, problem_solving: 0.85, creativity: 0.60, communication: 0.55,
+        python: 0.92, statistics: 0.92, machine_learning: 0.88,
+        sql: 0.78, data_visualization: 0.82,
     },
     "Machine Learning Engineer": {
-        analytical: 0.88, problem_solving: 0.88,
-        python: 0.92, machine_learning: 0.92, statistics: 0.78,
-        backend_apis: 0.65, cloud: 0.6, linux_devops: 0.55,
+        analytical: 0.90, problem_solving: 0.90, creativity: 0.55,
+        python: 0.94, machine_learning: 0.94, statistics: 0.80,
+        backend_apis: 0.68, cloud: 0.65, linux_devops: 0.60,
     },
     "Data Analyst": {
-        analytical: 0.85, communication: 0.7,
-        sql: 0.88, statistics: 0.72, data_visualization: 0.88, python: 0.55,
+        analytical: 0.88, communication: 0.78, problem_solving: 0.65,
+        sql: 0.92, statistics: 0.75, data_visualization: 0.90,
+        python: 0.58, databases: 0.60,
     },
     "Frontend Developer": {
-        creativity: 0.75, problem_solving: 0.65,
-        javascript: 0.88, html_css: 0.9, react: 0.88, ui_ux_design: 0.55,
+        creativity: 0.80, problem_solving: 0.68, communication: 0.60,
+        javascript: 0.92, html_css: 0.92, react: 0.90, ui_ux_design: 0.65,
     },
     "Backend Developer": {
-        problem_solving: 0.8, analytical: 0.7,
-        backend_apis: 0.9, databases: 0.85, sql: 0.78,
-        python: 0.55, javascript: 0.55,
+        problem_solving: 0.85, analytical: 0.78,
+        backend_apis: 0.92, databases: 0.88, sql: 0.82,
+        python: 0.72, javascript: 0.58, linux_devops: 0.55,
     },
     "Full Stack Developer": {
-        problem_solving: 0.78, communication: 0.62,
-        javascript: 0.82, html_css: 0.78, react: 0.8,
-        backend_apis: 0.8, databases: 0.72, sql: 0.65,
+        problem_solving: 0.82, communication: 0.65, analytical: 0.65,
+        javascript: 0.85, html_css: 0.80, react: 0.82,
+        backend_apis: 0.82, databases: 0.75, sql: 0.68,
     },
     "Cybersecurity Analyst": {
-        analytical: 0.82, problem_solving: 0.8,
-        networking_security: 0.92, linux_devops: 0.7,
-        python: 0.55, databases: 0.5,
+        analytical: 0.88, problem_solving: 0.85,
+        networking_security: 0.94, linux_devops: 0.78,
+        python: 0.62, databases: 0.55, cloud: 0.55,
     },
     "Cloud / DevOps Engineer": {
-        problem_solving: 0.78, analytical: 0.68,
-        cloud: 0.9, linux_devops: 0.9, networking_security: 0.65,
-        backend_apis: 0.6, databases: 0.55,
+        problem_solving: 0.82, analytical: 0.72,
+        cloud: 0.94, linux_devops: 0.92, networking_security: 0.70,
+        backend_apis: 0.65, databases: 0.58, python: 0.55,
     },
     "Mobile App Developer": {
-        creativity: 0.68, problem_solving: 0.72,
-        mobile_dev: 0.92, javascript: 0.65, ui_ux_design: 0.55, backend_apis: 0.55,
+        creativity: 0.72, problem_solving: 0.78,
+        mobile_dev: 0.94, javascript: 0.70, ui_ux_design: 0.62,
+        backend_apis: 0.58, react: 0.55,
     },
     "UI/UX Designer": {
-        creativity: 0.92, communication: 0.75, teamwork: 0.68,
-        ui_ux_design: 0.92, html_css: 0.55,
+        creativity: 0.94, communication: 0.82, teamwork: 0.72,
+        ui_ux_design: 0.94, html_css: 0.68, javascript: 0.52, react: 0.50,
     },
 };
 
