@@ -1,8 +1,8 @@
 {
   "model_version": "2.0",
   "chosen_algorithm": "Random Forest",
-  "selected_for": "Random Forest chosen for interpretability; its CV accuracy (0.9507) is within 2% of the best (Logistic Regression, 0.9597)",
-  "best_by_accuracy": "Logistic Regression",
+  "selected_for": "Random Forest chosen for interpretability; its CV accuracy (0.9666) is within 2% of the best (Gradient Boosting, 0.9699)",
+  "best_by_accuracy": "Gradient Boosting",
   "calibration": "isotonic",
   "feature_order": [
     "leadership",
@@ -39,59 +39,59 @@
     "Mobile App Developer",
     "UI/UX Designer"
   ],
-  "test_accuracy": 0.9508,
-  "macro_f1": 0.9508,
-  "log_loss": 0.1292,
-  "cv_accuracy_mean": 0.9507,
-  "cv_accuracy_std": 0.0041,
+  "test_accuracy": 0.9641,
+  "macro_f1": 0.9518,
+  "log_loss": 0.07,
+  "cv_accuracy_mean": 0.9666,
+  "cv_accuracy_std": 0.0071,
   "algorithm_comparison": [
     {
-      "algorithm": "Logistic Regression",
-      "cv_accuracy_mean": 0.9597,
-      "cv_accuracy_std": 0.0031,
-      "cv_time_sec": 0.27
-    },
-    {
-      "algorithm": "K-Nearest Neighbors",
-      "cv_accuracy_mean": 0.9563,
-      "cv_accuracy_std": 0.0039,
-      "cv_time_sec": 0.2
+      "algorithm": "Gradient Boosting",
+      "cv_accuracy_mean": 0.9699,
+      "cv_accuracy_std": 0.005,
+      "cv_time_sec": 17.56
     },
     {
       "algorithm": "Random Forest",
-      "cv_accuracy_mean": 0.9507,
-      "cv_accuracy_std": 0.0041,
-      "cv_time_sec": 17.32
+      "cv_accuracy_mean": 0.9666,
+      "cv_accuracy_std": 0.0071,
+      "cv_time_sec": 5.02
     },
     {
-      "algorithm": "Gradient Boosting",
-      "cv_accuracy_mean": 0.9427,
-      "cv_accuracy_std": 0.0062,
-      "cv_time_sec": 250.03
+      "algorithm": "Logistic Regression",
+      "cv_accuracy_mean": 0.8342,
+      "cv_accuracy_std": 0.0046,
+      "cv_time_sec": 0.14
+    },
+    {
+      "algorithm": "K-Nearest Neighbors",
+      "cv_accuracy_mean": 0.7159,
+      "cv_accuracy_std": 0.0076,
+      "cv_time_sec": 0.16
     }
   ],
   "feature_importance": {
-    "backend_apis": 0.0681,
-    "machine_learning": 0.068,
-    "mobile_dev": 0.0643,
-    "cloud": 0.063,
-    "sql": 0.0627,
-    "react": 0.0597,
-    "data_visualization": 0.0564,
-    "networking_security": 0.0561,
-    "problem_solving": 0.0536,
-    "creativity": 0.0516,
-    "analytical": 0.0502,
-    "communication": 0.0473,
-    "databases": 0.0436,
-    "statistics": 0.0433,
-    "html_css": 0.041,
-    "linux_devops": 0.0397,
-    "python": 0.0372,
-    "ui_ux_design": 0.0361,
-    "javascript": 0.0355,
-    "teamwork": 0.017,
-    "leadership": 0.0058
+    "cloud": 0.299,
+    "statistics": 0.1191,
+    "data_visualization": 0.0882,
+    "machine_learning": 0.0832,
+    "ui_ux_design": 0.0636,
+    "networking_security": 0.0577,
+    "linux_devops": 0.0574,
+    "mobile_dev": 0.0545,
+    "creativity": 0.0397,
+    "python": 0.0192,
+    "sql": 0.0179,
+    "react": 0.0139,
+    "backend_apis": 0.0122,
+    "html_css": 0.0114,
+    "problem_solving": 0.0112,
+    "teamwork": 0.0107,
+    "databases": 0.0107,
+    "communication": 0.0102,
+    "javascript": 0.0101,
+    "analytical": 0.0068,
+    "leadership": 0.0032
   },
-  "trained_samples": 4800
+  "trained_samples": 2900
 }
