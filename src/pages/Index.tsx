@@ -31,11 +31,6 @@ const Index = () => {
         <div className="absolute inset-0 grid-bg opacity-40" />
         <GlowOrbs />
         <div className="container relative py-24 lg:py-36 text-center max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card text-xs font-medium mb-8">
-            <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <span className="text-muted-foreground">AI-powered career platform — 100% free</span>
-          </div>
-
           <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight mb-6">
             Pakistan's AI platform<br />
             <span className="text-gradient-gold">for career success.</span>
