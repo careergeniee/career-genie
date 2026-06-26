@@ -76,8 +76,20 @@ def build_candidates() -> dict[str, Pipeline]:
 
 
 def main() -> None:
-    print("Generating synthetic dataset ...")
-    df = generate_dataset(n_per_class=600, noise=0.26, seed=42)
+    import sys
+    # Accept --data path/to/real_dataset.csv to train on real data instead of synthetic.
+    data_path = None
+    if "--data" in sys.argv:
+        data_path = sys.argv[sys.argv.index("--data") + 1]
+
+    if data_path:
+        import pandas as pd
+        print(f"Loading real dataset: {data_path} ...")
+        df = pd.read_csv(data_path)
+    else:
+        print("Generating synthetic dataset (pass --data real_dataset.csv to use real data) ...")
+        df = generate_dataset(n_per_class=800, noise=0.14, seed=42)
+
     X = df[FEATURE_ORDER].values
     y = df["career"].values
     print(f"  {X.shape[0]} samples x {X.shape[1]} features, {len(CAREER_LABELS)} classes")
