@@ -68,18 +68,20 @@ const CARDS = [
     },
 ];
 
-// Spread angles when fanned (-60° → +60°)
-const FAN_ANGLES   = [-60, -40, -20, 0, 20, 40, 60];
-// Tight cluster in rest — slight variation shows deck depth
-const STACK_ANGLES = [-9, -6, -3, 0, 3, 6, 9];
+// Pivot is at the bottom-left corner of each card (like the SO logo spine).
+// Positive rotation = clockwise = card leans right from upright.
+// FAN: nearly upright (5°) → nearly flat (71°), 11° steps.
+const FAN_ANGLES   = [5, 16, 27, 38, 49, 60, 71];
+// STACK: clustered tightly around 38° so the deck looks natural at rest.
+const STACK_ANGLES = [32, 35, 38, 41, 44, 47, 50];
 
 export const HeroShowcase = () => {
     const [open, setOpen] = useState(false);
 
     return (
         <div
-            className="relative flex items-end justify-center cursor-pointer select-none overflow-visible"
-            style={{ height: 260, width: "100%", maxWidth: 520 }}
+            className="relative cursor-pointer select-none overflow-visible"
+            style={{ height: 260 }}
             onMouseEnter={() => setOpen(true)}
             onMouseLeave={() => setOpen(false)}
             onClick={() => setOpen((v) => !v)}
@@ -87,25 +89,22 @@ export const HeroShowcase = () => {
         >
             {CARDS.map((card, i) => {
                 const rotation = open ? FAN_ANGLES[i] : STACK_ANGLES[i];
-                // Outer cards animate first on open; inner cards first on close
-                const delay = open
-                    ? Math.abs(i - 3) * 40
-                    : (CARDS.length - 1 - Math.abs(i - 3)) * 28;
+                // Stagger outward from the first card when opening
+                const delay = open ? i * 45 : (CARDS.length - 1 - i) * 30;
                 const Icon = card.icon;
 
                 return (
                     <div
                         key={card.label}
-                        className="absolute bottom-10"
+                        className="absolute bottom-0 left-6"
                         style={{
-                            left: "50%",
-                            width: 148,
-                            marginLeft: -74,
-                            // Pivot at the card's bottom center so tops arc outward
-                            transformOrigin: "50% 100%",
+                            width: 156,
+                            // Pivot at BOTTOM-LEFT corner — identical to SO logo spine
+                            transformOrigin: "0% 100%",
                             transform: `rotate(${rotation}deg)`,
                             transition: `transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms`,
-                            zIndex: CARDS.length - Math.abs(i - 3),
+                            // Top card (index 0, least rotated) sits on top of the deck
+                            zIndex: CARDS.length - i,
                         }}
                     >
                         <div className={cn(
@@ -129,14 +128,14 @@ export const HeroShowcase = () => {
                 );
             })}
 
-            {/* Hint — fades out when open */}
-            <div
-                className="absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center gap-1.5 text-[11px] text-muted-foreground pointer-events-none transition-opacity duration-300"
+            {/* Hint */}
+            <p
+                className="absolute -bottom-6 left-6 text-[11px] text-muted-foreground flex items-center gap-1.5 pointer-events-none transition-opacity duration-300"
                 style={{ opacity: open ? 0 : 1 }}
             >
-                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse inline-block" />
                 hover to explore all tools
-            </div>
+            </p>
         </div>
     );
 };
