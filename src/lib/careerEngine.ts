@@ -18,14 +18,12 @@ import {
     PERSONALITY,
     PERSONALITY_QUESTIONS,
     SKILLS,
-    CAREER_LABELS,
     SKILL_META,
-    idealVector,
-    CAREERS,
     type FeatureKey,
     type PersonalityKey,
     type SkillKey,
 } from "@/lib/mlSchema";
+import { CAREER_LABELS, CAREERS, idealVector } from "@/lib/careerCatalog";
 import { loadData, saveData } from "@/lib/userStore";
 
 const ML_API_URL = import.meta.env.VITE_ML_API_URL as string | undefined;

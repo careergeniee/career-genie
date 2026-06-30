@@ -100,7 +100,7 @@ const ChatPage = () => {
                     { role: "user", content: userText },
                 ],
                 max_tokens: 1024,
-                temperature: 0.7,
+                temperature: 0.4,
             });
             const reply = completion.choices[0]?.message?.content || "I couldn't generate a response. Try again!";
             setMessages((prev) => [...prev, { sender: "genie", text: reply, time: getTime() }]);

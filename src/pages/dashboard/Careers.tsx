@@ -7,9 +7,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { aiText } from "@/lib/ai";
-import {
-    CAREER_BLURB, PERSONALITY, type PersonalityKey,
-} from "@/lib/mlSchema";
+import { PERSONALITY, type PersonalityKey } from "@/lib/mlSchema";
+import { CAREER_BLURB } from "@/lib/careerCatalog";
 import {
     loadPrediction, loadAssessment, analyzeSkillGap, traitScore,
     strongSkillsText, type SkillGapItem,
