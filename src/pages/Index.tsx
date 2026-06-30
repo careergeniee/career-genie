@@ -20,9 +20,12 @@ const Index = () => {
   return (
     <div>
       {/* ── HERO ── */}
-      <section className="relative hero-bg overflow-hidden">
-        <div className="absolute inset-0 grid-bg opacity-40" />
-        <GlowOrbs />
+      <section className="relative hero-bg">
+        <div className="absolute inset-0 grid-bg opacity-40 pointer-events-none" />
+        {/* GlowOrbs clipped independently so the showcase fan can overflow the section */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <GlowOrbs />
+        </div>
         <div className="container relative py-20 lg:py-28">
           <div className="grid lg:grid-cols-2 gap-16 xl:gap-20 items-center">
             {/* Left: copy + live product showcase */}

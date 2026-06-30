@@ -68,8 +68,8 @@ const CARDS = [
     },
 ];
 
-// Full spread angles when fanned (-78° → +78° in 26° steps)
-const FAN_ANGLES   = [-78, -52, -26, 0, 26, 52, 78];
+// Spread angles when fanned (-60° → +60°)
+const FAN_ANGLES   = [-60, -40, -20, 0, 20, 40, 60];
 // Tight cluster in rest — slight variation shows deck depth
 const STACK_ANGLES = [-9, -6, -3, 0, 3, 6, 9];
 
@@ -78,8 +78,8 @@ export const HeroShowcase = () => {
 
     return (
         <div
-            className="relative flex items-end justify-center cursor-pointer select-none"
-            style={{ height: 300, width: "100%", maxWidth: 520 }}
+            className="relative flex items-end justify-center cursor-pointer select-none overflow-visible"
+            style={{ height: 260, width: "100%", maxWidth: 520 }}
             onMouseEnter={() => setOpen(true)}
             onMouseLeave={() => setOpen(false)}
             onClick={() => setOpen((v) => !v)}
@@ -96,13 +96,13 @@ export const HeroShowcase = () => {
                 return (
                     <div
                         key={card.label}
-                        className="absolute bottom-8"
+                        className="absolute bottom-10"
                         style={{
                             left: "50%",
                             width: 148,
                             marginLeft: -74,
-                            // Pivot 55% of card height below its own bottom edge — creates wide arc
-                            transformOrigin: "50% 155%",
+                            // Pivot at the card's bottom center so tops arc outward
+                            transformOrigin: "50% 100%",
                             transform: `rotate(${rotation}deg)`,
                             transition: `transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms`,
                             zIndex: CARDS.length - Math.abs(i - 3),
