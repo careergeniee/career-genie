@@ -172,7 +172,7 @@ export const DashboardLayout = () => {
             {/* Main content */}
             <main className="flex-1 overflow-auto min-w-0">
                 {/* Top bar */}
-                <div className="sticky top-0 z-30 flex items-center gap-3 px-4 h-14 border-b border-border/60 bg-background/90 backdrop-blur-sm">
+                <div className="sticky top-0 z-30 flex items-center gap-3 px-4 h-14">
                     <button
                         onClick={() => setSidebarOpen(true)}
                         className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-secondary transition-colors"
