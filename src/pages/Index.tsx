@@ -27,12 +27,9 @@ const Index = () => {
               Discover your path, build a standout profile, and land the career you deserve —
               with seven AI tools built for Pakistani students.
             </p>
-            <div className="flex flex-wrap justify-center gap-4">
+            <div className="flex justify-center">
               <Button asChild variant="hero" size="xl">
                 <Link to="/signup">Get Started Free <ArrowRight className="w-4 h-4" /></Link>
-              </Button>
-              <Button asChild variant="outline" size="xl">
-                <Link to="/services">Browse Tools</Link>
               </Button>
             </div>
           </div>
