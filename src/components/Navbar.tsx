@@ -16,7 +16,6 @@ export const Navbar = () => {
 
   return (
     <header className="fixed top-0 inset-x-0 z-50">
-      <div className="absolute inset-0 bg-background/70 backdrop-blur-xl border-b border-border/60" />
       <nav className="container relative flex items-center justify-between h-[72px] py-3">
         <Link to="/" className="flex items-center gap-1 group">
           <div className="relative">
