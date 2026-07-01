@@ -31,7 +31,7 @@ export const Navbar = () => {
   return (
     <header
       className={cn(
-        "fixed top-0 inset-x-0 z-50 transition-transform duration-300",
+        "fixed top-0 inset-x-0 z-50 backdrop-blur-md transition-transform duration-300",
         hidden && "-translate-y-full"
       )}
     >
