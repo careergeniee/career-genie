@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
@@ -7,6 +7,20 @@ import { cn } from "@/lib/utils";
 
 export const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      const scrollingDown = y > lastScrollY.current;
+      // Ignore the rubber-band/bounce range at the very top so it never hides too eagerly
+      setHidden(scrollingDown && y > 80);
+      lastScrollY.current = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -15,7 +29,12 @@ export const Navbar = () => {
   ];
 
   return (
-    <header className="fixed top-0 inset-x-0 z-50">
+    <header
+      className={cn(
+        "fixed top-0 inset-x-0 z-50 backdrop-blur-md transition-transform duration-300",
+        hidden && "-translate-y-full"
+      )}
+    >
       <nav className="container relative flex items-center justify-between h-[72px] py-3">
         <Link to="/" className="flex items-center gap-1 group">
           <div className="relative">
