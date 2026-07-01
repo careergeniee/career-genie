@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import TextType from "@/components/TextType";
+import BlurText from "@/components/BlurText";
 
 /* ── Editorial bottom-border input ── */
 const EditorialInput = ({
@@ -79,34 +79,22 @@ const Login = () => {
 
         <div className="relative z-10 space-y-4">
           <div className="rounded-2xl bg-white/10 backdrop-blur-sm border border-white/15 p-6">
-            <TextType
-              as="h1"
-              text={"The only platform\nbuilt for the\nPakistani CS student."}
+            <h1
               className="font-display font-bold text-white leading-[1.1] tracking-[-0.03em]"
               style={{ fontSize: "clamp(28px, 3vw, 44px)" }}
-              typingSpeed={40}
-              initialDelay={200}
-              loop={false}
-              showCursor={true}
-              hideCursorWhileTyping={false}
-              cursorCharacter="|"
-              cursorClassName="text-white/70"
-              startOnVisible={false}
-            />
+            >
+              <BlurText text="The only platform" animateBy="words" direction="top" delay={120} />
+              <BlurText text="built for the" animateBy="words" direction="top" delay={120} />
+              <BlurText text="Pakistani CS student." animateBy="words" direction="top" delay={120} />
+            </h1>
           </div>
           <div className="rounded-2xl bg-white/10 backdrop-blur-sm border border-white/15 p-6 max-w-sm">
-            <TextType
-              as="p"
+            <BlurText
               text="Bridging the gap between academic theory and industry reality. Join the community shaping the future of tech."
+              animateBy="words"
+              direction="top"
+              delay={60}
               className="text-white/80 text-[15px] leading-relaxed"
-              typingSpeed={15}
-              initialDelay={2400}
-              loop={false}
-              showCursor={true}
-              hideCursorWhileTyping={false}
-              cursorCharacter="|"
-              cursorClassName="text-white/50"
-              startOnVisible={false}
             />
           </div>
         </div>
