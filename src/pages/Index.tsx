@@ -5,6 +5,7 @@ import BlurText from "@/components/BlurText";
 import LineWaves from "@/components/LineWaves";
 import BorderGlow from "@/components/BorderGlow";
 import TextType from "@/components/TextType";
+import AnimatedContent from "@/components/AnimatedContent";
 import { ArrowRight } from "lucide-react";
 
 const Index = () => {
@@ -75,13 +76,17 @@ const Index = () => {
                 startOnVisible={true}
               />
               <div className="flex flex-wrap items-center gap-4">
-                <Button asChild size="lg"
-                  className="rounded-[10px] px-8 h-14 text-[16px] font-semibold bg-primary text-primary-foreground shadow-[0_4px_14px_hsl(19_86%_40%_/_0.35)] hover:brightness-90">
-                  <Link to="/signup">Start My Journey <ArrowRight className="w-5 h-5" /></Link>
-                </Button>
-                <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4">
-                  Already have an account?
-                </Link>
+                <AnimatedContent direction="horizontal" distance={40} duration={0.8} delay={0.1} threshold={0}>
+                  <Button asChild size="lg"
+                    className="rounded-[10px] px-8 h-14 text-[16px] font-semibold bg-primary text-primary-foreground shadow-[0_4px_14px_hsl(19_86%_40%_/_0.35)] hover:brightness-90">
+                    <Link to="/signup">Start My Journey <ArrowRight className="w-5 h-5" /></Link>
+                  </Button>
+                </AnimatedContent>
+                <AnimatedContent direction="horizontal" distance={40} duration={0.8} delay={0.25} threshold={0}>
+                  <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4">
+                    Already have an account?
+                  </Link>
+                </AnimatedContent>
               </div>
             </div>
           </div>
