@@ -152,12 +152,15 @@ const Index = () => {
       {/* ── CTA ── */}
       <section className="w-full bg-foreground py-24 px-8">
         <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row items-start md:items-end justify-between gap-10">
-          <h2
+          <div
+            role="heading"
+            aria-level={2}
             className="font-display font-bold text-background leading-[1.0] tracking-[-0.04em]"
             style={{ fontSize: "clamp(36px, 5vw, 68px)" }}
           >
-            Build your future<br />in Pakistan.
-          </h2>
+            <BlurText text="Build your future" animateBy="words" direction="top" delay={150} />
+            <BlurText text="in Pakistan." animateBy="words" direction="top" delay={150} />
+          </div>
           <FadeContent blur duration={1000} ease="power2.out" className="flex flex-col items-start gap-3 shrink-0">
             <Button asChild size="lg"
               className="rounded-[10px] px-8 h-14 text-[16px] font-semibold bg-primary text-primary-foreground shadow-[0_4px_14px_hsl(19_86%_40%_/_0.3)] hover:brightness-90">
