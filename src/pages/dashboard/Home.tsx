@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import {
     Bot, FileText, MessageSquare, Map, GraduationCap,
     ArrowRight, TrendingUp, Award, Brain, ClipboardList, Target,
+    Check, Lock,
 } from "lucide-react";
 import genieLogo2 from "@/assets/genie-logo2.png";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,6 @@ import { totalProgress, phaseProgress } from "@/lib/roadmap";
 import type { Roadmap } from "@/lib/roadmap";
 import type { InterviewSession } from "@/lib/interview";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { BubbleStat } from "@/components/dashboard/BubbleStat";
 import { BarTrend } from "@/components/dashboard/BarTrend";
 
 const services = [
@@ -99,17 +99,49 @@ const DashboardHome = () => {
                     />
                 </div>
 
-                {/* Roadmap phase breakdown — omitted when no roadmap */}
+                {/* Current Focus — phase-by-phase list ala Stitch design */}
                 {phaseItems.length > 0 && (
                     <div className="dash-card p-6 mb-6 animate-pop-in" style={{ animationDelay: "280ms" }}>
                         <div className="flex items-center justify-between mb-5">
                             <div>
-                                <h2 className="font-display font-bold text-lg">{roadmap!.goal}</h2>
-                                <p className="text-xs text-muted-foreground mt-0.5">Phase-by-phase completion</p>
+                                <h2 className="font-display font-bold text-lg">Current Focus</h2>
+                                <p className="text-xs text-muted-foreground mt-0.5">{roadmap!.goal}</p>
                             </div>
                             <span className="dash-pill">{roadmapPct}% overall</span>
                         </div>
-                        <BubbleStat items={phaseItems} />
+                        <div className="space-y-3">
+                            {phaseItems.map((item, i) => {
+                                const done   = item.value === 100;
+                                const active = item.value > 0 && item.value < 100;
+                                const locked = item.value === 0;
+                                return (
+                                    <div
+                                        key={item.label}
+                                        className={`flex items-center gap-4 transition-opacity animate-pop-in${locked ? " opacity-50" : ""}`}
+                                        style={{ animationDelay: `${280 + i * 55}ms` }}
+                                    >
+                                        {/* Status box */}
+                                        <div className={[
+                                            "w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0 font-display font-bold text-xs",
+                                            done   ? "bg-primary text-primary-foreground" : "",
+                                            active ? "border-2 border-primary text-primary bg-transparent" : "",
+                                            locked ? "bg-secondary border border-border text-muted-foreground" : "",
+                                        ].join(" ")}>
+                                            {done   && <Check className="w-5 h-5" />}
+                                            {active && `${item.value}%`}
+                                            {locked && <Lock className="w-4 h-4" />}
+                                        </div>
+                                        {/* Label + status */}
+                                        <div>
+                                            <p className="font-semibold text-sm leading-tight">{item.label}</p>
+                                            <p className={`text-xs mt-0.5 ${done ? "text-muted-foreground" : active ? "text-primary font-medium" : "text-muted-foreground"}`}>
+                                                {done ? "Completed" : active ? "In Progress" : "Locked"}
+                                            </p>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
                 )}
 
