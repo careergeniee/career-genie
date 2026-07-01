@@ -61,6 +61,12 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        dash: {
+          bg: "hsl(var(--dash-bg))",
+          sidebar: "hsl(var(--dash-sidebar))",
+          "sidebar-foreground": "hsl(var(--dash-sidebar-foreground))",
+          "sidebar-muted": "hsl(var(--dash-sidebar-muted))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -83,6 +89,11 @@ export default {
           "100%": { backgroundPosition: "1000px 0" },
         },
         "spin-slow": { from: { transform: "rotate(0deg)" }, to: { transform: "rotate(360deg)" } },
+        "grow-bar": { "0%": { transform: "scaleY(0)" }, "100%": { transform: "scaleY(1)" } },
+        "pop-in": {
+          "0%": { opacity: "0", transform: "scale(0.85)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -93,6 +104,8 @@ export default {
         "float": "float 6s ease-in-out infinite",
         "glow-pulse": "glow-pulse 4s ease-in-out infinite",
         "spin-slow": "spin-slow 20s linear infinite",
+        "grow-bar": "grow-bar 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) backwards",
+        "pop-in": "pop-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) backwards",
       },
       backgroundImage: {
         'gradient-gold': 'var(--gradient-gold)',

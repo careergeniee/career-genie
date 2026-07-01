@@ -3,13 +3,16 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
     Bot, FileText, MessageSquare, Map, GraduationCap,
     LogOut, Settings, ChevronLeft, ChevronRight,
-    LayoutDashboard, User, ClipboardList, Target, Menu, X
+    LayoutDashboard, ClipboardList, Target, Menu, X, Flame, Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import genieLogo from "@/assets/genie-logo.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { DailyTaskReminder } from "@/components/DailyTaskReminder";
+import { loadData } from "@/lib/userStore";
+import { loadTasks, hasPendingTaskToday } from "@/lib/instructor";
+import { currentStreak, type Roadmap } from "@/lib/roadmap";
 
 const navItems = [
     { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
@@ -37,8 +40,13 @@ export const DashboardLayout = () => {
     const displayName = user?.displayName || user?.email?.split("@")[0] || "Explorer";
     const initials = displayName.slice(0, 2).toUpperCase();
 
+    // Real-data signals — no fabricated counts.
+    const instructorPending = hasPendingTaskToday(loadTasks());
+    const roadmap = loadData<Roadmap | null>("roadmap", null);
+    const streak = roadmap ? currentStreak(roadmap.completionDates) : 0;
+
     return (
-        <div className="min-h-screen flex bg-background">
+        <div className="min-h-screen flex bg-dash-bg">
             {/* Mobile backdrop */}
             {mobileOpen && (
                 <div
@@ -49,8 +57,7 @@ export const DashboardLayout = () => {
 
             {/* Sidebar */}
             <aside className={cn(
-                "flex flex-col border-r border-border/60 transition-all duration-300 shrink-0",
-                "bg-gradient-to-b from-card to-background",
+                "flex flex-col dash-sidebar-bg transition-all duration-300 shrink-0",
                 // Desktop: relative in flow
                 "lg:relative lg:translate-x-0",
                 // Mobile: fixed overlay, hidden by default
@@ -60,19 +67,19 @@ export const DashboardLayout = () => {
             )}>
                 {/* Logo */}
                 <div className={cn(
-                    "flex items-center gap-1 px-4 py-5 border-b border-border/60",
+                    "flex items-center gap-1 px-4 py-5 border-b border-white/10",
                     collapsed && "justify-center px-0"
                 )}>
                     <img src={genieLogo} alt="Career Genie" className="w-11 h-11 object-contain shrink-0" />
                     {!collapsed && (
-                        <span className="font-display font-bold text-lg tracking-tight leading-none flex-1">
-                            Career <span className="text-gradient-gold">Genie</span>
+                        <span className="font-display font-bold text-lg tracking-tight leading-none flex-1 text-dash-sidebar-foreground">
+                            Career <span className="text-primary">Genie</span>
                         </span>
                     )}
                     {!collapsed && (
                         <button
                             onClick={() => setMobileOpen(false)}
-                            className="lg:hidden ml-auto w-7 h-7 flex items-center justify-center rounded-lg hover:bg-secondary transition-colors"
+                            className="lg:hidden ml-auto w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-dash-sidebar-foreground transition-colors"
                         >
                             <X className="w-4 h-4" />
                         </button>
@@ -82,49 +89,97 @@ export const DashboardLayout = () => {
                 {/* Collapse toggle */}
                 <button
                     onClick={() => setCollapsed(!collapsed)}
-                    className="absolute -right-3 top-[72px] w-6 h-6 rounded-full bg-secondary border border-border flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors z-10"
+                    className="absolute -right-3 top-[72px] w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:brightness-110 transition-all z-10 shadow-lg"
                 >
                     {collapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
                 </button>
 
                 {/* Nav */}
                 <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-                    {navItems.map((item) => (
-                        <NavLink
-                            key={item.path}
-                            to={item.path}
-                            end={item.path === "/dashboard"}
-                            onClick={() => setMobileOpen(false)}
-                            className={({ isActive }) => cn(
-                                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group",
-                                collapsed && "justify-center px-0",
-                                isActive
-                                    ? "bg-primary/15 text-primary border border-primary/30"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
-                            )}
-                        >
-                            {({ isActive }) => (
-                                <>
-                                    <item.icon className={cn(
-                                        "w-5 h-5 shrink-0 transition-transform group-hover:scale-110",
-                                        isActive && "text-primary"
-                                    )} />
-                                    {!collapsed && <span className="truncate">{item.label}</span>}
-                                </>
-                            )}
-                        </NavLink>
-                    ))}
+                    {navItems.map((item, i) => {
+                        const showBadge = item.path === "/dashboard/instructor" && instructorPending;
+                        return (
+                            <NavLink
+                                key={item.path}
+                                to={item.path}
+                                end={item.path === "/dashboard"}
+                                onClick={() => setMobileOpen(false)}
+                                style={{ animationDelay: `${i * 40}ms` }}
+                                className={({ isActive }) => cn(
+                                    "flex items-center gap-3 px-3 py-2.5 rounded-full text-sm font-medium transition-all duration-200 group animate-fade-in-up",
+                                    collapsed && "justify-center px-0",
+                                    isActive
+                                        ? "bg-primary text-primary-foreground shadow-md shadow-primary/30"
+                                        : "text-dash-sidebar-muted hover:text-dash-sidebar-foreground hover:bg-white/5"
+                                )}
+                            >
+                                {({ isActive }) => (
+                                    <>
+                                        <item.icon className={cn(
+                                            "w-5 h-5 shrink-0 transition-transform group-hover:scale-110",
+                                        )} />
+                                        {!collapsed && <span className="truncate flex-1">{item.label}</span>}
+                                        {!collapsed && showBadge && (
+                                            <span className={cn(
+                                                "w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0",
+                                                isActive ? "bg-primary-foreground text-primary" : "bg-primary text-primary-foreground"
+                                            )}>
+                                                1
+                                            </span>
+                                        )}
+                                    </>
+                                )}
+                            </NavLink>
+                        );
+                    })}
                 </nav>
 
+                {/* Streak / motivation widget */}
+                {!collapsed && (
+                    <div className="px-3 pb-3">
+                        {roadmap && streak > 0 ? (
+                            <div className="rounded-2xl bg-primary p-4 text-primary-foreground">
+                                <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-3">
+                                    <Flame className="w-5 h-5" />
+                                </div>
+                                <p className="font-display font-bold text-2xl leading-none mb-1">{streak}-day streak</p>
+                                <p className="text-xs text-primary-foreground/80 mb-3">Keep showing up on your roadmap.</p>
+                                <NavLink
+                                    to="/dashboard/roadmap"
+                                    onClick={() => setMobileOpen(false)}
+                                    className="inline-flex items-center gap-1.5 text-xs font-semibold bg-black/15 hover:bg-black/25 transition-colors px-3 py-2 rounded-lg"
+                                >
+                                    View roadmap <ChevronRight className="w-3 h-3" />
+                                </NavLink>
+                            </div>
+                        ) : (
+                            <div className="rounded-2xl bg-primary p-4 text-primary-foreground">
+                                <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-3">
+                                    <Sparkles className="w-5 h-5" />
+                                </div>
+                                <p className="font-display font-bold text-sm leading-snug mb-1">Start your journey</p>
+                                <p className="text-xs text-primary-foreground/80 mb-3">Take the career assessment to get matched.</p>
+                                <NavLink
+                                    to="/dashboard/assessment"
+                                    onClick={() => setMobileOpen(false)}
+                                    className="inline-flex items-center gap-1.5 text-xs font-semibold bg-black/15 hover:bg-black/25 transition-colors px-3 py-2 rounded-lg"
+                                >
+                                    Get started <ChevronRight className="w-3 h-3" />
+                                </NavLink>
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {/* Bottom section */}
-                <div className="px-3 py-4 border-t border-border/60 space-y-1">
+                <div className="px-3 py-4 border-t border-white/10 space-y-1">
                     <NavLink
                         to="/dashboard/settings"
                         onClick={() => setMobileOpen(false)}
                         className={({ isActive }) => cn(
-                            "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
+                            "flex items-center gap-3 px-3 py-2.5 rounded-full text-sm font-medium transition-all",
                             collapsed && "justify-center px-0",
-                            isActive ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                            isActive ? "bg-primary text-primary-foreground" : "text-dash-sidebar-muted hover:text-dash-sidebar-foreground hover:bg-white/5"
                         )}
                     >
                         <Settings className="w-5 h-5 shrink-0" />
@@ -134,8 +189,8 @@ export const DashboardLayout = () => {
                     <button
                         onClick={handleLogout}
                         className={cn(
-                            "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
-                            "text-muted-foreground hover:text-destructive hover:bg-destructive/10",
+                            "w-full flex items-center gap-3 px-3 py-2.5 rounded-full text-sm font-medium transition-all",
+                            "text-dash-sidebar-muted hover:text-red-400 hover:bg-red-500/10",
                             collapsed && "justify-center px-0"
                         )}
                     >
@@ -145,16 +200,16 @@ export const DashboardLayout = () => {
 
                     {/* User card */}
                     <div className={cn(
-                        "flex items-center gap-3 px-3 py-3 mt-2 rounded-xl bg-secondary/40 border border-border/60",
+                        "flex items-center gap-3 px-3 py-3 mt-2 rounded-xl bg-white/5",
                         collapsed && "justify-center px-0"
                     )}>
-                        <div className="w-8 h-8 rounded-full bg-gradient-gold flex items-center justify-center shrink-0 text-xs font-bold text-primary-foreground">
+                        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0 text-xs font-bold text-primary-foreground">
                             {initials}
                         </div>
                         {!collapsed && (
                             <div className="min-w-0">
-                                <p className="text-sm font-semibold truncate">{displayName}</p>
-                                <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                                <p className="text-sm font-semibold truncate text-dash-sidebar-foreground">{displayName}</p>
+                                <p className="text-xs text-dash-sidebar-muted truncate">{user?.email}</p>
                             </div>
                         )}
                     </div>
