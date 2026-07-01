@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import TextType from "@/components/TextType";
 
 /* ── Editorial bottom-border input ── */
 const EditorialInput = ({
@@ -77,16 +78,33 @@ const Login = () => {
         </div>
 
         <div className="relative z-10">
-          <h1
+          <TextType
+            as="h1"
+            text={"The only platform\nbuilt for the\nPakistani CS student."}
             className="font-display font-bold text-white leading-[1.1] tracking-[-0.03em] mb-5"
             style={{ fontSize: "clamp(32px, 3.5vw, 48px)" }}
-          >
-            The only platform<br />built for the<br />Pakistani CS student.
-          </h1>
-          <p className="text-white/80 text-[15px] leading-relaxed max-w-sm">
-            Bridging the gap between academic theory and industry reality.
-            Join the community shaping the future of tech.
-          </p>
+            typingSpeed={40}
+            initialDelay={200}
+            loop={false}
+            showCursor={true}
+            hideCursorWhileTyping={false}
+            cursorCharacter="|"
+            cursorClassName="text-white/70"
+            startOnVisible={false}
+          />
+          <TextType
+            as="p"
+            text="Bridging the gap between academic theory and industry reality. Join the community shaping the future of tech."
+            className="text-white/80 text-[15px] leading-relaxed max-w-sm"
+            typingSpeed={15}
+            initialDelay={2400}
+            loop={false}
+            showCursor={true}
+            hideCursorWhileTyping={false}
+            cursorCharacter="|"
+            cursorClassName="text-white/50"
+            startOnVisible={false}
+          />
         </div>
       </div>
 
