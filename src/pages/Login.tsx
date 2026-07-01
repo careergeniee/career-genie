@@ -4,6 +4,7 @@ import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import BlurText from "@/components/BlurText";
+import { isValidEmail, getAuthErrorMessage } from "@/lib/authErrors";
 
 /* ── Editorial bottom-border input ── */
 const EditorialInput = ({
@@ -44,13 +45,14 @@ const Login = () => {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) { toast.error("Please fill in all fields"); return; }
+    if (!isValidEmail(email)) { toast.error("Enter a valid email address."); return; }
     setLoading(true);
     try {
       await login(email, password);
       toast.success("Welcome back!");
       navigate("/dashboard");
     } catch (err: any) {
-      toast.error(err.message || "Login failed. Check your credentials.");
+      toast.error(getAuthErrorMessage(err, err.message || "Login failed. Check your credentials."));
     } finally {
       setLoading(false);
     }

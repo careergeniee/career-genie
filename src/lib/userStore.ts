@@ -9,14 +9,37 @@ export const KEYS = {
     resumeRole: "resume_role",
     roadmap: "roadmap",
     interviewSessions: "interview_sessions",
-    instructorTasks: "instructor_tasks",
-    instructorChat: "instructor_chat",
-    instructorReminder: "instructor_reminder",
+    instructorTasks: "instructorTasks",
+    instructorChat: "instructorChat",
+    instructorReminder: "instructorReminderTime",
+    instructorLastNotified: "instructorLastNotified",
     assessment: "assessment",
     prediction: "prediction",
 } as const;
 
-const uid = () => auth.currentUser?.uid || "guest";
+/**
+ * Anonymous per-browser id for signed-out visitors, so two different people on the
+ * same shared/public machine never read or write the same "guest" data bucket.
+ */
+const ANON_ID_KEY = "cg:_anon_id";
+let _anonId: string | null = null;
+const anonId = () => {
+    if (_anonId) return _anonId;
+    try {
+        const existing = localStorage.getItem(ANON_ID_KEY);
+        if (existing) {
+            _anonId = existing;
+        } else {
+            _anonId = `anon_${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
+            localStorage.setItem(ANON_ID_KEY, _anonId);
+        }
+    } catch {
+        _anonId = "guest";
+    }
+    return _anonId;
+};
+
+const uid = () => auth.currentUser?.uid || anonId();
 
 const fullKey = (key: string) => `cg:${uid()}:${key}`;
 
@@ -58,13 +81,32 @@ export function saveData<T>(key: string, value: T): void {
     const userId = auth.currentUser?.uid;
     if (userId) {
         setDoc(doc(db, "users", userId), { [key]: JSON.stringify(value) }, { merge: true })
-            .catch(() => {});
+            .catch((err) => console.warn("CareerGenie: Firestore sync failed —", err));
     }
 }
 
 export function removeData(key: string): void {
     try {
         localStorage.removeItem(fullKey(key));
+    } catch {
+        /* noop */
+    }
+}
+
+/**
+ * Remove every locally-stored key belonging to the given uid (or the current
+ * user/anonymous visitor if omitted). Call on logout so app data doesn't linger
+ * readable in localStorage on shared/public machines.
+ */
+export function clearUserData(targetUid?: string): void {
+    const prefix = `cg:${targetUid ?? uid()}:`;
+    try {
+        const toRemove: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && k.startsWith(prefix)) toRemove.push(k);
+        }
+        toRemove.forEach((k) => localStorage.removeItem(k));
     } catch {
         /* noop */
     }

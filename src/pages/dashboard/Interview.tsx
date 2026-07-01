@@ -131,13 +131,23 @@ const InterviewPage = () => {
 
     const finishSession = (s: InterviewSession) => {
         const total = s.answers.reduce((sum, a) => sum + a.score, 0);
-        const overall = Math.round((total / (s.answers.length * 10)) * 100);
+        const overall = s.answers.length ? Math.round((total / (s.answers.length * 10)) * 100) : 0;
         const finished: InterviewSession = { ...s, overallScore: overall, finished: true };
         setSession(finished);
         setSessions((prev) => [finished, ...prev]);
         setView("result");
         stopTimer();
     };
+
+    // Auto-submit (with whatever's typed so far, blank if nothing) once the
+    // per-question timer runs out — otherwise the countdown just freezes at
+    // 0:00 with no way to progress except a manual click.
+    useEffect(() => {
+        if (view === "active" && timeLeft === 0 && !evaluating) {
+            submitAnswer();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [timeLeft, view]);
 
     const quitToSetup = () => {
         stopTimer();

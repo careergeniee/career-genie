@@ -33,15 +33,25 @@ const AssessmentPage = () => {
     const [skills, setSkills] = useState<Record<SkillKey, number>>(
         () => loadAssessment()?.skillRatings ?? emptySkillRatings()
     );
+    // Tracks which skills the user has actually rated — a prior assessment's saved
+    // ratings count as touched, but the all-zero default from emptySkillRatings() must not.
+    const [touchedSkills, setTouchedSkills] = useState<Set<SkillKey>>(
+        () => new Set(loadAssessment() ? SKILLS : [])
+    );
     const [loading, setLoading] = useState(false);
 
     const answeredCount = Object.keys(answers).length;
     const personalityDone = answeredCount === PERSONALITY_QUESTIONS.length;
+    const skillsDone = touchedSkills.size === SKILLS.length;
 
     const submit = async () => {
         if (!personalityDone) {
             toast.error("Please answer every personality statement.");
             setStep("personality");
+            return;
+        }
+        if (!skillsDone) {
+            toast.error("Please rate every skill before submitting.");
             return;
         }
         setLoading(true);
@@ -177,6 +187,7 @@ const AssessmentPage = () => {
                         <p className="text-sm text-muted-foreground">
                             Rate your current level honestly — this drives your skill-gap analysis.
                         </p>
+                        <Progress value={(touchedSkills.size / SKILLS.length) * 100} className="h-1.5" />
                         {SKILL_CATEGORIES.map((cat) => {
                             const inCat = SKILLS.filter((s) => SKILL_META[s].category === cat);
                             if (!inCat.length) return null;
@@ -194,7 +205,10 @@ const AssessmentPage = () => {
                                                             <button
                                                                 key={idx}
                                                                 title={label}
-                                                                onClick={() => setSkills((p) => ({ ...p, [s]: idx }))}
+                                                                onClick={() => {
+                                                                    setSkills((p) => ({ ...p, [s]: idx }));
+                                                                    setTouchedSkills((t) => new Set(t).add(s));
+                                                                }}
                                                                 className={cn(
                                                                     "rounded-md border px-2 py-1.5 text-[10px] transition-all",
                                                                     active
@@ -217,7 +231,7 @@ const AssessmentPage = () => {
                             <Button variant="ghost" onClick={() => setStep("personality")}>
                                 <ArrowLeft className="w-4 h-4" /> Back
                             </Button>
-                            <Button variant="hero" size="lg" disabled={loading} onClick={submit}>
+                            <Button variant="hero" size="lg" disabled={loading || !skillsDone} onClick={submit}>
                                 {loading ? (
                                     <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing…</>
                                 ) : (

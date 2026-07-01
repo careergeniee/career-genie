@@ -105,7 +105,12 @@ export const InterviewSession = ({
                         {listening ? "Stop" : transcribing ? "Processing…" : "Speak"}
                     </button>
                 </div>
-                <button onClick={onSubmit} disabled={evaluating}
+                <button
+                    onClick={() => {
+                        if (!answer.trim() && !window.confirm("Submit with no answer?")) return;
+                        onSubmit();
+                    }}
+                    disabled={evaluating}
                     className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-gold text-primary-foreground font-semibold hover:shadow-[0_0_20px_hsl(48_96%_53%_/_0.5)] transition-all disabled:opacity-60">
                     {evaluating ? (
                         <><Loader2 className="w-4 h-4 animate-spin" /> Evaluating...</>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
     Bot, FileText, MessageSquare, Map, GraduationCap,
@@ -28,6 +28,7 @@ const navItems = [
 
 export const DashboardLayout = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const closeButtonRef = useRef<HTMLButtonElement>(null);
     const { user, logout } = useAuth();
     const navigate = useNavigate();
 
@@ -36,6 +37,18 @@ export const DashboardLayout = () => {
         toast.success("Logged out successfully");
         navigate("/");
     };
+
+    // Keyboard-only users: Escape closes the sidebar, and focus moves into it on open
+    // so Tab doesn't wander into the visually-obscured content behind the backdrop.
+    useEffect(() => {
+        if (!sidebarOpen) return;
+        closeButtonRef.current?.focus();
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") setSidebarOpen(false);
+        };
+        window.addEventListener("keydown", onKeyDown);
+        return () => window.removeEventListener("keydown", onKeyDown);
+    }, [sidebarOpen]);
 
     const displayName = user?.displayName || user?.email?.split("@")[0] || "Explorer";
     const initials = displayName.slice(0, 2).toUpperCase();
@@ -62,11 +75,15 @@ export const DashboardLayout = () => {
             )}
 
             {/* Sidebar — hidden by default on every screen size, opens as an overlay on click */}
-            <aside className={cn(
-                "flex flex-col dash-sidebar-bg transition-transform duration-300 shrink-0",
-                "fixed inset-y-0 left-0 z-50 w-64",
-                !sidebarOpen && "-translate-x-full"
-            )}>
+            <aside
+                role="dialog"
+                aria-modal="true"
+                aria-label="Dashboard navigation"
+                className={cn(
+                    "flex flex-col dash-sidebar-bg transition-transform duration-300 shrink-0",
+                    "fixed inset-y-0 left-0 z-50 w-64",
+                    !sidebarOpen && "-translate-x-full"
+                )}>
                 {/* Logo */}
                 <div className="flex items-center gap-1 px-4 py-5 border-b border-white/10">
                     <img src={genieLogo} alt="Career Genie" className="w-11 h-11 object-contain shrink-0" />
@@ -74,6 +91,7 @@ export const DashboardLayout = () => {
                         Career <span className="text-primary">Genie</span>
                     </span>
                     <button
+                        ref={closeButtonRef}
                         onClick={() => setSidebarOpen(false)}
                         className="ml-auto w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-dash-sidebar-foreground transition-colors"
                         aria-label="Close menu"

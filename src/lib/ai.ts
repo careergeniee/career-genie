@@ -32,13 +32,19 @@ export async function aiText(
             }),
             AI_TIMEOUT_MS
         );
-    let completion;
     try {
-        completion = await call();
+        const completion = await call();
+        return completion.choices[0]?.message?.content?.trim() || "";
     } catch {
-        completion = await call(); // single retry on timeout/transient error
+        try {
+            const completion = await call(); // single retry on timeout/transient error
+            return completion.choices[0]?.message?.content?.trim() || "";
+        } catch {
+            // Both attempts failed (e.g. persistent rate-limit or outage) — degrade to
+            // an empty string rather than letting the retry itself throw uncaught.
+            return "";
+        }
     }
-    return completion.choices[0]?.message?.content?.trim() || "";
 }
 
 /**

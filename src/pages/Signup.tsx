@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { GlowOrbs } from "@/components/GlowOrbs";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { isValidEmail, getAuthErrorMessage } from "@/lib/authErrors";
 
 const Signup = () => {
     const [name, setName] = useState("");
@@ -26,6 +27,10 @@ const Signup = () => {
             toast.error("Please fill in all fields");
             return;
         }
+        if (!isValidEmail(email)) {
+            toast.error("Enter a valid email address.");
+            return;
+        }
         if (password.length < 6) {
             toast.error("Password must be at least 6 characters");
             return;
@@ -39,11 +44,7 @@ const Signup = () => {
             await signup(email, password);
             setDone(true);
         } catch (err: any) {
-            if (err.code === "auth/email-already-in-use") {
-                toast.error("This email is already registered. Try logging in.");
-            } else {
-                toast.error(err.message || "Signup failed. Try again.");
-            }
+            toast.error(getAuthErrorMessage(err, err.message || "Signup failed. Try again."));
         } finally {
             setLoading(false);
         }

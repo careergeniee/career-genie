@@ -133,20 +133,30 @@ export async function predictCareers(
                 );
                 if (res.ok) {
                     const data = await res.json();
-                    const predictions: CareerPrediction[] = (data.predictions || []).map(
+                    const rawPredictions: CareerPrediction[] = (data.predictions || []).map(
                         (p: { career: string; probability: number }) => ({
                             career: p.career,
                             probability: p.probability,
                         })
                     );
+                    // Guard against label drift between the ML backend and the frontend
+                    // catalog — an unrecognized career would otherwise render a blank
+                    // detail panel, empty skill gap, and no roadmap stack with no warning.
+                    const knownLabels = new Set<string>(CAREER_LABELS);
+                    const predictions = rawPredictions.filter((p) => {
+                        if (knownLabels.has(p.career)) return true;
+                        console.warn(`CareerGenie: ML API returned unknown career "${p.career}" — dropping it.`);
+                        return false;
+                    });
                     if (predictions.length) {
                         const confidence =
                             typeof data.confidence === "number"
                                 ? data.confidence
                                 : predictions[0].probability - (predictions[1]?.probability ?? 0);
+                        const topCareer = knownLabels.has(data.top_career) ? data.top_career : predictions[0].career;
                         return {
                             predictions,
-                            topCareer: data.top_career || predictions[0].career,
+                            topCareer,
                             source: "ml-api",
                             confidence: Math.max(0, Math.round(confidence * 1000) / 1000),
                             uncertain:
@@ -196,9 +206,12 @@ function localPredict(
         return { career, similarity: 1 - dist };
     });
 
-    // Softmax over similarity for a clean probability spread.
+    // Softmax over similarity for a clean probability spread. Subtract the max
+    // before exponentiating (the standard numerically-stable form) so this can't
+    // silently blow up to Infinity/NaN if similarity/T ever drift out of [0,1].
     const T = 0.12;
-    const exps = scored.map((s) => Math.exp(s.similarity / T));
+    const maxSimilarity = Math.max(...scored.map((s) => s.similarity));
+    const exps = scored.map((s) => Math.exp((s.similarity - maxSimilarity) / T));
     const sum = exps.reduce((a, b) => a + b, 0);
     const predictions = scored
         .map((s, i) => ({ career: s.career, probability: exps[i] / sum }))

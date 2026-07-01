@@ -11,11 +11,12 @@ import {
     onAuthStateChanged,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { initUserData } from "@/lib/userStore";
+import { initUserData, clearUserData } from "@/lib/userStore";
 
 interface AuthContextType {
     user: User | null;
     loading: boolean;
+    error: string | null;
     signup: (email: string, password: string) => Promise<void>;
     login: (email: string, password: string) => Promise<void>;
     loginWithGoogle: () => Promise<void>;
@@ -34,16 +35,27 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const unsub = onAuthStateChanged(auth, async (u) => {
-            setUser(u);
-            if (u) {
-                // Hydrate localStorage from Firestore so data is available across devices
-                await initUserData();
+        const unsub = onAuthStateChanged(
+            auth,
+            (u) => {
+                setUser(u);
+                setError(null);
+                setLoading(false);
+                if (u) {
+                    // Hydrate localStorage from Firestore in the background — don't block
+                    // first paint on a Firestore round-trip; localStorage is always primary.
+                    initUserData().catch(() => {});
+                }
+            },
+            (err) => {
+                console.error("CareerGenie: auth state listener failed —", err);
+                setError(err.message);
+                setLoading(false);
             }
-            setLoading(false);
-        });
+        );
         return unsub;
     }, []);
 
@@ -64,12 +76,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await signInWithPopup(auth, new GoogleAuthProvider());
     };
 
-    const logout = () => signOut(auth);
+    const logout = async () => {
+        const outgoingUid = auth.currentUser?.uid;
+        await signOut(auth);
+        // Data is namespaced per uid, but still leaves it readable in localStorage on
+        // shared/public machines until cleared — remove it now that the session is over.
+        if (outgoingUid) clearUserData(outgoingUid);
+    };
 
     const resetPassword = (email: string) => sendPasswordResetEmail(auth, email);
 
     return (
-        <AuthContext.Provider value={{ user, loading, signup, login, loginWithGoogle, logout, resetPassword }}>
+        <AuthContext.Provider value={{ user, loading, error, signup, login, loginWithGoogle, logout, resetPassword }}>
             {!loading && children}
         </AuthContext.Provider>
     );

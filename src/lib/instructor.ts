@@ -14,7 +14,7 @@
  */
 
 import { aiText, aiJson } from "@/lib/ai";
-import { loadData, saveData, uid8, todayKey, dayDiff } from "@/lib/userStore";
+import { loadData, saveData, uid8, todayKey, dayDiff, KEYS } from "@/lib/userStore";
 import { loadAssessment, loadPrediction, analyzeSkillGap, traitScore } from "@/lib/careerEngine";
 import { PERSONALITY, type PersonalityKey } from "@/lib/mlSchema";
 import { getStack, flattenStack } from "@/lib/careerStacks";
@@ -294,19 +294,14 @@ export async function instructorChat(
 // Persistence
 // -------------------------------------------------------------------------
 
-const TASKS_KEY = "instructorTasks";
-const CHAT_KEY = "instructorChat";
-const REMINDER_KEY = "instructorReminderTime";
-const NOTIFIED_KEY = "instructorLastNotified";
-
-export const loadTasks = () => loadData<DailyTask[]>(TASKS_KEY, []);
-export const saveTasks = (t: DailyTask[]) => saveData(TASKS_KEY, t);
-export const loadChat = () => loadData<ChatMsg[]>(CHAT_KEY, []);
-export const saveChat = (m: ChatMsg[]) => saveData(CHAT_KEY, m);
-export const loadReminderTime = () => loadData<string>(REMINDER_KEY, "18:00");
-export const saveReminderTime = (t: string) => saveData(REMINDER_KEY, t);
-export const loadLastNotified = () => loadData<string>(NOTIFIED_KEY, "");
-export const saveLastNotified = (d: string) => saveData(NOTIFIED_KEY, d);
+export const loadTasks = () => loadData<DailyTask[]>(KEYS.instructorTasks, []);
+export const saveTasks = (t: DailyTask[]) => saveData(KEYS.instructorTasks, t);
+export const loadChat = () => loadData<ChatMsg[]>(KEYS.instructorChat, []);
+export const saveChat = (m: ChatMsg[]) => saveData(KEYS.instructorChat, m);
+export const loadReminderTime = () => loadData<string>(KEYS.instructorReminder, "18:00");
+export const saveReminderTime = (t: string) => saveData(KEYS.instructorReminder, t);
+export const loadLastNotified = () => loadData<string>(KEYS.instructorLastNotified, "");
+export const saveLastNotified = (d: string) => saveData(KEYS.instructorLastNotified, d);
 
 export const getTodayTask = (tasks: DailyTask[]): DailyTask | undefined =>
     tasks.find((t) => t.date === todayKey());

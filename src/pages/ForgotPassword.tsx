@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { GlowOrbs } from "@/components/GlowOrbs";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { isValidEmail } from "@/lib/authErrors";
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState("");
@@ -18,11 +19,12 @@ const ForgotPassword = () => {
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!email) { toast.error("Enter your email"); return; }
+        if (!isValidEmail(email)) { toast.error("Enter a valid email address."); return; }
         setLoading(true);
         try {
             await resetPassword(email);
             setSent(true);
-        } catch (err: any) {
+        } catch {
             toast.error("Could not send reset email. Check the address.");
         } finally {
             setLoading(false);

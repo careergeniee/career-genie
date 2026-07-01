@@ -12,6 +12,7 @@ node_modules
 dist
 dist-ssr
 *.local
+coverage
 
 # ML model binary
 ml-service/career_model.pkl

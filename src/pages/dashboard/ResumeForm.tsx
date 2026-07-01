@@ -128,7 +128,7 @@ export const ResumeForm = ({
                     </div>
                     <div>
                         <label className={labelCls}>Email</label>
-                        <input className={inputCls} value={data.personal.email}
+                        <input type="email" className={inputCls} value={data.personal.email}
                             onChange={(e) => setPersonal("email", e.target.value)} placeholder="you@email.com" />
                     </div>
                     <div>
@@ -143,7 +143,7 @@ export const ResumeForm = ({
                     </div>
                     <div>
                         <label className={labelCls}>Website / LinkedIn</label>
-                        <input className={inputCls} value={data.personal.website}
+                        <input type="text" inputMode="url" className={inputCls} value={data.personal.website}
                             onChange={(e) => setPersonal("website", e.target.value)} placeholder="github.com/you" />
                     </div>
                     <div className="col-span-2">

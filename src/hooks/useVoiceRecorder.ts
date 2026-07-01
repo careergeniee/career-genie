@@ -49,6 +49,7 @@ export function useVoiceRecorder(onTranscript: (text: string) => void) {
                 try {
                     const text = await transcribeAudio(blob, mimeType);
                     if (text) onTranscript(text);
+                    else toast.info("Didn't catch that — try again.");
                 } catch {
                     toast.error("Transcription failed. Check your API key and try again.");
                 } finally {

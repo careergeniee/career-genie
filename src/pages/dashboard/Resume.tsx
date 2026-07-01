@@ -21,11 +21,25 @@ const ResumePage = () => {
     const [rewritingId, setRewritingId] = useState<string | null>(null);
 
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const dataRef = useRef(data);
+    useEffect(() => { dataRef.current = data; }, [data]);
+
     useEffect(() => {
         if (saveTimer.current) clearTimeout(saveTimer.current);
-        saveTimer.current = setTimeout(() => saveData(KEY, data), 400);
+        saveTimer.current = setTimeout(() => {
+            saveData(KEY, data);
+            saveTimer.current = null;
+        }, 400);
         return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
     }, [data]);
+
+    // Flush any pending debounced save on unmount only (not on every keystroke) —
+    // otherwise navigating away within 400ms of the last edit would silently lose it.
+    useEffect(() => {
+        return () => {
+            if (saveTimer.current) saveData(KEY, dataRef.current);
+        };
+    }, []);
     useEffect(() => saveData("resume_tpl", template), [template]);
     useEffect(() => saveData("resume_role", targetRole), [targetRole]);
 
@@ -56,6 +70,14 @@ const ResumePage = () => {
     };
 
     const downloadPdf = async () => {
+        if (!data.personal.fullName.trim()) {
+            toast.error("Add your name before downloading.");
+            return;
+        }
+        if (data.personal.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.personal.email.trim())) {
+            toast.error("That email address doesn't look right — please check it.");
+            return;
+        }
         setDownloading(true);
         try {
             const [{ pdf }, { ResumePDF }] = await Promise.all([

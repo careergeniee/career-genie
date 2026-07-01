@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { groq } from "@/lib/groq";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
+import { loadData, saveData, removeData, KEYS } from "@/lib/userStore";
 import genieLogo from "@/assets/genie-logo3.png";
 
 interface Message {
@@ -13,8 +14,18 @@ interface Message {
     time: string;
 }
 
+const MAX_INPUT_LENGTH = 2000;
+
 const getTime = () =>
     new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+const defaultMessages = (): Message[] => [
+    {
+        sender: "genie",
+        text: "Hello! I'm Career Genie, your AI career mentor. Ask me anything about career paths, skills, resume tips, or interview prep. I'm specialized in the Pakistani job market! 🚀",
+        time: getTime(),
+    },
+];
 
 const SYSTEM_PROMPT = `You are Career Genie, an AI career counselor built exclusively for Pakistani students and professionals.
 
@@ -36,18 +47,7 @@ Keep responses concise, friendly, and actionable.`;
 
 const ChatPage = () => {
     const { user } = useAuth();
-    const [messages, setMessages] = useState<Message[]>(() => {
-        const saved = localStorage.getItem("cg_chat");
-        return saved
-            ? JSON.parse(saved)
-            : [
-                {
-                    sender: "genie",
-                    text: "Hello! I'm Career Genie, your AI career mentor. Ask me anything about career paths, skills, resume tips, or interview prep. I'm specialized in the Pakistani job market! 🚀",
-                    time: getTime(),
-                },
-            ];
-    });
+    const [messages, setMessages] = useState<Message[]>(() => loadData<Message[]>(KEYS.chat, defaultMessages()));
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
     const bottomRef = useRef<HTMLDivElement>(null);
@@ -55,7 +55,7 @@ const ChatPage = () => {
     useEffect(() => { messagesRef.current = messages; }, [messages]);
 
     useEffect(() => {
-        localStorage.setItem("cg_chat", JSON.stringify(messages.slice(-100)));
+        saveData(KEYS.chat, messages.slice(-100));
     }, [messages]);
 
     useEffect(() => {
@@ -74,7 +74,7 @@ const ChatPage = () => {
                         time: getTime(),
                     }];
                     setMessages(reset);
-                    localStorage.removeItem("cg_chat");
+                    removeData(KEYS.chat);
                 },
             },
             cancel: { label: "Cancel", onClick: () => {} },
@@ -83,14 +83,14 @@ const ChatPage = () => {
 
     const doSend = useCallback(async (text: string) => {
         if (!text.trim() || isTyping) return;
-        const userText = text.trim();
+        const userText = text.trim().slice(0, MAX_INPUT_LENGTH);
         setMessages((prev) => [...prev, { sender: "user", text: userText, time: getTime() }]);
         setInput("");
         setIsTyping(true);
         try {
             const history = messagesRef.current.slice(-10).map((m) => ({
                 role: m.sender === "user" ? "user" as const : "assistant" as const,
-                content: m.text,
+                content: m.text.slice(0, MAX_INPUT_LENGTH),
             }));
             const completion = await groq.chat.completions.create({
                 model: "llama-3.3-70b-versatile",
@@ -104,12 +104,12 @@ const ChatPage = () => {
             });
             const reply = completion.choices[0]?.message?.content || "I couldn't generate a response. Try again!";
             setMessages((prev) => [...prev, { sender: "genie", text: reply, time: getTime() }]);
-        } catch {
-            setMessages((prev) => [...prev, {
-                sender: "genie",
-                text: "Sorry, I couldn't connect right now. Please try again in a moment.",
-                time: getTime(),
-            }]);
+        } catch (err: any) {
+            const status = err?.status ?? err?.response?.status;
+            const message = status === 429
+                ? "You're sending messages a bit too fast — please wait a moment and try again."
+                : "Sorry, I couldn't connect right now. Please try again in a moment.";
+            setMessages((prev) => [...prev, { sender: "genie", text: message, time: getTime() }]);
         } finally {
             setIsTyping(false);
         }
@@ -229,6 +229,7 @@ const ChatPage = () => {
                         onChange={(e) => setInput(e.target.value)}
                         placeholder={recording ? "Listening…" : transcribing ? "Transcribing…" : "Ask about jobs, skills, career paths..."}
                         disabled={isTyping}
+                        maxLength={MAX_INPUT_LENGTH}
                         className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                     />
                     <button
