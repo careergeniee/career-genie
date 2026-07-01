@@ -9,26 +9,9 @@ const Index = () => {
 
       {/* ── HERO — asymmetric two-column ── */}
       <section className="max-w-[1200px] mx-auto px-8 pt-16 pb-0">
-        <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-8 md:gap-14 items-start">
+        <div className="items-start">
 
-          {/* Left: stacked stat blocks */}
-          <div className="flex flex-row md:flex-col gap-3 overflow-x-auto md:overflow-visible pb-2 md:pb-0 md:pt-3 shrink-0">
-            <div className="bg-foreground text-background rounded-xl p-5 shrink-0 md:shrink">
-              <p className="font-display font-bold text-[36px] leading-none">96.4%</p>
-              <p className="text-[9px] text-background/45 uppercase tracking-[0.12em] mt-2 font-medium">ML accuracy</p>
-            </div>
-            <div className="rounded-xl p-5 shrink-0 md:shrink border"
-              style={{ background: "hsl(var(--primary)/0.07)", borderColor: "hsl(var(--primary)/0.18)" }}>
-              <p className="font-display font-bold text-[30px] leading-none text-primary">3,625</p>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-[0.12em] mt-2 font-medium">Students trained on</p>
-            </div>
-            <div className="bg-secondary rounded-xl p-5 shrink-0 md:shrink border border-border">
-              <p className="font-display font-bold text-[24px] leading-none">7 tools</p>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-[0.12em] mt-2 font-medium">One platform</p>
-            </div>
-          </div>
-
-          {/* Right: massive headline + CTA */}
+          {/* Headline + CTA */}
           <div>
             <h1
               className="font-display font-bold leading-[1.0] tracking-[-0.04em] mb-8"
