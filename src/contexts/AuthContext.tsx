@@ -3,6 +3,8 @@ import {
     User,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
+    signInWithPopup,
+    GoogleAuthProvider,
     signOut,
     sendPasswordResetEmail,
     sendEmailVerification,
@@ -16,6 +18,7 @@ interface AuthContextType {
     loading: boolean;
     signup: (email: string, password: string) => Promise<void>;
     login: (email: string, password: string) => Promise<void>;
+    loginWithGoogle: () => Promise<void>;
     logout: () => Promise<void>;
     resetPassword: (email: string) => Promise<void>;
 }
@@ -57,12 +60,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
+    const loginWithGoogle = async () => {
+        await signInWithPopup(auth, new GoogleAuthProvider());
+    };
+
     const logout = () => signOut(auth);
 
     const resetPassword = (email: string) => sendPasswordResetEmail(auth, email);
 
     return (
-        <AuthContext.Provider value={{ user, loading, signup, login, logout, resetPassword }}>
+        <AuthContext.Provider value={{ user, loading, signup, login, loginWithGoogle, logout, resetPassword }}>
             {!loading && children}
         </AuthContext.Provider>
     );
