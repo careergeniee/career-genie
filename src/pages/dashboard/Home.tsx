@@ -53,7 +53,7 @@ const DashboardHome = () => {
         }));
 
     return (
-        <div className="dash-bg min-h-screen">
+        <div className="min-h-screen">
             <div className="p-6 lg:p-10 max-w-6xl mx-auto">
 
                 {/* ── GREETING ── */}

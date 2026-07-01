@@ -140,7 +140,7 @@ const ChatPage = () => {
     const initials = displayName.slice(0, 2).toUpperCase();
 
     return (
-        <div className="flex flex-col h-screen bg-background">
+        <div className="flex flex-col h-screen">
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-border/60 bg-card/40 backdrop-blur-sm shrink-0">
                 <div className="flex items-center gap-3">

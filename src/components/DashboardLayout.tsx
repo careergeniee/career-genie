@@ -13,6 +13,7 @@ import { DailyTaskReminder } from "@/components/DailyTaskReminder";
 import { loadData } from "@/lib/userStore";
 import { loadTasks, hasPendingTaskToday } from "@/lib/instructor";
 import { currentStreak, type Roadmap } from "@/lib/roadmap";
+import Iridescence from "@/components/Iridescence";
 
 const navItems = [
     { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
@@ -45,7 +46,13 @@ export const DashboardLayout = () => {
     const streak = roadmap ? currentStreak(roadmap.completionDates) : 0;
 
     return (
-        <div className="min-h-screen flex bg-dash-bg">
+        <div className="min-h-screen flex relative">
+            {/* Ambient animated background, tinted in the site's burnt-sienna palette —
+                shared across the whole dashboard shell so every module sits on top of it. */}
+            <div className="fixed inset-0 -z-10 opacity-[0.08] pointer-events-none">
+                <Iridescence color={[0.7569, 0.2667, 0.0549]} speed={0.4} amplitude={0.1} mouseReact={false} />
+            </div>
+
             {/* Backdrop */}
             {sidebarOpen && (
                 <div
