@@ -2,61 +2,91 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { HeroShowcase } from "@/components/home/HeroShowcase";
 import BlurText from "@/components/BlurText";
+import LineWaves from "@/components/LineWaves";
 import { ArrowRight } from "lucide-react";
 
 const Index = () => {
   return (
     <div className="bg-background text-foreground">
 
-      {/* ── HERO — asymmetric two-column ── */}
-      <section className="max-w-[1200px] mx-auto px-8 pt-16 pb-0">
-        <div className="items-start">
+      {/* ── HERO + TOOLKIT — share one fading line-wave background ── */}
+      <div className="relative overflow-hidden">
+        {/* Animated line-wave background, tinted in the site's burnt-sienna palette.
+            Spans past the hero and fades out through the toolkit section instead of cutting off abruptly. */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            maskImage: "linear-gradient(to bottom, black 0%, black 55%, transparent 95%)",
+            WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 55%, transparent 95%)",
+          }}
+        >
+          <LineWaves
+            speed={0.3}
+            innerLineCount={32}
+            outerLineCount={36}
+            warpIntensity={1.0}
+            rotation={-45}
+            edgeFadeWidth={0.15}
+            colorCycleSpeed={0.4}
+            brightness={0.22}
+            color1="#c1440e"
+            color2="#e8703a"
+            color3="#7a2500"
+            enableMouseInteraction={true}
+            mouseInfluence={1.5}
+          />
+        </div>
 
-          {/* Headline + CTA */}
-          <div>
-            <div
-              role="heading"
-              aria-level={1}
-              className="font-display font-bold leading-[1.0] tracking-[-0.04em] mb-8"
-              style={{ fontSize: "clamp(48px, 7.5vw, 92px)" }}
-            >
-              <BlurText text="Navigate" animateBy="words" direction="top" delay={150} />
-              <BlurText
-                text="your Path"
-                animateBy="words"
-                direction="top"
-                delay={150}
-                className="[&>span:last-child]:text-primary"
-              />
-              <BlurText text="with confidence." animateBy="words" direction="top" delay={150} />
-            </div>
-            <p className="text-muted-foreground max-w-md mb-10 text-[15px] leading-relaxed">
-              The definitive platform for ambitious Pakistani Computer Science
-              students — map careers, master skills, land top-tier tech roles.
-            </p>
-            <div className="flex flex-wrap items-center gap-4">
-              <Button asChild size="lg"
-                className="rounded-[10px] px-8 h-14 text-[16px] font-semibold bg-primary text-primary-foreground shadow-[0_4px_14px_hsl(19_86%_40%_/_0.35)] hover:brightness-90">
-                <Link to="/signup">Start My Journey <ArrowRight className="w-5 h-5" /></Link>
-              </Button>
-              <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4">
-                Already have an account?
-              </Link>
+        {/* ── HERO — asymmetric two-column ── */}
+        <section className="relative max-w-[1200px] mx-auto px-8 pt-16 pb-0">
+          <div className="relative items-start">
+
+            {/* Headline + CTA */}
+            <div>
+              <div
+                role="heading"
+                aria-level={1}
+                className="font-display font-bold leading-[1.0] tracking-[-0.04em] mb-8"
+                style={{ fontSize: "clamp(48px, 7.5vw, 92px)" }}
+              >
+                <BlurText text="Navigate" animateBy="words" direction="top" delay={150} />
+                <BlurText
+                  text="your Path"
+                  animateBy="words"
+                  direction="top"
+                  delay={150}
+                  className="[&>span:last-child]:text-primary"
+                />
+                <BlurText text="with confidence." animateBy="words" direction="top" delay={150} />
+              </div>
+              <p className="text-muted-foreground max-w-md mb-10 text-[15px] leading-relaxed">
+                The definitive platform for ambitious Pakistani Computer Science
+                students — map careers, master skills, land top-tier tech roles.
+              </p>
+              <div className="flex flex-wrap items-center gap-4">
+                <Button asChild size="lg"
+                  className="rounded-[10px] px-8 h-14 text-[16px] font-semibold bg-primary text-primary-foreground shadow-[0_4px_14px_hsl(19_86%_40%_/_0.35)] hover:brightness-90">
+                  <Link to="/signup">Start My Journey <ArrowRight className="w-5 h-5" /></Link>
+                </Button>
+                <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4">
+                  Already have an account?
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ── YOUR TOOLKIT ── */}
-      <section className="pt-20 pb-8 w-full">
-        <div className="max-w-[1200px] mx-auto px-8 mb-8 flex items-baseline justify-between">
-          <h2 className="font-display font-bold text-3xl tracking-tight">Your Toolkit</h2>
-          <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground font-medium">7 modules</span>
-        </div>
-        <div className="w-full overflow-visible px-8">
-          <HeroShowcase />
-        </div>
-      </section>
+        {/* ── YOUR TOOLKIT ── */}
+        <section className="relative pt-20 pb-8 w-full">
+          <div className="max-w-[1200px] mx-auto px-8 mb-8 flex items-baseline justify-between">
+            <h2 className="font-display font-bold text-3xl tracking-tight">Your Toolkit</h2>
+            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground font-medium">7 modules</span>
+          </div>
+          <div className="w-full overflow-visible px-8">
+            <HeroShowcase />
+          </div>
+        </section>
+      </div>
 
       {/* ── HOW IT WORKS — divided columns ── */}
       <section className="max-w-[1200px] mx-auto px-8 pt-16 pb-20 mt-8 border-t border-border">
