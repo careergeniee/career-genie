@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 /* ─── Mini UI previews — one per module ─────────────────────────── */
@@ -157,27 +158,74 @@ const CARDS = [
 
 /* ─── Showcase ───────────────────────────────────────────────────── */
 
-export const HeroShowcase = () => (
-    <div className="flex flex-wrap justify-center gap-3">
-        {CARDS.map((card, i) => (
-            <div
-                key={card.label}
-                className={cn("rounded-2xl border bg-white shadow-md overflow-hidden w-[148px] animate-pop-in hover:-translate-y-1 transition-transform duration-200", card.border)}
-                style={{ animationDelay: `${i * 60}ms` }}
-            >
-                {/* Mini screenshot */}
-                <div className={cn("h-28 overflow-hidden", card.bg)}>
-                    {card.preview}
-                </div>
+const CARD_W = 148;
+const GAP    = 14;
+// Amount each card translates to collapse onto the center card (index 3)
+const stackShift = (i: number) => (3 - i) * (CARD_W + GAP);
 
-                {/* Label */}
-                <div className="px-3 py-2.5 border-t border-gray-100">
-                    <p className={cn("font-display font-bold text-[12px] leading-tight", card.color)}>
-                        {card.label}
-                    </p>
-                    <span className="text-[10px] text-muted-foreground">{card.detail}</span>
-                </div>
+export const HeroShowcase = () => {
+    const [open, setOpen] = useState(false);
+
+    return (
+        <div
+            className="overflow-visible cursor-pointer"
+            onMouseEnter={() => setOpen(true)}
+            onMouseLeave={() => setOpen(false)}
+            onClick={() => setOpen((v) => !v)}
+        >
+            {/* Flex row — natural positions ARE the spread positions.
+                translateX pulls cards to center when stacked. */}
+            <div className="flex justify-center overflow-visible" style={{ gap: GAP }}>
+                {CARDS.map((card, i) => {
+                    const tx  = open ? 0 : stackShift(i);
+                    const rot = open ? 0 : (i - 3) * 2.5;
+                    const ty  = open ? 0 : Math.abs(i - 3) * 4;
+                    // left → right stagger when opening; right → left when closing
+                    const delay = open ? i * 55 : (CARDS.length - 1 - i) * 38;
+
+                    return (
+                        <div
+                            key={card.label}
+                            className="shrink-0 overflow-visible"
+                            style={{
+                                width: CARD_W,
+                                transform: `translateX(${tx}px) translateY(${ty}px) rotate(${rot}deg)`,
+                                transition: `transform 0.52s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms`,
+                                zIndex: open ? 1 : 10 - Math.abs(i - 3),
+                                position: "relative",
+                            }}
+                        >
+                            <div className={cn(
+                                "rounded-2xl border bg-white shadow-lg overflow-hidden",
+                                "hover:-translate-y-1 transition-[box-shadow,transform] duration-200",
+                                open && "shadow-xl",
+                                card.border,
+                            )}>
+                                {/* Mini screenshot */}
+                                <div className={cn("h-28 overflow-hidden", card.bg)}>
+                                    {card.preview}
+                                </div>
+                                {/* Label */}
+                                <div className="px-3 py-2.5 border-t border-gray-100">
+                                    <p className={cn("font-display font-bold text-[12px] leading-tight", card.color)}>
+                                        {card.label}
+                                    </p>
+                                    <span className="text-[10px] text-muted-foreground">{card.detail}</span>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
-        ))}
-    </div>
-);
+
+            {/* Hint */}
+            <p
+                className="mt-5 text-center text-[11px] text-muted-foreground flex items-center justify-center gap-1.5 pointer-events-none transition-opacity duration-300"
+                style={{ opacity: open ? 0 : 1 }}
+            >
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse inline-block" />
+                hover to explore all tools
+            </p>
+        </div>
+    );
+};
