@@ -7,67 +7,77 @@
 
 @layer base {
   :root {
-    /* Career Genie — 70/20/10: White / #62D141 / #61CF40 */
-    --background: 0 0% 100%;
-    --foreground: 106 45% 16%;
+    /* ── Editorial Career Intelligence — Burnt Sienna × Warm Off-White × Navy ── */
 
-    --card: 106 40% 97%;
-    --card-foreground: 106 45% 16%;
+    /* Warm off-white paper background (#F7F3EE) */
+    --background: 36 29% 95%;
+    --foreground: 0 2% 11%;
+
+    /* Pure white card surfaces */
+    --card: 0 0% 100%;
+    --card-foreground: 0 2% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 106 45% 16%;
+    --popover-foreground: 0 2% 11%;
 
-    /* 10% accent — #61CF40 */
-    --primary: 106 55% 52%;
+    /* Burnt sienna CTA — #c1440e */
+    --primary: 19 86% 40%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 106 60% 62%;
+    --primary-glow: 19 86% 55%;
 
-    /* 20% secondary — #62D141 */
-    --secondary: 106 50% 88%;
-    --secondary-foreground: 106 45% 16%;
+    /* Warm neutral secondary */
+    --secondary: 36 20% 91%;
+    --secondary-foreground: 0 2% 11%;
 
-    --muted: 106 35% 94%;
-    --muted-foreground: 106 25% 42%;
+    --muted: 36 15% 92%;
+    --muted-foreground: 14 18% 40%;
 
-    --accent: 106 61% 54%;
+    --accent: 19 86% 40%;
     --accent-foreground: 0 0% 100%;
-    --accent-glow: 106 61% 44%;
+    --accent-glow: 19 86% 52%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 106 35% 82%;
-    --input: 106 30% 90%;
-    --ring: 106 55% 52%;
+    --border: 36 14% 84%;
+    --input: 36 15% 90%;
+    --ring: 19 86% 40%;
 
-    --radius: 0.85rem;
+    /* 10px radius — structured, not bubbly */
+    --radius: 0.625rem;
 
     /* Gradients */
-    --gradient-hero: radial-gradient(ellipse at top left, hsl(106 61% 54% / 0.1), transparent 55%), radial-gradient(ellipse at bottom right, hsl(106 55% 52% / 0.06), transparent 50%), linear-gradient(180deg, hsl(0 0% 100%), hsl(106 40% 97%));
-    --gradient-gold: linear-gradient(135deg, hsl(106 55% 48%), hsl(106 61% 42%));
-    --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.85), hsl(106 40% 96% / 0.7));
-    --gradient-purple: linear-gradient(135deg, hsl(106 61% 54%), hsl(106 45% 28%));
-    --gradient-text: linear-gradient(135deg, hsl(106 55% 36%), hsl(106 61% 30%) 50%, hsl(106 55% 38%));
+    --gradient-hero: linear-gradient(180deg, hsl(36 29% 97%), hsl(36 22% 94%));
+    --gradient-gold: linear-gradient(135deg, hsl(19 86% 40%), hsl(19 100% 30%));
+    --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.92), hsl(36 25% 95% / 0.8));
+    --gradient-purple: linear-gradient(135deg, hsl(19 86% 40%), hsl(19 100% 28%));
+    --gradient-text: linear-gradient(135deg, hsl(19 86% 44%), hsl(19 100% 30%));
 
     /* Shadows */
-    --shadow-gold: 0 0 40px hsl(106 55% 52% / 0.22), 0 0 80px hsl(106 55% 52% / 0.1);
-    --shadow-purple: 0 0 40px hsl(106 61% 54% / 0.18), 0 0 80px hsl(106 61% 54% / 0.08);
-    --shadow-card: 0 2px 16px hsl(106 45% 16% / 0.07), 0 1px 4px hsl(106 45% 16% / 0.04);
-    --shadow-elegant: 0 20px 60px -20px hsl(106 55% 52% / 0.25);
+    --shadow-gold: 0 0 40px hsl(19 86% 40% / 0.22), 0 0 80px hsl(19 86% 40% / 0.10);
+    --shadow-purple: 0 0 40px hsl(19 86% 40% / 0.18), 0 0 80px hsl(19 86% 40% / 0.08);
+    --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.07);
+    --shadow-elegant: 0 20px 60px -20px hsl(19 86% 40% / 0.25);
 
     /* Transitions */
     --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
     --transition-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-    /* Sidebar — dark #62D141 family */
-    --sidebar-background: 106 45% 18%;
+    /* Sidebar — near-black navy #1a1a2e */
+    --sidebar-background: 240 28% 14%;
     --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 106 55% 52%;
+    --sidebar-primary: 19 86% 40%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 106 45% 26%;
+    --sidebar-accent: 240 20% 22%;
     --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 106 40% 24%;
-    --sidebar-ring: 106 55% 52%;
+    --sidebar-border: 240 15% 22%;
+    --sidebar-ring: 19 86% 40%;
+
+    /* Dashboard surfaces */
+    --dash-bg: 36 22% 93%;
+    --dash-sidebar: 240 28% 14%;
+    --dash-sidebar-foreground: 0 0% 96%;
+    --dash-sidebar-muted: 240 10% 62%;
   }
 }
 
@@ -106,8 +116,8 @@
   }
   .glass-card-hover:hover {
     transform: translateY(-6px);
-    border-color: hsl(var(--primary) / 0.6);
-    box-shadow: 0 16px 40px -12px hsl(106 55% 52% / 0.18), 0 2px 8px hsl(120 5% 28% / 0.06);
+    border-color: hsl(var(--primary) / 0.5);
+    box-shadow: 0 16px 40px -12px hsl(19 86% 40% / 0.18), 0 2px 8px hsl(0 0% 0% / 0.06);
   }
 
   .text-gradient-gold {
@@ -127,8 +137,8 @@
 
   .grid-bg {
     background-image:
-      linear-gradient(hsl(106 61% 54% / 0.08) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(106 61% 54% / 0.08) 1px, transparent 1px);
+      linear-gradient(hsl(19 86% 40% / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(19 86% 40% / 0.05) 1px, transparent 1px);
     background-size: 60px 60px;
     mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
     -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
@@ -137,11 +147,42 @@
   .hero-bg {
     background: var(--gradient-hero);
   }
+
+  /* ── Dashboard "flux"-style surfaces ── */
+  .dash-bg {
+    background: hsl(var(--dash-bg));
+  }
+
+  .dash-card {
+    @apply bg-card rounded-2xl border border-border/60;
+    box-shadow: var(--shadow-card);
+  }
+
+  .dash-card-hover {
+    @apply dash-card transition-all duration-300;
+  }
+  .dash-card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 32px -12px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .dash-card-dark {
+    @apply rounded-2xl text-white;
+    background: hsl(var(--dash-sidebar));
+  }
+
+  .dash-pill {
+    @apply inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/15 text-primary;
+  }
+
+  .dash-sidebar-bg {
+    background: hsl(var(--dash-sidebar));
+  }
 }
 
-/* Daily-task alarm: a gentle pulsing ring that doesn't fade the content. */
+/* Daily-task alarm */
 @keyframes pulse-slow {
-  0%, 100% { box-shadow: 0 0 0 0 hsl(45 93% 47% / 0); }
-  50%      { box-shadow: 0 0 0 4px hsl(45 93% 47% / 0.18); }
+  0%, 100% { box-shadow: 0 0 0 0 hsl(19 86% 40% / 0); }
+  50%       { box-shadow: 0 0 0 4px hsl(19 86% 40% / 0.18); }
 }
 .animate-pulse-slow { animation: pulse-slow 2.5s ease-in-out infinite; }
