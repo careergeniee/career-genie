@@ -4,6 +4,7 @@ import { HeroShowcase } from "@/components/home/HeroShowcase";
 import BlurText from "@/components/BlurText";
 import LineWaves from "@/components/LineWaves";
 import BorderGlow from "@/components/BorderGlow";
+import TextType from "@/components/TextType";
 import { ArrowRight } from "lucide-react";
 
 const Index = () => {
@@ -60,10 +61,19 @@ const Index = () => {
                 />
                 <BlurText text="with confidence." animateBy="words" direction="top" delay={150} />
               </div>
-              <p className="text-muted-foreground max-w-md mb-10 text-[15px] leading-relaxed">
-                The definitive platform for ambitious Pakistani Computer Science
-                students — map careers, master skills, land top-tier tech roles.
-              </p>
+              <TextType
+                as="p"
+                text="The definitive platform for ambitious Pakistani Computer Science students — map careers, master skills, land top-tier tech roles."
+                className="text-muted-foreground max-w-md mb-10 text-[15px] leading-relaxed"
+                typingSpeed={18}
+                initialDelay={600}
+                loop={false}
+                showCursor={true}
+                hideCursorWhileTyping={false}
+                cursorCharacter="|"
+                cursorClassName="text-primary"
+                startOnVisible={true}
+              />
               <div className="flex flex-wrap items-center gap-4">
                 <Button asChild size="lg"
                   className="rounded-[10px] px-8 h-14 text-[16px] font-semibold bg-primary text-primary-foreground shadow-[0_4px_14px_hsl(19_86%_40%_/_0.35)] hover:brightness-90">
