@@ -12,7 +12,6 @@ import { totalProgress, phaseProgress } from "@/lib/roadmap";
 import type { Roadmap } from "@/lib/roadmap";
 import type { InterviewSession } from "@/lib/interview";
 import { BarTrend } from "@/components/dashboard/BarTrend";
-import Strands from "@/components/Strands";
 
 const services = [
     { label: "Career Assessment", path: "/dashboard/assessment", icon: ClipboardList, active: true, desc: "Discover your best-fit careers" },
@@ -195,28 +194,8 @@ const DashboardHome = () => {
 
                 {/* ── TOOLS GRID ── */}
                 <h2 className="font-display text-xl font-bold mb-5 tracking-tight">Your Tools</h2>
-                <div className="relative mb-10">
-                    {/* Animated strand background, tinted in the site's burnt-sienna palette */}
-                    <div className="absolute -inset-6 pointer-events-none overflow-hidden">
-                        <Strands
-                            colors={["#c1440e", "#a83d12", "#5c1c00"]}
-                            count={3}
-                            speed={0.4}
-                            amplitude={0.8}
-                            waviness={1}
-                            thickness={0.5}
-                            glow={1.2}
-                            taper={3}
-                            spread={1}
-                            intensity={0.4}
-                            saturation={1.1}
-                            opacity={0.35}
-                            scale={1.5}
-                            glass={false}
-                        />
-                    </div>
-                    <div className="relative grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {services.map((s, i) => (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
+                    {services.map((s, i) => (
                         <Link
                             key={s.path}
                             to={s.active ? s.path : "#"}
@@ -234,8 +213,7 @@ const DashboardHome = () => {
                                 </div>
                             )}
                         </Link>
-                        ))}
-                    </div>
+                    ))}
                 </div>
 
                 {/* ── ASSESSMENT CTA ── */}
