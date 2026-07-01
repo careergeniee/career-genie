@@ -77,34 +77,38 @@ const Login = () => {
           <Link to="/" className="font-display font-bold text-2xl text-white">CareerGenie</Link>
         </div>
 
-        <div className="relative z-10">
-          <TextType
-            as="h1"
-            text={"The only platform\nbuilt for the\nPakistani CS student."}
-            className="font-display font-bold text-white leading-[1.1] tracking-[-0.03em] mb-5"
-            style={{ fontSize: "clamp(32px, 3.5vw, 48px)" }}
-            typingSpeed={40}
-            initialDelay={200}
-            loop={false}
-            showCursor={true}
-            hideCursorWhileTyping={false}
-            cursorCharacter="|"
-            cursorClassName="text-white/70"
-            startOnVisible={false}
-          />
-          <TextType
-            as="p"
-            text="Bridging the gap between academic theory and industry reality. Join the community shaping the future of tech."
-            className="text-white/80 text-[15px] leading-relaxed max-w-sm"
-            typingSpeed={15}
-            initialDelay={2400}
-            loop={false}
-            showCursor={true}
-            hideCursorWhileTyping={false}
-            cursorCharacter="|"
-            cursorClassName="text-white/50"
-            startOnVisible={false}
-          />
+        <div className="relative z-10 space-y-4">
+          <div className="rounded-2xl bg-white/10 backdrop-blur-sm border border-white/15 p-6">
+            <TextType
+              as="h1"
+              text={"The only platform\nbuilt for the\nPakistani CS student."}
+              className="font-display font-bold text-white leading-[1.1] tracking-[-0.03em]"
+              style={{ fontSize: "clamp(28px, 3vw, 44px)" }}
+              typingSpeed={40}
+              initialDelay={200}
+              loop={false}
+              showCursor={true}
+              hideCursorWhileTyping={false}
+              cursorCharacter="|"
+              cursorClassName="text-white/70"
+              startOnVisible={false}
+            />
+          </div>
+          <div className="rounded-2xl bg-white/10 backdrop-blur-sm border border-white/15 p-6 max-w-sm">
+            <TextType
+              as="p"
+              text="Bridging the gap between academic theory and industry reality. Join the community shaping the future of tech."
+              className="text-white/80 text-[15px] leading-relaxed"
+              typingSpeed={15}
+              initialDelay={2400}
+              loop={false}
+              showCursor={true}
+              hideCursorWhileTyping={false}
+              cursorCharacter="|"
+              cursorClassName="text-white/50"
+              startOnVisible={false}
+            />
+          </div>
         </div>
       </div>
 
