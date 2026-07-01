@@ -1,5 +1,6 @@
 @import '@fontsource-variable/inter';
 @import '@fontsource-variable/space-grotesk';
+@import '@fontsource-variable/plus-jakarta-sans';
 
 @tailwind base;
 @tailwind components;
@@ -43,8 +44,8 @@
     --input: 36 15% 90%;
     --ring: 19 86% 40%;
 
-    /* 10px radius — structured, not bubbly */
-    --radius: 0.625rem;
+    /* Roundness scale — Small 4px / Medium 8px / Large 16px / Very Large 48px */
+    --radius: 0.5rem;
 
     /* Gradients */
     --gradient-hero: linear-gradient(180deg, hsl(36 29% 97%), hsl(36 22% 94%));
@@ -92,12 +93,12 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Plus Jakarta Sans Variable', 'Inter', system-ui, sans-serif;
     background: hsl(var(--background));
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-family: 'Plus Jakarta Sans Variable', 'Space Grotesk', 'Inter', sans-serif;
     @apply tracking-tight;
   }
 }
