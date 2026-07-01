@@ -3,7 +3,7 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
     Bot, FileText, MessageSquare, Map, GraduationCap,
     LogOut, Settings, ChevronLeft, ChevronRight,
-    LayoutDashboard, ClipboardList, Target, Menu, X, Flame, Sparkles
+    LayoutDashboard, ClipboardList, Target, Menu, X, Flame
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import genieLogo from "@/assets/genie-logo.png";
@@ -134,40 +134,23 @@ export const DashboardLayout = () => {
                     })}
                 </nav>
 
-                {/* Streak / motivation widget */}
-                {!collapsed && (
+                {/* Streak widget — only shown when user has an active streak */}
+                {!collapsed && roadmap && streak > 0 && (
                     <div className="px-3 pb-3">
-                        {roadmap && streak > 0 ? (
-                            <div className="rounded-2xl bg-primary p-4 text-primary-foreground">
-                                <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-3">
-                                    <Flame className="w-5 h-5" />
-                                </div>
-                                <p className="font-display font-bold text-2xl leading-none mb-1">{streak}-day streak</p>
-                                <p className="text-xs text-primary-foreground/80 mb-3">Keep showing up on your roadmap.</p>
-                                <NavLink
-                                    to="/dashboard/roadmap"
-                                    onClick={() => setMobileOpen(false)}
-                                    className="inline-flex items-center gap-1.5 text-xs font-semibold bg-black/15 hover:bg-black/25 transition-colors px-3 py-2 rounded-lg"
-                                >
-                                    View roadmap <ChevronRight className="w-3 h-3" />
-                                </NavLink>
+                        <div className="rounded-2xl bg-primary p-4 text-primary-foreground">
+                            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-3">
+                                <Flame className="w-5 h-5" />
                             </div>
-                        ) : (
-                            <div className="rounded-2xl bg-primary p-4 text-primary-foreground">
-                                <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-3">
-                                    <Sparkles className="w-5 h-5" />
-                                </div>
-                                <p className="font-display font-bold text-sm leading-snug mb-1">Start your journey</p>
-                                <p className="text-xs text-primary-foreground/80 mb-3">Take the career assessment to get matched.</p>
-                                <NavLink
-                                    to="/dashboard/assessment"
-                                    onClick={() => setMobileOpen(false)}
-                                    className="inline-flex items-center gap-1.5 text-xs font-semibold bg-black/15 hover:bg-black/25 transition-colors px-3 py-2 rounded-lg"
-                                >
-                                    Get started <ChevronRight className="w-3 h-3" />
-                                </NavLink>
-                            </div>
-                        )}
+                            <p className="font-display font-bold text-2xl leading-none mb-1">{streak}-day streak</p>
+                            <p className="text-xs text-primary-foreground/80 mb-3">Keep showing up on your roadmap.</p>
+                            <NavLink
+                                to="/dashboard/roadmap"
+                                onClick={() => setMobileOpen(false)}
+                                className="inline-flex items-center gap-1.5 text-xs font-semibold bg-black/15 hover:bg-black/25 transition-colors px-3 py-2 rounded-lg"
+                            >
+                                View roadmap <ChevronRight className="w-3 h-3" />
+                            </NavLink>
+                        </div>
                     </div>
                 )}
 
