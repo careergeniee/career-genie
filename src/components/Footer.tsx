@@ -17,10 +17,10 @@ export const Footer = () => {
         <div>
           <h3 className="font-semibold mb-4 text-sm">Product</h3>
           <ul className="space-y-2.5 text-sm text-muted-foreground">
-            <li><Link to="/services/ai-chatbot" className="hover:text-primary">AI Chatbot</Link></li>
-            <li><Link to="/services/resume-builder" className="hover:text-primary">Resume Builder</Link></li>
-            <li><Link to="/services/interview-prep" className="hover:text-primary">Interview Prep</Link></li>
-            <li><Link to="/services/roadmap" className="hover:text-primary">Roadmaps</Link></li>
+            <li><Link to="/" className="hover:text-primary">AI Chatbot</Link></li>
+            <li><Link to="/" className="hover:text-primary">Resume Builder</Link></li>
+            <li><Link to="/" className="hover:text-primary">Interview Prep</Link></li>
+            <li><Link to="/" className="hover:text-primary">Roadmaps</Link></li>
           </ul>
         </div>
         <div>
@@ -28,7 +28,6 @@ export const Footer = () => {
           <ul className="space-y-2.5 text-sm text-muted-foreground">
             <li><Link to="/about" className="hover:text-primary">About Us</Link></li>
             <li><Link to="/contact" className="hover:text-primary">Contact</Link></li>
-            <li><Link to="/services" className="hover:text-primary">All Services</Link></li>
             <li><Link to="/login" className="hover:text-primary">Login</Link></li>
           </ul>
         </div>

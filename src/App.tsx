@@ -13,8 +13,6 @@ const DashboardLayout = lazy(() =>
 );
 
 const Index = lazy(() => import("./pages/Index"));
-const Services = lazy(() => import("./pages/Services"));
-const ServiceDetail = lazy(() => import("./pages/ServiceDetail"));
 const About = lazy(() => import("./pages/About"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Login = lazy(() => import("./pages/Login"));
@@ -64,8 +62,6 @@ const App = () => (
               {/* Public routes */}
               <Route element={<Layout />}>
                 <Route path="/" element={<Index />} />
-                <Route path="/services" element={<Services />} />
-                <Route path="/services/:slug" element={<ServiceDetail />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
               </Route>
