@@ -49,7 +49,7 @@ export const DashboardLayout = () => {
         <div className="min-h-screen flex relative">
             {/* Ambient animated background, tinted in the site's burnt-sienna palette —
                 shared across the whole dashboard shell so every module sits on top of it. */}
-            <div className="fixed inset-0 -z-10 opacity-[0.08] pointer-events-none">
+            <div className="fixed inset-0 -z-10 opacity-40 pointer-events-none">
                 <Iridescence color={[0.7569, 0.2667, 0.0549]} speed={0.4} amplitude={0.1} mouseReact={false} />
             </div>
 
