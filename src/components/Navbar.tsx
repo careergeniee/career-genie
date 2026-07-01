@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
@@ -7,14 +7,6 @@ import { cn } from "@/lib/utils";
 
 export const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 0);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -23,7 +15,7 @@ export const Navbar = () => {
   ];
 
   return (
-    <header className={cn("fixed top-0 inset-x-0 z-50 transition-[backdrop-filter] duration-300", !scrolled && "backdrop-blur-md")}>
+    <header className="fixed top-0 inset-x-0 z-50">
       <nav className="container relative flex items-center justify-between h-[72px] py-3">
         <Link to="/" className="flex items-center gap-1 group">
           <div className="relative">
