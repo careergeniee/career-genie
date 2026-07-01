@@ -6,6 +6,7 @@ import LineWaves from "@/components/LineWaves";
 import BorderGlow from "@/components/BorderGlow";
 import TextType from "@/components/TextType";
 import AnimatedContent from "@/components/AnimatedContent";
+import FadeContent from "@/components/FadeContent";
 import { ArrowRight } from "lucide-react";
 
 const Index = () => {
@@ -157,13 +158,13 @@ const Index = () => {
           >
             Build your future<br />in Pakistan.
           </h2>
-          <div className="flex flex-col items-start gap-3 shrink-0">
+          <FadeContent blur duration={1000} ease="power2.out" className="flex flex-col items-start gap-3 shrink-0">
             <Button asChild size="lg"
               className="rounded-[10px] px-8 h-14 text-[16px] font-semibold bg-primary text-primary-foreground shadow-[0_4px_14px_hsl(19_86%_40%_/_0.3)] hover:brightness-90">
               <Link to="/signup">Join CareerGenie <ArrowRight className="w-5 h-5" /></Link>
             </Button>
             <p className="text-background/35 text-[11px] uppercase tracking-[0.08em]">Free forever · No credit card</p>
-          </div>
+          </FadeContent>
         </div>
       </section>
 
