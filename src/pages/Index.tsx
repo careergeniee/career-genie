@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { HeroShowcase } from "@/components/home/HeroShowcase";
+import BlurText from "@/components/BlurText";
 import { ArrowRight } from "lucide-react";
 
 const Index = () => {
@@ -13,14 +14,22 @@ const Index = () => {
 
           {/* Headline + CTA */}
           <div>
-            <h1
+            <div
+              role="heading"
+              aria-level={1}
               className="font-display font-bold leading-[1.0] tracking-[-0.04em] mb-8"
               style={{ fontSize: "clamp(48px, 7.5vw, 92px)" }}
             >
-              Navigate<br />
-              your CS <span className="text-primary">Path</span><br />
-              with confidence.
-            </h1>
+              <BlurText text="Navigate" animateBy="words" direction="top" delay={150} />
+              <BlurText
+                text="your Path"
+                animateBy="words"
+                direction="top"
+                delay={150}
+                className="[&>span:last-child]:text-primary"
+              />
+              <BlurText text="with confidence." animateBy="words" direction="top" delay={150} />
+            </div>
             <p className="text-muted-foreground max-w-md mb-10 text-[15px] leading-relaxed">
               The definitive platform for ambitious Pakistani Computer Science
               students — map careers, master skills, land top-tier tech roles.
