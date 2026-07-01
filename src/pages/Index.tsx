@@ -31,10 +31,10 @@ const Index = () => {
             rotation={-45}
             edgeFadeWidth={0.15}
             colorCycleSpeed={0.4}
-            brightness={0.22}
+            brightness={0.14}
             color1="#c1440e"
-            color2="#e8703a"
-            color3="#7a2500"
+            color2="#a83d12"
+            color3="#5c1c00"
             enableMouseInteraction={true}
             mouseInfluence={1.5}
           />
