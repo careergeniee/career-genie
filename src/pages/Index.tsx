@@ -14,7 +14,9 @@ const Index = () => {
     <div className="bg-background text-foreground">
 
       {/* ── HERO + TOOLKIT — share one fading line-wave background ── */}
-      <div className="relative overflow-hidden">
+      {/* Pulled up to fill the space reserved for the floating navbar, so the wave
+          pattern shows through behind it instead of leaving a flat gap up top. */}
+      <div className="relative overflow-hidden -mt-[104px] pt-[104px]">
         {/* Animated line-wave background, tinted in the site's burnt-sienna palette.
             Spans past the hero and fades out through the toolkit section instead of cutting off abruptly. */}
         <div
