@@ -151,7 +151,7 @@ const ChatPage = () => {
                         <h2 className="font-display font-bold">AI Career Mentor</h2>
                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                             <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                            Online · Powered by Llama 3.3
+                            Online
                         </div>
                     </div>
                 </div>

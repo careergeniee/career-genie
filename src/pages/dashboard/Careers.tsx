@@ -118,13 +118,6 @@ const CareersPage = () => {
                 {/* Header */}
                 <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
                     <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-card text-xs font-medium mb-4">
-                            {prediction.source === "ml-api" ? (
-                                <><Cpu className="w-3.5 h-3.5 text-primary" /><span className="text-muted-foreground">{prediction.algorithm} model</span></>
-                            ) : (
-                                <><WifiOff className="w-3.5 h-3.5 text-primary" /><span className="text-muted-foreground">Offline scorer</span></>
-                            )}
-                        </div>
                         <h1 className="font-display text-3xl md:text-4xl font-bold mb-1">
                             Your <span className="text-gradient-gold">career matches</span>
                         </h1>
