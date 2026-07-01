@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { HeroShowcase } from "@/components/home/HeroShowcase";
 import BlurText from "@/components/BlurText";
 import LineWaves from "@/components/LineWaves";
+import BorderGlow from "@/components/BorderGlow";
 import { ArrowRight } from "lucide-react";
 
 const Index = () => {
@@ -88,9 +89,9 @@ const Index = () => {
         </section>
       </div>
 
-      {/* ── HOW IT WORKS — divided columns ── */}
+      {/* ── HOW IT WORKS — glowing step cards ── */}
       <section className="max-w-[1200px] mx-auto px-8 pt-16 pb-20 mt-8 border-t border-border">
-        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-16">
           {[
             {
               n: "01", title: "Assess",
@@ -105,19 +106,29 @@ const Index = () => {
               desc: "Follow curated roadmaps, practice with AI, and engage with mentors to bridge the gap to your dream role.",
             },
           ].map((s) => (
-            <div key={s.n} className="relative pt-20 py-10 md:px-10 first:pl-0 last:pr-0">
-              {/* Giant ghost number */}
-              <div
-                className="absolute top-4 left-0 md:left-10 first:left-0 font-display font-bold leading-none select-none"
-                style={{ fontSize: 100, color: "hsl(var(--border))", opacity: 0.7 }}
-              >
-                {s.n}
+            <BorderGlow
+              key={s.n}
+              backgroundColor="#FFFFFF"
+              borderRadius={16}
+              glowColor="19 86 40"
+              glowRadius={30}
+              coneSpread={30}
+              colors={["#c1440e", "#e8703a", "#7a2500"]}
+            >
+              <div className="relative p-8">
+                {/* Giant ghost number */}
+                <div
+                  className="absolute top-4 right-6 font-display font-bold leading-none select-none"
+                  style={{ fontSize: 90, color: "hsl(var(--border))", opacity: 0.7 }}
+                >
+                  {s.n}
+                </div>
+                <div className="relative pt-8">
+                  <h3 className="font-display text-2xl font-bold mb-3">{s.title}</h3>
+                  <p className="text-muted-foreground text-[15px] leading-relaxed">{s.desc}</p>
+                </div>
               </div>
-              <div className="relative">
-                <h3 className="font-display text-2xl font-bold mb-3">{s.title}</h3>
-                <p className="text-muted-foreground text-[15px] leading-relaxed">{s.desc}</p>
-              </div>
-            </div>
+            </BorderGlow>
           ))}
         </div>
       </section>
