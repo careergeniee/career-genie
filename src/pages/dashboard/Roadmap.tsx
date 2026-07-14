@@ -35,7 +35,7 @@ const RoadmapPage = () => {
             else setCustomGoal(seed.goal);
         }
         if (seed?.skills) setSkills(seed.skills);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [location.state]);
 
     useEffect(() => {

@@ -104,7 +104,7 @@ const ChatPage = () => {
             });
             const reply = completion.choices[0]?.message?.content || "I couldn't generate a response. Try again!";
             setMessages((prev) => [...prev, { sender: "genie", text: reply, time: getTime() }]);
-        } catch (err: any) {
+        } catch (err) {
             const status = err?.status ?? err?.response?.status;
             const message = status === 429
                 ? "You're sending messages a bit too fast — please wait a moment and try again."

@@ -51,7 +51,7 @@ const Login = () => {
       await login(email, password);
       toast.success("Welcome back!");
       navigate("/dashboard");
-    } catch (err: any) {
+    } catch (err) {
       toast.error(getAuthErrorMessage(err, err.message || "Login failed. Check your credentials."));
     } finally {
       setLoading(false);

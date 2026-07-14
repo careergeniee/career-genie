@@ -74,7 +74,7 @@ export const ResumeForm = ({
     ) =>
         setData((d) => ({
             ...d,
-            [list]: (d[list] as Array<{ id: string } & Record<string, string>>).map((it) =>
+            [list]: (d[list] as unknown as Array<{ id: string } & Record<string, string>>).map((it) =>
                 it.id === id ? { ...it, [field]: value } : it
             ),
         }));

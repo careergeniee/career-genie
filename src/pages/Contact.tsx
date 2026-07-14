@@ -37,7 +37,7 @@ const Contact = () => {
         message: form.message.trim(),
         createdAt: serverTimestamp(),
       }).catch(() => {});
-    } catch (err: any) {
+    } catch (err) {
       console.error("EmailJS error:", err);
       toast.error("Failed to send message. Please try again.");
     } finally {

@@ -43,7 +43,7 @@ const Signup = () => {
         try {
             await signup(email, password);
             setDone(true);
-        } catch (err: any) {
+        } catch (err) {
             toast.error(getAuthErrorMessage(err, err.message || "Signup failed. Try again."));
         } finally {
             setLoading(false);
