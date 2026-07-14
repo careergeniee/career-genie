@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Send, Plus, Mic, MicOff, Loader2, Reply, X, Copy, Trash2, MoreVertical } from "lucide-react";
+import { Send, Plus, Mic, MicOff, Loader2, Reply, X, Copy, Trash2, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -271,7 +271,7 @@ const ChatPage = () => {
                                 else messageElsRef.current.delete(msg.id);
                             }}
                             className={cn(
-                                "group flex items-end gap-2 -mx-2 px-2 py-1 rounded-2xl transition-colors duration-500",
+                                "flex items-end gap-2 -mx-2 px-2 py-1 rounded-2xl transition-colors duration-500",
                                 msg.sender === "user" && "flex-row-reverse",
                                 highlightedId === msg.id && "bg-primary/10"
                             )}
@@ -285,46 +285,6 @@ const ChatPage = () => {
                                 {msg.sender === "genie" ? <img src={genieLogo} alt="Genie" className="w-5 h-5 object-contain" /> : initials}
                             </div>
 
-                            <DropdownMenu
-                                open={activeMenuId === msg.id}
-                                onOpenChange={(open) => setActiveMenuId(open ? msg.id : null)}
-                            >
-                                <DropdownMenuTrigger asChild>
-                                    <button
-                                        type="button"
-                                        title="Message options"
-                                        className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground opacity-40 hover:opacity-100 hover:bg-secondary hover:text-foreground md:opacity-0 md:group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity"
-                                    >
-                                        <MoreVertical className="w-3.5 h-3.5" />
-                                    </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent
-                                    align={msg.sender === "user" ? "end" : "start"}
-                                    className="w-52 rounded-2xl border-border/60 bg-popover/95 backdrop-blur-sm p-0 overflow-hidden shadow-xl"
-                                >
-                                    <DropdownMenuItem
-                                        onSelect={() => replyFromMenu(msg)}
-                                        className="flex items-center justify-between gap-3 rounded-none px-4 py-3 text-sm cursor-pointer focus:bg-secondary"
-                                    >
-                                        Reply <Reply className="w-4 h-4 shrink-0" />
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator className="mx-0 my-0" />
-                                    <DropdownMenuItem
-                                        onSelect={() => copyMessage(msg.text)}
-                                        className="flex items-center justify-between gap-3 rounded-none px-4 py-3 text-sm cursor-pointer focus:bg-secondary"
-                                    >
-                                        Copy <Copy className="w-4 h-4 shrink-0" />
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator className="mx-0 my-0" />
-                                    <DropdownMenuItem
-                                        onSelect={() => deleteMessage(msg.id)}
-                                        className="flex items-center justify-between gap-3 rounded-none px-4 py-3 text-sm cursor-pointer text-red-500 focus:text-red-500 focus:bg-red-500/10"
-                                    >
-                                        Delete <Trash2 className="w-4 h-4 shrink-0" />
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-
                             <div
                                 onPointerDown={handleBubblePointerDown(msg.id)}
                                 onPointerMove={handleBubblePointerMove}
@@ -333,11 +293,56 @@ const ChatPage = () => {
                                 onPointerLeave={clearLongPress}
                                 onContextMenu={handleBubbleContextMenu(msg.id)}
                                 className={cn(
-                                "max-w-[70%] rounded-2xl px-4 py-3 text-sm leading-relaxed select-none sm:select-text",
+                                "group/bubble relative max-w-[70%] rounded-2xl pl-4 pr-6 py-3 text-sm leading-relaxed select-none sm:select-text",
                                 msg.sender === "genie"
                                     ? "bg-card border border-border/60 rounded-bl-sm text-foreground"
                                     : "bg-primary text-primary-foreground rounded-br-sm"
                             )}>
+                                <DropdownMenu
+                                    open={activeMenuId === msg.id}
+                                    onOpenChange={(open) => setActiveMenuId(open ? msg.id : null)}
+                                >
+                                    <DropdownMenuTrigger asChild>
+                                        <button
+                                            type="button"
+                                            title="Message options"
+                                            className={cn(
+                                                "absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover/bubble:opacity-100 data-[state=open]:opacity-100 transition-opacity",
+                                                msg.sender === "genie"
+                                                    ? "text-muted-foreground hover:bg-secondary"
+                                                    : "text-primary-foreground/80 hover:bg-primary-foreground/20"
+                                            )}
+                                        >
+                                            <ChevronDown className="w-3.5 h-3.5" />
+                                        </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent
+                                        align="end"
+                                        className="w-52 rounded-2xl border-border/60 bg-popover/95 backdrop-blur-sm p-0 overflow-hidden shadow-xl"
+                                    >
+                                        <DropdownMenuItem
+                                            onSelect={() => replyFromMenu(msg)}
+                                            className="flex items-center justify-between gap-3 rounded-none px-4 py-3 text-sm cursor-pointer focus:bg-secondary"
+                                        >
+                                            Reply <Reply className="w-4 h-4 shrink-0" />
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator className="mx-0 my-0" />
+                                        <DropdownMenuItem
+                                            onSelect={() => copyMessage(msg.text)}
+                                            className="flex items-center justify-between gap-3 rounded-none px-4 py-3 text-sm cursor-pointer focus:bg-secondary"
+                                        >
+                                            Copy <Copy className="w-4 h-4 shrink-0" />
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator className="mx-0 my-0" />
+                                        <DropdownMenuItem
+                                            onSelect={() => deleteMessage(msg.id)}
+                                            className="flex items-center justify-between gap-3 rounded-none px-4 py-3 text-sm cursor-pointer text-red-500 focus:text-red-500 focus:bg-red-500/10"
+                                        >
+                                            Delete <Trash2 className="w-4 h-4 shrink-0" />
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+
                                 {msg.replyTo && (
                                     <button
                                         type="button"
