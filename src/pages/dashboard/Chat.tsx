@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Send, Plus, Mic, MicOff, Loader2 } from "lucide-react";
+import { Send, Plus, Mic, MicOff, Loader2, Reply, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,19 +8,31 @@ import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { loadData, saveData, removeData, KEYS } from "@/lib/userStore";
 import genieLogo from "@/assets/genie-logo3.png";
 
+interface ReplySnippet {
+    id: string;
+    sender: "user" | "genie";
+    text: string;
+}
+
 interface Message {
+    id: string;
     sender: "user" | "genie";
     text: string;
     time: string;
+    replyTo?: ReplySnippet;
 }
 
 const MAX_INPUT_LENGTH = 2000;
+const REPLY_SNIPPET_LENGTH = 200;
+
+const genId = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
 
 const getTime = () =>
     new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
 const defaultMessages = (): Message[] => [
     {
+        id: genId(),
         sender: "genie",
         text: "Hello! I'm Career Genie, your AI career mentor. Ask me anything about career paths, skills, resume tips, or interview prep. I'm specialized in the Pakistani job market! 🚀",
         time: getTime(),
@@ -47,11 +59,18 @@ Keep responses concise, friendly, and actionable.`;
 
 const ChatPage = () => {
     const { user } = useAuth();
-    const [messages, setMessages] = useState<Message[]>(() => loadData<Message[]>(KEYS.chat, defaultMessages()));
+    const [messages, setMessages] = useState<Message[]>(() => {
+        const loaded = loadData<Message[]>(KEYS.chat, defaultMessages());
+        // Backfills ids for chats saved before the reply feature existed.
+        return loaded.map((m) => (m.id ? m : { ...m, id: genId() }));
+    });
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
+    const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+    const [highlightedId, setHighlightedId] = useState<string | null>(null);
     const bottomRef = useRef<HTMLDivElement>(null);
     const messagesRef = useRef(messages);
+    const messageElsRef = useRef<Map<string, HTMLDivElement>>(new Map());
     useEffect(() => { messagesRef.current = messages; }, [messages]);
 
     useEffect(() => {
@@ -69,11 +88,13 @@ const ChatPage = () => {
                 label: "Yes, clear",
                 onClick: () => {
                     const reset: Message[] = [{
+                        id: genId(),
                         sender: "genie",
                         text: "Fresh start! What career goal would you like to work on today?",
                         time: getTime(),
                     }];
                     setMessages(reset);
+                    setReplyingTo(null);
                     removeData(KEYS.chat);
                 },
             },
@@ -81,44 +102,63 @@ const ChatPage = () => {
         });
     };
 
-    const doSend = useCallback(async (text: string) => {
+    const cancelReply = () => setReplyingTo(null);
+
+    const scrollToMessage = (id: string) => {
+        const el = messageElsRef.current.get(id);
+        if (!el) return;
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        setHighlightedId(id);
+        window.setTimeout(() => setHighlightedId((cur) => (cur === id ? null : cur)), 1500);
+    };
+
+    const doSend = useCallback(async (text: string, replyTarget?: Message | null) => {
         if (!text.trim() || isTyping) return;
         const userText = text.trim().slice(0, MAX_INPUT_LENGTH);
-        setMessages((prev) => [...prev, { sender: "user", text: userText, time: getTime() }]);
+        const replySnippet: ReplySnippet | undefined = replyTarget
+            ? { id: replyTarget.id, sender: replyTarget.sender, text: replyTarget.text.slice(0, REPLY_SNIPPET_LENGTH) }
+            : undefined;
+        setMessages((prev) => [...prev, { id: genId(), sender: "user", text: userText, time: getTime(), replyTo: replySnippet }]);
         setInput("");
+        setReplyingTo(null);
         setIsTyping(true);
         try {
             const history = messagesRef.current.slice(-10).map((m) => ({
                 role: m.sender === "user" ? "user" as const : "assistant" as const,
                 content: m.text.slice(0, MAX_INPUT_LENGTH),
             }));
+            // Anchors the model's reply to the quoted message instead of just the trailing history,
+            // so it stays on-topic even if the conversation has moved on since then.
+            const promptContent = replySnippet
+                ? `(Replying to this earlier ${replySnippet.sender === "genie" ? "response of yours" : "message of mine"}: "${replySnippet.text}")\n\n${userText}`
+                : userText;
             const completion = await groq.chat.completions.create({
                 model: "llama-3.3-70b-versatile",
                 messages: [
                     { role: "system", content: SYSTEM_PROMPT },
                     ...history,
-                    { role: "user", content: userText },
+                    { role: "user", content: promptContent },
                 ],
                 max_tokens: 1024,
                 temperature: 0.4,
             });
             const reply = completion.choices[0]?.message?.content || "I couldn't generate a response. Try again!";
-            setMessages((prev) => [...prev, { sender: "genie", text: reply, time: getTime() }]);
+            setMessages((prev) => [...prev, { id: genId(), sender: "genie", text: reply, time: getTime() }]);
         } catch (err) {
             const status = err?.status ?? err?.response?.status;
             const message = status === 429
                 ? "You're sending messages a bit too fast — please wait a moment and try again."
                 : "Sorry, I couldn't connect right now. Please try again in a moment.";
-            setMessages((prev) => [...prev, { sender: "genie", text: message, time: getTime() }]);
+            setMessages((prev) => [...prev, { id: genId(), sender: "genie", text: message, time: getTime() }]);
         } finally {
             setIsTyping(false);
         }
     }, [isTyping]);
 
-    const sendMessage = (e: React.FormEvent) => { e.preventDefault(); doSend(input); };
+    const sendMessage = (e: React.FormEvent) => { e.preventDefault(); doSend(input, replyingTo); };
 
     // Voice — auto-sends after transcription; press-and-hold on mobile
-    const onTranscript = useCallback((text: string) => { doSend(text); }, [doSend]);
+    const onTranscript = useCallback((text: string) => { doSend(text, replyingTo); }, [doSend, replyingTo]);
     const { recording, transcribing, toggle: toggleVoice, start: startVoice, stop: stopVoice } = useVoiceRecorder(onTranscript);
 
     const handleMicPointerDown = useCallback((e: React.PointerEvent) => {
@@ -166,8 +206,19 @@ const ChatPage = () => {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-6">
                 <div className="max-w-3xl mx-auto w-full space-y-6">
-                    {messages.map((msg, i) => (
-                        <div key={i} className={cn("flex items-end gap-3", msg.sender === "user" && "flex-row-reverse")}>
+                    {messages.map((msg) => (
+                        <div
+                            key={msg.id}
+                            ref={(el) => {
+                                if (el) messageElsRef.current.set(msg.id, el);
+                                else messageElsRef.current.delete(msg.id);
+                            }}
+                            className={cn(
+                                "group flex items-end gap-2 -mx-2 px-2 py-1 rounded-2xl transition-colors duration-500",
+                                msg.sender === "user" && "flex-row-reverse",
+                                highlightedId === msg.id && "bg-primary/10"
+                            )}
+                        >
                             <div className={cn(
                                 "w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold",
                                 msg.sender === "genie"
@@ -177,12 +228,36 @@ const ChatPage = () => {
                                 {msg.sender === "genie" ? <img src={genieLogo} alt="Genie" className="w-5 h-5 object-contain" /> : initials}
                             </div>
 
+                            <button
+                                type="button"
+                                onClick={() => setReplyingTo(msg)}
+                                title="Reply"
+                                className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground opacity-40 hover:opacity-100 hover:bg-secondary hover:text-foreground md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                            >
+                                <Reply className="w-3.5 h-3.5" />
+                            </button>
+
                             <div className={cn(
                                 "max-w-[70%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
                                 msg.sender === "genie"
                                     ? "bg-card border border-border/60 rounded-bl-sm text-foreground"
                                     : "bg-primary text-primary-foreground rounded-br-sm"
                             )}>
+                                {msg.replyTo && (
+                                    <button
+                                        type="button"
+                                        onClick={() => scrollToMessage(msg.replyTo!.id)}
+                                        className={cn(
+                                            "block w-full text-left mb-2 pl-2 py-1 border-l-2 rounded-sm opacity-80 hover:opacity-100 transition-opacity",
+                                            msg.sender === "genie" ? "border-primary/50" : "border-primary-foreground/50"
+                                        )}
+                                    >
+                                        <span className="block text-[11px] font-semibold">
+                                            {msg.replyTo.sender === "genie" ? "Career Genie" : "You"}
+                                        </span>
+                                        <span className="block text-xs truncate">{msg.replyTo.text}</span>
+                                    </button>
+                                )}
                                 <p className="whitespace-pre-wrap">{msg.text}</p>
                                 <p className={cn(
                                     "text-[10px] mt-1.5",
@@ -219,6 +294,24 @@ const ChatPage = () => {
 
             {/* Input */}
             <div className="shrink-0 px-4 pb-6 pt-3 border-t border-border/60 bg-card/20 backdrop-blur-sm">
+                {replyingTo && (
+                    <div className="max-w-3xl mx-auto mb-2 flex items-center gap-2 glass-card rounded-xl pl-3 pr-2 py-2 border-l-4 border-primary">
+                        <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-primary">
+                                Replying to {replyingTo.sender === "genie" ? "Career Genie" : "yourself"}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate">{replyingTo.text}</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={cancelReply}
+                            title="Cancel reply"
+                            className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                )}
                 <form
                     onSubmit={sendMessage}
                     className="max-w-3xl mx-auto flex items-center gap-3 glass-card rounded-2xl px-4 py-3"
