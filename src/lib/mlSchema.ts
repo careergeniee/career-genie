@@ -46,6 +46,16 @@ export const FEATURE_ORDER: FeatureKey[] = [...PERSONALITY, ...SKILLS];
 
 export const BASELINE = 0.10;
 
+/** Human-readable labels for personality traits — shared by Careers.tsx and Chat.tsx. */
+export const TRAIT_LABEL: Record<PersonalityKey, string> = {
+    leadership: "Leadership",
+    creativity: "Creativity",
+    communication: "Communication",
+    problem_solving: "Problem solving",
+    analytical: "Analytical thinking",
+    teamwork: "Teamwork",
+};
+
 /** Human-readable labels + grouping for the skill self-rating UI. */
 export const SKILL_META: Record<
     SkillKey,

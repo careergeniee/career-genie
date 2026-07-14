@@ -6,6 +6,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { groq } from "@/lib/groq";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { loadData, saveData, removeData, KEYS } from "@/lib/userStore";
+import { loadAssessment, loadPrediction, traitScore, analyzeSkillGap, strongSkillsText } from "@/lib/careerEngine";
+import { PERSONALITY, TRAIT_LABEL } from "@/lib/mlSchema";
+import type { Roadmap } from "@/lib/roadmap";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -65,6 +68,51 @@ If the user asks about ANYTHING outside these topics — such as general knowled
 
 Never break this rule, even if the user insists or rephrases the question. Stay focused on career guidance only.
 Keep responses concise, friendly, and actionable.`;
+
+/** Summarizes the user's assessment, prediction, resume, and roadmap so the AI can personalize advice. */
+const buildUserContext = (): string | null => {
+    const assessment = loadAssessment();
+    const prediction = loadPrediction();
+    const lines: string[] = [];
+
+    if (prediction) {
+        const topPct = Math.round((prediction.predictions[0]?.probability ?? 0) * 100);
+        lines.push(`Top predicted career: ${prediction.topCareer} (~${topPct}% match).`);
+        const others = prediction.predictions.slice(1, 3).map((p) => p.career);
+        if (others.length) lines.push(`Other strong-fit careers: ${others.join(", ")}.`);
+    }
+
+    if (assessment) {
+        const topTraits = PERSONALITY
+            .map((t) => ({ t, score: traitScore(t, assessment.personalityAnswers) }))
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 3)
+            .map((x) => TRAIT_LABEL[x.t]);
+        if (topTraits.length) lines.push(`Strongest personality traits: ${topTraits.join(", ")}.`);
+
+        const strongSkills = strongSkillsText(assessment.skillRatings);
+        if (strongSkills) lines.push(`Self-rated strong skills: ${strongSkills}.`);
+
+        if (prediction) {
+            const gaps = analyzeSkillGap(prediction.topCareer, assessment.skillRatings)
+                .filter((g) => g.status !== "strong")
+                .slice(0, 4)
+                .map((g) => g.label);
+            if (gaps.length) lines.push(`Skill gaps for their top career match (${prediction.topCareer}): ${gaps.join(", ")}.`);
+        }
+    }
+
+    const resumeRole = loadData<string>(KEYS.resumeRole, "");
+    if (resumeRole) lines.push(`Resume target role: ${resumeRole}.`);
+
+    const roadmap = loadData<Roadmap | null>(KEYS.roadmap, null);
+    if (roadmap?.goal) {
+        const allTasks = roadmap.phases.flatMap((p) => p.tasks);
+        lines.push(`Active learning roadmap: ${roadmap.goal} (${allTasks.filter((t) => t.done).length}/${allTasks.length} tasks completed).`);
+    }
+
+    return lines.length ? lines.join("\n") : null;
+};
 
 const ChatPage = () => {
     const { user } = useAuth();
@@ -189,10 +237,14 @@ const ChatPage = () => {
             const promptContent = replySnippet
                 ? `(Replying to this earlier ${replySnippet.sender === "genie" ? "response of yours" : "message of mine"}: "${replySnippet.text}")\n\n${userText}`
                 : userText;
+            const userContext = buildUserContext();
+            const systemContent = userContext
+                ? `${SYSTEM_PROMPT}\n\nContext about this specific user — use it to personalize your advice, but don't recite it back verbatim unless asked:\n${userContext}`
+                : SYSTEM_PROMPT;
             const completion = await groq.chat.completions.create({
                 model: "llama-3.3-70b-versatile",
                 messages: [
-                    { role: "system", content: SYSTEM_PROMPT },
+                    { role: "system", content: systemContent },
                     ...history,
                     { role: "user", content: promptContent },
                 ],

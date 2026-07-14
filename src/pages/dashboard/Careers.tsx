@@ -7,21 +7,12 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { aiText } from "@/lib/ai";
-import { PERSONALITY, type PersonalityKey } from "@/lib/mlSchema";
+import { PERSONALITY, TRAIT_LABEL } from "@/lib/mlSchema";
 import { CAREER_BLURB } from "@/lib/careerCatalog";
 import {
     loadPrediction, loadAssessment, analyzeSkillGap, traitScore,
     strongSkillsText, type SkillGapItem,
 } from "@/lib/careerEngine";
-
-const TRAIT_LABEL: Record<PersonalityKey, string> = {
-    leadership: "Leadership",
-    creativity: "Creativity",
-    communication: "Communication",
-    problem_solving: "Problem solving",
-    analytical: "Analytical thinking",
-    teamwork: "Teamwork",
-};
 
 const STATUS_STYLE = {
     strong: { icon: CheckCircle2, cls: "text-emerald-400 border-emerald-400/30 bg-emerald-400/10", label: "Strong" },
