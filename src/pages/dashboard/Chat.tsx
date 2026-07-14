@@ -1,11 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Send, Plus, Mic, MicOff, Loader2, Reply, X } from "lucide-react";
+import { Send, Plus, Mic, MicOff, Loader2, Reply, X, Copy, Trash2, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { groq } from "@/lib/groq";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { loadData, saveData, removeData, KEYS } from "@/lib/userStore";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import genieLogo from "@/assets/genie-logo3.png";
 
 interface ReplySnippet {
@@ -24,6 +31,8 @@ interface Message {
 
 const MAX_INPUT_LENGTH = 2000;
 const REPLY_SNIPPET_LENGTH = 200;
+const LONG_PRESS_MS = 450;
+const LONG_PRESS_MOVE_TOLERANCE = 10;
 
 const genId = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
 
@@ -68,9 +77,11 @@ const ChatPage = () => {
     const [isTyping, setIsTyping] = useState(false);
     const [replyingTo, setReplyingTo] = useState<Message | null>(null);
     const [highlightedId, setHighlightedId] = useState<string | null>(null);
+    const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
     const bottomRef = useRef<HTMLDivElement>(null);
     const messagesRef = useRef(messages);
     const messageElsRef = useRef<Map<string, HTMLDivElement>>(new Map());
+    const longPressRef = useRef<{ timer: ReturnType<typeof setTimeout> | null; x: number; y: number }>({ timer: null, x: 0, y: 0 });
     useEffect(() => { messagesRef.current = messages; }, [messages]);
 
     useEffect(() => {
@@ -95,6 +106,7 @@ const ChatPage = () => {
                     }];
                     setMessages(reset);
                     setReplyingTo(null);
+                    setActiveMenuId(null);
                     removeData(KEYS.chat);
                 },
             },
@@ -110,6 +122,51 @@ const ChatPage = () => {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
         setHighlightedId(id);
         window.setTimeout(() => setHighlightedId((cur) => (cur === id ? null : cur)), 1500);
+    };
+
+    const clearLongPress = () => {
+        if (longPressRef.current.timer) {
+            clearTimeout(longPressRef.current.timer);
+            longPressRef.current.timer = null;
+        }
+    };
+
+    // Mirrors WhatsApp's press-and-hold gesture; a move past the tolerance cancels it
+    // so a scroll or drag on the message list doesn't accidentally pop the menu open.
+    const handleBubblePointerDown = (id: string) => (e: React.PointerEvent) => {
+        if (e.pointerType === "mouse" && e.button !== 0) return;
+        longPressRef.current.x = e.clientX;
+        longPressRef.current.y = e.clientY;
+        clearLongPress();
+        longPressRef.current.timer = setTimeout(() => setActiveMenuId(id), LONG_PRESS_MS);
+    };
+
+    const handleBubblePointerMove = (e: React.PointerEvent) => {
+        if (!longPressRef.current.timer) return;
+        const dx = e.clientX - longPressRef.current.x;
+        const dy = e.clientY - longPressRef.current.y;
+        if (Math.hypot(dx, dy) > LONG_PRESS_MOVE_TOLERANCE) clearLongPress();
+    };
+
+    const handleBubbleContextMenu = (id: string) => (e: React.MouseEvent) => {
+        e.preventDefault();
+        setActiveMenuId(id);
+    };
+
+    const replyFromMenu = (msg: Message) => setReplyingTo(msg);
+
+    const copyMessage = async (text: string) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            toast.success("Copied to clipboard");
+        } catch {
+            toast.error("Couldn't copy — try selecting the text manually.");
+        }
+    };
+
+    const deleteMessage = (id: string) => {
+        setMessages((prev) => prev.filter((m) => m.id !== id));
+        setReplyingTo((cur) => (cur?.id === id ? null : cur));
     };
 
     const doSend = useCallback(async (text: string, replyTarget?: Message | null) => {
@@ -228,17 +285,55 @@ const ChatPage = () => {
                                 {msg.sender === "genie" ? <img src={genieLogo} alt="Genie" className="w-5 h-5 object-contain" /> : initials}
                             </div>
 
-                            <button
-                                type="button"
-                                onClick={() => setReplyingTo(msg)}
-                                title="Reply"
-                                className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground opacity-40 hover:opacity-100 hover:bg-secondary hover:text-foreground md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                            <DropdownMenu
+                                open={activeMenuId === msg.id}
+                                onOpenChange={(open) => setActiveMenuId(open ? msg.id : null)}
                             >
-                                <Reply className="w-3.5 h-3.5" />
-                            </button>
+                                <DropdownMenuTrigger asChild>
+                                    <button
+                                        type="button"
+                                        title="Message options"
+                                        className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground opacity-40 hover:opacity-100 hover:bg-secondary hover:text-foreground md:opacity-0 md:group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity"
+                                    >
+                                        <MoreVertical className="w-3.5 h-3.5" />
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    align={msg.sender === "user" ? "end" : "start"}
+                                    className="w-52 rounded-2xl border-border/60 bg-popover/95 backdrop-blur-sm p-0 overflow-hidden shadow-xl"
+                                >
+                                    <DropdownMenuItem
+                                        onSelect={() => replyFromMenu(msg)}
+                                        className="flex items-center justify-between gap-3 rounded-none px-4 py-3 text-sm cursor-pointer focus:bg-secondary"
+                                    >
+                                        Reply <Reply className="w-4 h-4 shrink-0" />
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator className="mx-0 my-0" />
+                                    <DropdownMenuItem
+                                        onSelect={() => copyMessage(msg.text)}
+                                        className="flex items-center justify-between gap-3 rounded-none px-4 py-3 text-sm cursor-pointer focus:bg-secondary"
+                                    >
+                                        Copy <Copy className="w-4 h-4 shrink-0" />
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator className="mx-0 my-0" />
+                                    <DropdownMenuItem
+                                        onSelect={() => deleteMessage(msg.id)}
+                                        className="flex items-center justify-between gap-3 rounded-none px-4 py-3 text-sm cursor-pointer text-red-500 focus:text-red-500 focus:bg-red-500/10"
+                                    >
+                                        Delete <Trash2 className="w-4 h-4 shrink-0" />
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
 
-                            <div className={cn(
-                                "max-w-[70%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
+                            <div
+                                onPointerDown={handleBubblePointerDown(msg.id)}
+                                onPointerMove={handleBubblePointerMove}
+                                onPointerUp={clearLongPress}
+                                onPointerCancel={clearLongPress}
+                                onPointerLeave={clearLongPress}
+                                onContextMenu={handleBubbleContextMenu(msg.id)}
+                                className={cn(
+                                "max-w-[70%] rounded-2xl px-4 py-3 text-sm leading-relaxed select-none sm:select-text",
                                 msg.sender === "genie"
                                     ? "bg-card border border-border/60 rounded-bl-sm text-foreground"
                                     : "bg-primary text-primary-foreground rounded-br-sm"
