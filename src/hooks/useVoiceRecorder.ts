@@ -2,11 +2,14 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { auth } from "@/lib/firebase";
 
+// See src/lib/ai.ts for why this is needed on Cloudflare Pages.
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+
 async function transcribeAudio(blob: Blob, mimeType: string): Promise<string> {
     const token = await auth.currentUser?.getIdToken();
     if (!token) throw new Error("Not signed in");
 
-    const res = await fetch("/api/ai/transcribe", {
+    const res = await fetch(`${API_BASE}/api/ai/transcribe`, {
         method: "POST",
         headers: { "Content-Type": mimeType, Authorization: `Bearer ${token}` },
         body: blob,

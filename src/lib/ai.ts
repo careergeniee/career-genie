@@ -2,6 +2,11 @@ import { auth } from "@/lib/firebase";
 
 const AI_TIMEOUT_MS = 30000;
 
+// Empty on Vercel (same-origin, relative paths). On Cloudflare Pages — which
+// can't reach Groq directly since Groq blocks Cloudflare Workers' IP ranges —
+// this points cross-origin at the working Vercel deployment instead.
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+
 /** Reject if a promise takes longer than `ms`. */
 function withTimeout<T>(p: Promise<T>, ms: number, label = "AI request"): Promise<T> {
     return Promise.race([
@@ -30,7 +35,7 @@ async function callProxy(
     if (!token) throw new AiProxyError(401, "Not signed in");
 
     const res = await withTimeout(
-        fetch("/api/ai/complete", {
+        fetch(`${API_BASE}/api/ai/complete`, {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             body: JSON.stringify({

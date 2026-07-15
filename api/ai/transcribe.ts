@@ -1,11 +1,13 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { requireUser } from "../_lib/auth.js";
+import { applyCors } from "../_lib/cors.js";
 
 export const config = { api: { bodyParser: false } };
 
 const MAX_BYTES = 20 * 1024 * 1024; // Defense-in-depth cap for the request body; Vercel's own platform limit (~4.5MB on most plans) is smaller than this and will reject an oversized request first.
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+    if (applyCors(req, res)) return;
     if (req.method !== "POST") {
         res.status(405).json({ error: "Method not allowed" });
         return;

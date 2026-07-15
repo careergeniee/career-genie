@@ -1,11 +1,13 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import Groq from "groq-sdk";
 import { requireUser } from "../_lib/auth.js";
+import { applyCors } from "../_lib/cors.js";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const MODEL = "llama-3.3-70b-versatile";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+    if (applyCors(req, res)) return;
     if (req.method !== "POST") {
         res.status(405).json({ error: "Method not allowed" });
         return;
