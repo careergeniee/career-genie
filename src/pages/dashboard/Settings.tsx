@@ -5,6 +5,7 @@ import { auth } from "@/lib/firebase";
 import { updateProfile } from "firebase/auth";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { KEYS, removeData } from "@/lib/userStore";
 
 const inputCls =
     "w-full bg-secondary/50 border border-border/60 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-primary/60 transition-colors placeholder:text-muted-foreground/70";
@@ -19,23 +20,23 @@ const SectionCard = ({ icon: Icon, title, children }: { icon: React.ComponentTyp
     </div>
 );
 
-const DATA_KEYS = [
-    { key: "cg_chat", label: "Chat history" },
-    { key: "interview_sessions", label: "Interview sessions" },
+const DATA_KEYS: { key: keyof typeof KEYS; label: string }[] = [
+    { key: "chat", label: "Chat history" },
+    { key: "interviewSessions", label: "Interview sessions" },
     { key: "resume", label: "Resume data" },
-    { key: "resume_tpl", label: "Resume template preference" },
-    { key: "resume_role", label: "ATS target role" },
-    { key: "cg_assessment", label: "Career assessment answers" },
-    { key: "cg_prediction", label: "Career prediction results" },
-    { key: "cg_roadmap", label: "Career roadmap" },
-    { key: "cg_instructor", label: "Instructor progress" },
+    { key: "resumeTemplate", label: "Resume template preference" },
+    { key: "resumeRole", label: "ATS target role" },
+    { key: "assessment", label: "Career assessment answers" },
+    { key: "prediction", label: "Career prediction results" },
+    { key: "roadmap", label: "Career roadmap" },
+    { key: "instructorTasks", label: "Instructor progress" },
 ];
 
 const SettingsPage = () => {
     const { user } = useAuth();
     const [displayName, setDisplayName] = useState(user?.displayName || "");
     const [savingName, setSavingName] = useState(false);
-    const [cleared, setCleared] = useState<string[]>([]);
+    const [cleared, setCleared] = useState<(keyof typeof KEYS)[]>([]);
 
     const saveDisplayName = async () => {
         if (!displayName.trim()) {
@@ -54,22 +55,15 @@ const SettingsPage = () => {
         }
     };
 
-    const clearKey = (key: string, label: string) => {
-        const uid = auth.currentUser?.uid;
-        const storageKey = uid ? `${key}_${uid}` : key;
-        localStorage.removeItem(storageKey);
-        localStorage.removeItem(key);
+    const clearKey = (key: keyof typeof KEYS, label: string) => {
+        removeData(KEYS[key]);
         setCleared((prev) => [...prev, key]);
         toast.success(`${label} cleared`);
     };
 
     const clearAll = () => {
         if (!window.confirm("Clear ALL your data? This cannot be undone.")) return;
-        DATA_KEYS.forEach(({ key }) => {
-            const uid = auth.currentUser?.uid;
-            localStorage.removeItem(uid ? `${key}_${uid}` : key);
-            localStorage.removeItem(key);
-        });
+        DATA_KEYS.forEach(({ key }) => removeData(KEYS[key]));
         setCleared(DATA_KEYS.map((d) => d.key));
         toast.success("All local data cleared");
     };
@@ -157,7 +151,7 @@ const SettingsPage = () => {
                 {/* Data management */}
                 <SectionCard icon={Trash2} title="Data Management">
                     <p className="text-xs text-muted-foreground mb-4">
-                        All your data is stored locally in your browser. Clear individual sections or everything at once.
+                        Clears data stored locally in this browser. Clear individual sections or everything at once.
                     </p>
                     <div className="space-y-2 mb-5">
                         {DATA_KEYS.map(({ key, label }) => (
