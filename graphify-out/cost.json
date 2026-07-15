@@ -1,0 +1,19 @@
+{
+  "runs": [
+    {
+      "date": "2026-07-15T19:36:22.521214+00:00",
+      "input_tokens": 405041,
+      "output_tokens": 0,
+      "files": 184
+    },
+    {
+      "date": "2026-07-15T19:45:05.041436+00:00",
+      "input_tokens": 219409,
+      "output_tokens": 0,
+      "files": 8,
+      "note": "resumed docs extraction (README, plans, index.html, config files)"
+    }
+  ],
+  "total_input_tokens": 624450,
+  "total_output_tokens": 0
+}
