@@ -115,6 +115,23 @@ const CareersPage = () => {
                         <p className="text-muted-foreground">
                             Ranked by how well your personality and skills fit each role.
                         </p>
+                        {prediction && (
+                            <span
+                                className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md bg-secondary text-muted-foreground mt-2"
+                                title={
+                                    prediction.source === "ml-api"
+                                        ? "Predicted by the ML model"
+                                        : "Predicted by the offline fallback scorer"
+                                }
+                            >
+                                {prediction.source === "ml-api" ? (
+                                    <Cpu className="w-3 h-3" />
+                                ) : (
+                                    <WifiOff className="w-3 h-3" />
+                                )}
+                                {prediction.source === "ml-api" ? "ML model" : "Offline mode"}
+                            </span>
+                        )}
                     </div>
                     <Button variant="ghost" onClick={() => navigate("/dashboard/assessment")}>
                         <RefreshCw className="w-4 h-4" /> Retake
