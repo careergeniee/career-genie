@@ -58,7 +58,6 @@ const AssessmentPage = () => {
 
     const answeredCount = Object.keys(answers).length;
     const personalityDone = answeredCount === PERSONALITY_QUESTIONS.length;
-    const skillsDone = touchedSkills.size === SKILLS.length;
 
     // Persist progress as the user answers, so a refresh or switching device/tab
     // mid-quiz doesn't lose it. Debounced since this fires on every click.
@@ -80,10 +79,9 @@ const AssessmentPage = () => {
             setStep("personality");
             return;
         }
-        if (!skillsDone) {
-            toast.error("Please rate every skill before submitting.");
-            return;
-        }
+        // Skills are intentionally optional here — rate one, several, or none.
+        // Anything left unrated defaults to "None" and the model predicts off
+        // whatever was actually provided.
         setLoading(true);
         try {
             const assessment: Assessment = {
@@ -217,8 +215,8 @@ const AssessmentPage = () => {
                     <div className="space-y-5">
                         <p className="text-sm text-muted-foreground">
                             Rate your current level honestly — this drives your skill-gap analysis.
+                            Rate as many or as few as apply; anything left blank counts as "None".
                         </p>
-                        <Progress value={(touchedSkills.size / SKILLS.length) * 100} className="h-1.5" />
                         {SKILL_CATEGORIES.map((cat) => {
                             const inCat = SKILLS.filter((s) => SKILL_META[s].category === cat);
                             if (!inCat.length) return null;
@@ -262,7 +260,7 @@ const AssessmentPage = () => {
                             <Button variant="ghost" onClick={() => setStep("personality")}>
                                 <ArrowLeft className="w-4 h-4" /> Back
                             </Button>
-                            <Button variant="hero" size="lg" disabled={loading || !skillsDone} onClick={submit}>
+                            <Button variant="hero" size="lg" disabled={loading} onClick={submit}>
                                 {loading ? (
                                     <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing…</>
                                 ) : (
