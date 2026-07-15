@@ -129,10 +129,14 @@ export function stackToPromptText(stack: StackGroup[]): string {
 export function isKnown(tech: string, skillsText: string): boolean {
     if (!skillsText) return false;
     const hay = skillsText.toLowerCase();
-    // Compare on the core token (strip parenthetical notes and separators).
-    const core = tech.toLowerCase().replace(/\(.*?\)/g, "").split(/[/&,]/)[0].trim();
-    if (core.length < 2) return false;
-    // Word-boundary match so "java" doesn't match inside "javascript".
-    const esc = core.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    return new RegExp(`(^|[^a-z])${esc}([^a-z]|$)`, "i").test(hay);
+    // A stack item may bundle several technologies ("Node.js + Express",
+    // "Python/FastAPI"). Split on separators including '+' and check each
+    // core token independently — knowing any one of them counts as known.
+    const withoutParens = tech.toLowerCase().replace(/\(.*?\)/g, "");
+    const cores = withoutParens.split(/[/&,+]/).map((s) => s.trim()).filter((s) => s.length >= 2);
+    return cores.some((core) => {
+        const esc = core.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        // Word-boundary match so "java" doesn't match inside "javascript".
+        return new RegExp(`(^|[^a-z])${esc}([^a-z]|$)`, "i").test(hay);
+    });
 }
