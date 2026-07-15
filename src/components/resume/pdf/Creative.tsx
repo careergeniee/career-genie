@@ -1,4 +1,4 @@
-import { Page, View, Text, StyleSheet } from "@react-pdf/renderer";
+import { Page, View, Text, Link, StyleSheet } from "@react-pdf/renderer";
 import { ResumeData } from "@/lib/resume";
 import { INK, SUB, PURPLE, PURPLE_LIGHT, splitBullets, contactLine } from "./shared";
 
@@ -71,7 +71,7 @@ export const Creative = ({ d }: { d: ResumeData }) => (
                     {d.projects.filter((p) => p.name).map((p) => (
                         <View key={p.id} style={creative.block}>
                             <Text style={creative.itemTitle}>{p.name}</Text>
-                            {p.link ? <Text style={creative.itemSub}>{p.link}</Text> : null}
+                            {p.link ? <Link src={p.link.startsWith("http") ? p.link : `https://${p.link}`} style={creative.itemSub}>{p.link}</Link> : null}
                             <Text style={creative.bullet}>{p.description}</Text>
                         </View>
                     ))}

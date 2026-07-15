@@ -1,4 +1,4 @@
-import { Page, View, Text, StyleSheet } from "@react-pdf/renderer";
+import { Page, View, Text, Link, StyleSheet } from "@react-pdf/renderer";
 import { ResumeData } from "@/lib/resume";
 import { INK, SUB, NAVY, GOLD, splitBullets } from "./shared";
 
@@ -91,7 +91,7 @@ export const Executive = ({ d }: { d: ResumeData }) => (
                     {d.projects.filter((p) => p.name).map((p) => (
                         <View key={p.id} style={executive.block}>
                             <Text style={executive.itemTitle}>{p.name}</Text>
-                            {p.link ? <Text style={executive.itemSub}>{p.link}</Text> : null}
+                            {p.link ? <Link src={p.link.startsWith("http") ? p.link : `https://${p.link}`} style={executive.itemSub}>{p.link}</Link> : null}
                             <Text style={executive.bullet}>{p.description}</Text>
                         </View>
                     ))}

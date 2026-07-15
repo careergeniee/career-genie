@@ -1,4 +1,4 @@
-import { Page, View, Text, StyleSheet } from "@react-pdf/renderer";
+import { Page, View, Text, Link, StyleSheet } from "@react-pdf/renderer";
 import { ResumeData } from "@/lib/resume";
 import { INK, SUB, splitBullets, contactLine } from "./shared";
 
@@ -69,7 +69,7 @@ export const Minimal = ({ d }: { d: ResumeData }) => (
                         <View key={p.id} style={minimal.block}>
                             <View style={minimal.itemRow}>
                                 <Text style={minimal.itemTitle}>{p.name}</Text>
-                                {p.link ? <Text style={minimal.dates}>{p.link}</Text> : null}
+                                {p.link ? <Link src={p.link.startsWith("http") ? p.link : `https://${p.link}`} style={minimal.dates}>{p.link}</Link> : null}
                             </View>
                             <Text style={minimal.bullet}>{p.description}</Text>
                         </View>

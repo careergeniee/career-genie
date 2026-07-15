@@ -1,4 +1,4 @@
-import { Page, View, Text, StyleSheet } from "@react-pdf/renderer";
+import { Page, View, Text, Link, StyleSheet } from "@react-pdf/renderer";
 import { ResumeData } from "@/lib/resume";
 import { INK, SUB, TEAL, CORAL, splitBullets } from "./shared";
 
@@ -58,7 +58,7 @@ export const Vibrant = ({ d }: { d: ResumeData }) => (
                         {d.projects.filter((p) => p.name).map((p) => (
                             <View key={p.id} style={vibrant.block}>
                                 <Text style={vibrant.itemTitle}>{p.name}</Text>
-                                {p.link ? <Text style={[vibrant.dates, { color: TEAL }]}>{p.link}</Text> : null}
+                                {p.link ? <Link src={p.link.startsWith("http") ? p.link : `https://${p.link}`} style={[vibrant.dates, { color: TEAL }]}>{p.link}</Link> : null}
                                 <Text style={vibrant.bullet}>{p.description}</Text>
                             </View>
                         ))}
