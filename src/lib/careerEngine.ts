@@ -148,9 +148,10 @@ export async function predictCareers(
                         console.warn(`CareerGenie: ML API returned unknown career "${p.career}" — dropping it.`);
                         return false;
                     });
+                    const wasFiltered = predictions.length !== rawPredictions.length;
                     if (predictions.length) {
                         const confidence =
-                            typeof data.confidence === "number"
+                            typeof data.confidence === "number" && !wasFiltered
                                 ? data.confidence
                                 : predictions[0].probability - (predictions[1]?.probability ?? 0);
                         const topCareer = knownLabels.has(data.top_career) ? data.top_career : predictions[0].career;
