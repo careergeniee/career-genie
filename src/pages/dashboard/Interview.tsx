@@ -55,7 +55,7 @@ const InterviewPage = () => {
         },
         []
     );
-    const { recording: listening, transcribing, toggle: toggleVoiceRaw, start: startVoiceRaw, stop: stopVoice } = useVoiceRecorder(onTranscript);
+    const { recording: listening, transcribing, start: startVoiceRaw, stop: stopVoice } = useVoiceRecorder(onTranscript);
     const startVoice = useCallback(() => {
         recordingQIndexRef.current = qIndexRef.current;
         startVoiceRaw();
