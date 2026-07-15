@@ -28,6 +28,7 @@ import {
     traitScore, buildFeatures, analyzeSkillGap, emptySkillRatings,
     predictCareers, strongSkillsText, type Assessment,
     loadAssessmentDraft, saveAssessmentDraft, clearAssessmentDraft,
+    warmMlService,
 } from "@/lib/careerEngine";
 import { PERSONALITY, SKILLS, FEATURE_ORDER } from "@/lib/mlSchema";
 import { CAREER_LABELS } from "@/lib/careerCatalog";
@@ -183,6 +184,18 @@ describe("predictCareers (offline fallback — no ML API configured in tests)", 
         for (const p of result.predictions) {
             expect(Number.isFinite(p.probability)).toBe(true);
         }
+    });
+});
+
+describe("warmMlService", () => {
+    it("pings the ML API's base URL to wake a sleeping instance, without throwing", () => {
+        const fetchMock = global.fetch as ReturnType<typeof vi.fn>;
+        fetchMock.mockClear();
+        expect(() => warmMlService()).not.toThrow();
+        expect(fetchMock).toHaveBeenCalledWith(
+            expect.any(String),
+            expect.objectContaining({ method: "GET", mode: "no-cors" })
+        );
     });
 });
 

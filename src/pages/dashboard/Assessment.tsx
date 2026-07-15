@@ -17,6 +17,7 @@ import {
     type Assessment, buildFeatures, predictCareers, emptySkillRatings,
     saveAssessment, savePrediction, loadAssessment,
     loadAssessmentDraft, saveAssessmentDraft, clearAssessmentDraft,
+    warmMlService,
 } from "@/lib/careerEngine";
 
 const LIKERT = ["Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree"];
@@ -47,6 +48,13 @@ const AssessmentPage = () => {
         return new Set(SKILLS.filter((s) => s in saved));
     });
     const [loading, setLoading] = useState(false);
+
+    // Wake a sleeping free-tier Render instance now, ~3 minutes before the
+    // real predict call — cold starts can take longer than that call's own
+    // timeout budget and would otherwise silently fall back to offline mode.
+    useEffect(() => {
+        warmMlService();
+    }, []);
 
     const answeredCount = Object.keys(answers).length;
     const personalityDone = answeredCount === PERSONALITY_QUESTIONS.length;

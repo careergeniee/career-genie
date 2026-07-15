@@ -111,7 +111,7 @@ export function buildFeatures(a: Assessment): Record<FeatureKey, number> {
 // Prediction
 // -------------------------------------------------------------------------
 
-const ML_TIMEOUT_MS = 8000;
+const ML_TIMEOUT_MS = 15000;
 const ML_RETRIES = 1;
 
 /** fetch with an abort timeout. */
@@ -123,6 +123,19 @@ async function fetchWithTimeout(url: string, init: RequestInit, ms: number) {
     } finally {
         clearTimeout(timer);
     }
+}
+
+/**
+ * Fire-and-forget ping to wake a sleeping free-tier Render instance early.
+ * Render spins the service down after ~15 minutes idle, and a cold start can
+ * take 30-60s — longer than predictCareers()'s own timeout budget, which
+ * would otherwise silently fall back to the offline scorer. Call this as
+ * soon as the user starts the assessment (~3 minutes before they submit) so
+ * the real model is awake by the time its prediction is actually needed.
+ */
+export function warmMlService(): void {
+    if (!ML_API_URL) return;
+    fetch(`${ML_API_URL.replace(/\/$/, "")}/health`, { method: "GET", mode: "no-cors" }).catch(() => {});
 }
 
 const UNCERTAIN_MARGIN = 0.15;
