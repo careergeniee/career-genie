@@ -1,6 +1,5 @@
-import { groq } from "@/lib/groq";
+import { auth } from "@/lib/firebase";
 
-const MODEL = "llama-3.3-70b-versatile";
 const AI_TIMEOUT_MS = 30000;
 
 /** Reject if a promise takes longer than `ms`. */
@@ -13,35 +12,65 @@ function withTimeout<T>(p: Promise<T>, ms: number, label = "AI request"): Promis
     ]);
 }
 
+export class AiProxyError extends Error {
+    status: number;
+    constructor(status: number, message: string) {
+        super(message);
+        this.status = status;
+    }
+}
+
+type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
+
+async function callProxy(
+    messages: ChatMessage[],
+    opts: { temperature?: number; maxTokens?: number; jsonMode?: boolean } = {}
+): Promise<string> {
+    const token = await auth.currentUser?.getIdToken();
+    if (!token) throw new AiProxyError(401, "Not signed in");
+
+    const res = await withTimeout(
+        fetch("/api/ai/complete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({
+                messages,
+                temperature: opts.temperature,
+                maxTokens: opts.maxTokens,
+                jsonMode: opts.jsonMode,
+            }),
+        }),
+        AI_TIMEOUT_MS
+    );
+    if (!res.ok) throw new AiProxyError(res.status, `AI proxy returned ${res.status}`);
+    const data = (await res.json()) as { content: string };
+    return data.content || "";
+}
+
+/** Multi-turn chat completion — caller supplies the full message list. */
+export async function aiChat(
+    messages: ChatMessage[],
+    opts: { temperature?: number; maxTokens?: number } = {}
+): Promise<string> {
+    return callProxy(messages, opts);
+}
+
 /** Plain text completion (with one retry and a timeout). */
 export async function aiText(
     system: string,
     user: string,
     opts: { temperature?: number; maxTokens?: number } = {}
 ): Promise<string> {
-    const call = () =>
-        withTimeout(
-            groq.chat.completions.create({
-                model: MODEL,
-                messages: [
-                    { role: "system", content: system },
-                    { role: "user", content: user },
-                ],
-                temperature: opts.temperature ?? 0.6,
-                max_tokens: opts.maxTokens ?? 1500,
-            }),
-            AI_TIMEOUT_MS
-        );
+    const messages: ChatMessage[] = [
+        { role: "system", content: system },
+        { role: "user", content: user },
+    ];
     try {
-        const completion = await call();
-        return completion.choices[0]?.message?.content?.trim() || "";
+        return await callProxy(messages, opts);
     } catch {
         try {
-            const completion = await call(); // single retry on timeout/transient error
-            return completion.choices[0]?.message?.content?.trim() || "";
+            return await callProxy(messages, opts); // single retry on timeout/transient error
         } catch {
-            // Both attempts failed (e.g. persistent rate-limit or outage) — degrade to
-            // an empty string rather than letting the retry itself throw uncaught.
             return "";
         }
     }
@@ -54,11 +83,9 @@ export async function aiText(
 function extractJson<T>(raw: string): T {
     let text = raw.trim();
 
-    // Strip code fences if present.
     const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
     if (fence) text = fence[1].trim();
 
-    // Otherwise grab from the first { or [ to its matching last } or ].
     const firstObj = text.indexOf("{");
     const firstArr = text.indexOf("[");
     const start =
@@ -86,10 +113,9 @@ export async function aiJson<T>(
     user: string,
     opts: { temperature?: number; maxTokens?: number } = {}
 ): Promise<T> {
-    const run = async (temperature: number) => {
-        const completion = await groq.chat.completions.create({
-            model: MODEL,
-            messages: [
+    const run = (temperature: number) =>
+        callProxy(
+            [
                 {
                     role: "system",
                     content:
@@ -98,17 +124,12 @@ export async function aiJson<T>(
                 },
                 { role: "user", content: user },
             ],
-            temperature,
-            max_tokens: opts.maxTokens ?? 2500,
-            response_format: { type: "json_object" },
-        });
-        return completion.choices[0]?.message?.content || "";
-    };
+            { ...opts, temperature, jsonMode: true }
+        );
 
     try {
         return extractJson<T>(await run(opts.temperature ?? 0.5));
     } catch {
-        // Retry deterministically once before giving up.
         return extractJson<T>(await run(0));
     }
 }
