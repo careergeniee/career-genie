@@ -193,7 +193,10 @@ const ChatPage = () => {
 
     const scrollToMessage = (id: string) => {
         const el = messageElsRef.current.get(id);
-        if (!el) return;
+        if (!el) {
+            toast.info("That message was deleted.");
+            return;
+        }
         el.scrollIntoView({ behavior: "smooth", block: "center" });
         setHighlightedId(id);
         window.setTimeout(() => setHighlightedId((cur) => (cur === id ? null : cur)), 1500);
