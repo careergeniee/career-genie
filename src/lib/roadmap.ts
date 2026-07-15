@@ -1,5 +1,5 @@
 import { aiJson } from "@/lib/ai";
-import { uid8, todayKey, dayDiff, streakFromDates } from "@/lib/userStore";
+import { uid8, streakFromDates } from "@/lib/userStore";
 import { getStack, stackToPromptText, type StackGroup } from "@/lib/careerStacks";
 
 export const GOALS = [
