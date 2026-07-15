@@ -124,7 +124,7 @@ export async function aiJson<T>(
                 },
                 { role: "user", content: user },
             ],
-            { ...opts, temperature, jsonMode: true }
+            { ...opts, temperature, jsonMode: true, maxTokens: opts.maxTokens ?? 2500 }
         );
 
     try {
