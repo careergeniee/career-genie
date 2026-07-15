@@ -22,6 +22,7 @@ const SectionCard = ({ icon: Icon, title, children }: { icon: React.ComponentTyp
 
 const DATA_KEYS: { key: keyof typeof KEYS; label: string }[] = [
     { key: "chat", label: "Chat history" },
+    { key: "instructorChat", label: "Instructor chat history" },
     { key: "interviewSessions", label: "Interview sessions" },
     { key: "resume", label: "Resume data" },
     { key: "resumeTemplate", label: "Resume template preference" },
