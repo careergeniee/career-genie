@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import {
     User,
     createUserWithEmailAndPassword,
@@ -36,6 +36,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const hydratedUidRef = useRef<string | null>(null);
 
     useEffect(() => {
         const unsub = onAuthStateChanged(
@@ -44,10 +45,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 setUser(u);
                 setError(null);
                 setLoading(false);
-                if (u) {
-                    // Hydrate localStorage from Firestore in the background — don't block
-                    // first paint on a Firestore round-trip; localStorage is always primary.
+                if (u && hydratedUidRef.current !== u.uid) {
+                    // Hydrate localStorage from Firestore once per sign-in — not on every
+                    // token refresh, which would race with and clobber any local write made
+                    // since the last Firestore mirror (saveData's Firestore write is fire-and-forget).
+                    hydratedUidRef.current = u.uid;
                     initUserData().catch(() => {});
+                }
+                if (!u) {
+                    hydratedUidRef.current = null;
                 }
             },
             (err) => {
