@@ -121,7 +121,16 @@ export const DailyTaskTab = ({ persona, ctx }: TabProps) => {
                 )}
 
                 <div className="flex flex-wrap gap-2 mt-4">
-                    <button onClick={generate} disabled={loading} className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-border/60 hover:bg-secondary/50 transition disabled:opacity-50">
+                    <button
+                        onClick={() => {
+                            if (today?.done && !window.confirm("You've already completed today's task. Generate a new one anyway? This will reset today's progress.")) {
+                                return;
+                            }
+                            generate();
+                        }}
+                        disabled={loading}
+                        className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-border/60 hover:bg-secondary/50 transition disabled:opacity-50"
+                    >
                         <RotateCcw className="w-3.5 h-3.5" /> New task
                     </button>
                 </div>
