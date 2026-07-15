@@ -87,8 +87,6 @@ const App = () => (
                 <Route path="settings" element={<SettingsPage />} />
               </Route>
 
-              <Route path="/dev-chat-preview" element={<ChatPage />} />
-
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
