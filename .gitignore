@@ -22,6 +22,10 @@ ml-service/*.pyc
 # Lock files (using bun.lock)
 package-lock.json
 
+# Claude Code / superpowers scratch state (task briefs, review diffs, progress ledger)
+.superpowers/
+*.tsbuildinfo
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
