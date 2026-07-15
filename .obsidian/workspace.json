@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "2a8405c7da17b9f8",
+        "id": "3134d46e6591291c",
         "type": "tabs",
         "children": [
           {
-            "id": "c55cb2386c3ddffb",
+            "id": "f099c859fc853937",
             "type": "leaf",
             "state": {
               "type": "graph",
@@ -176,19 +176,22 @@
       "bases:Create new base": false
     }
   },
-  "active": "c55cb2386c3ddffb",
+  "active": "f099c859fc853937",
   "lastOpenFiles": [
+    "live-banner-check.png",
+    "vitest.config.ts.timestamp-1784136459852-2d68dec9451ae.mjs",
+    "banner-check2.png",
+    "banner-check.png",
+    "vite.config.ts.timestamp-1784136179621-1cea6ba3bcd77.mjs",
+    "README.md.tmp.27612.5b055f7a54df",
+    "README.md.tmp.27612.2fc3552a6718",
+    "README.md.tmp.27612.fb602787b3e4",
+    "README.md.tmp.27612.3ee45a284da3",
+    "node_modules/jose/README.md",
     "vite.config.ts.timestamp-1784028599587-cabed4be8821f.mjs",
     "node_modules/vite/node_modules/@esbuild/linux-x64",
     "node_modules/vite/node_modules/@esbuild/linux-s390x",
     "node_modules/vite/node_modules/@esbuild/linux-ppc64",
-    "node_modules/vite/node_modules/@esbuild/linux-mips64el",
-    "node_modules/vite/node_modules/@esbuild/linux-arm64",
-    "node_modules/vite/node_modules/@esbuild/android-arm",
-    "node_modules/vite/node_modules/@esbuild/linux-loong64",
-    "node_modules/vite/node_modules/@esbuild/linux-ia32",
-    "node_modules/vite/node_modules/@esbuild/freebsd-x64",
-    "node_modules/vite/node_modules/@esbuild/linux-arm",
     "dist/assets/genie-logo2-BJaSFO3H.png",
     "dist/assets/genie-logo3-Cu9njuzh.png",
     "dist/assets/genie-logo-DiS_2yXy.png",
