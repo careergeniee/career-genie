@@ -34,10 +34,14 @@ const AssessmentPage = () => {
         () => loadAssessment()?.skillRatings ?? emptySkillRatings()
     );
     // Tracks which skills the user has actually rated — a prior assessment's saved
-    // ratings count as touched, but the all-zero default from emptySkillRatings() must not.
-    const [touchedSkills, setTouchedSkills] = useState<Set<SkillKey>>(
-        () => new Set(loadAssessment() ? SKILLS : [])
-    );
+    // ratings count as touched (only the ones actually present, in case the skill
+    // schema has grown since that assessment was saved), but the all-zero default
+    // from emptySkillRatings() must not.
+    const [touchedSkills, setTouchedSkills] = useState<Set<SkillKey>>(() => {
+        const saved = loadAssessment()?.skillRatings;
+        if (!saved) return new Set();
+        return new Set(SKILLS.filter((s) => s in saved));
+    });
     const [loading, setLoading] = useState(false);
 
     const answeredCount = Object.keys(answers).length;
