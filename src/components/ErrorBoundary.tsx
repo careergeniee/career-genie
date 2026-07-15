@@ -40,6 +40,11 @@ export class ErrorBoundary extends Component<Props, State> {
                         An unexpected error interrupted this page. You can try again, or reload
                         the app.
                     </p>
+                    {this.state.message && (
+                        <p className="text-xs text-muted-foreground/70 mb-6 font-mono break-words">
+                            {this.state.message}
+                        </p>
+                    )}
                     <div className="flex gap-3 justify-center">
                         <Button variant="hero" onClick={this.reset}>
                             <RotateCcw className="w-4 h-4" /> Try again
@@ -53,5 +58,3 @@ export class ErrorBoundary extends Component<Props, State> {
         );
     }
 }
-
-export default ErrorBoundary;
