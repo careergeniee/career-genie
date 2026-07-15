@@ -105,6 +105,7 @@ const InterviewPage = () => {
             const s = newSession(effectiveRole, difficulty, qs);
             setSession(s);
             setQIndex(0);
+            recordingQIndexRef.current = -1;
             setAnswer("");
             setView("active");
             startTimer();
