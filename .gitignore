@@ -37,5 +37,6 @@ package-lock.json
 *.sln
 *.sw?
 .vercel
+.wrangler
 .env*
 .playwright-mcp
