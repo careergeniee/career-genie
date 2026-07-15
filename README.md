@@ -65,8 +65,7 @@ src/
 │   ├── roadmap.ts        # Roadmap generation
 │   ├── instructor.ts     # Instructor task/quiz generation
 │   ├── userStore.ts      # Per-user localStorage persistence
-│   ├── firebase.ts       # Firebase app + auth init
-│   └── groq.ts           # Groq client singleton
+│   └── firebase.ts       # Firebase app + auth init
 └── contexts/
     └── AuthContext.tsx   # Firebase auth context + PrivateRoute
 ```
@@ -96,15 +95,24 @@ bun install
 
 ### Environment Variables
 
-Create a `.env` file in the project root:
+Create a `.env` file in the project root (see `.env.example` for the full list):
 
 ```env
-VITE_GROQ_API_KEY=your_groq_api_key_here
+# Groq LLM API key — SERVER-SIDE ONLY. Used by api/ai/*.ts. Never prefix with VITE_.
+GROQ_API_KEY=your_groq_api_key_here
+
+# Firebase service account (Project Settings > Service Accounts > Generate new private key).
+# SERVER-SIDE ONLY — used by api/_lib/auth.ts to verify ID tokens.
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your-project-id.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 
 # Optional: URL of the FastAPI ML service.
 # Leave blank to use the built-in offline scorer.
 VITE_ML_API_URL=https://your-ml-service.onrender.com
 ```
+
+The AI chatbot, resume, interview, and roadmap features call server-side proxy endpoints (`api/ai/*.ts`) that hold the Groq key — it is never exposed to the browser. When running locally with `npm run dev`, use `npx vercel dev` instead so these API routes are served.
 
 ### Running Locally
 

@@ -3,7 +3,7 @@ import { Send, Plus, Mic, MicOff, Loader2, Reply, X, Copy, Trash2, MoreVertical 
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { groq } from "@/lib/groq";
+import { aiChat, AiProxyError } from "@/lib/ai";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { loadData, saveData, removeData, KEYS } from "@/lib/userStore";
 import { loadAssessment, loadPrediction, traitScore, analyzeSkillGap, strongSkillsText } from "@/lib/careerEngine";
@@ -268,20 +268,13 @@ const ChatPage = () => {
             const systemContent = userContext
                 ? `${SYSTEM_PROMPT}\n\nContext about this specific user — use it to personalize your advice, but don't recite it back verbatim unless asked:\n${userContext}`
                 : SYSTEM_PROMPT;
-            const completion = await groq.chat.completions.create({
-                model: "llama-3.3-70b-versatile",
-                messages: [
-                    { role: "system", content: systemContent },
-                    ...history,
-                    { role: "user", content: promptContent },
-                ],
-                max_tokens: 1024,
-                temperature: 0.4,
-            });
-            const reply = completion.choices[0]?.message?.content || "I couldn't generate a response. Try again!";
+            const reply = await aiChat(
+                [{ role: "system", content: systemContent }, ...history, { role: "user", content: promptContent }],
+                { maxTokens: 1024, temperature: 0.4 }
+            ) || "I couldn't generate a response. Try again!";
             setMessages((prev) => [...prev, { id: genId(), sender: "genie", text: reply, time: getTime() }]);
         } catch (err) {
-            const status = err?.status ?? err?.response?.status;
+            const status = err instanceof AiProxyError ? err.status : undefined;
             const message = status === 429
                 ? "You're sending messages a bit too fast — please wait a moment and try again."
                 : "Sorry, I couldn't connect right now. Please try again in a moment.";
