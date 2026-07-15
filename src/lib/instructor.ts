@@ -54,11 +54,10 @@ export function personaFor(career: string | null): Persona {
             tagline: "10+ years guiding students into tech careers.",
         };
     }
-    const role = career.replace("Cloud / DevOps Engineer", "Cloud / DevOps Engineer");
     return {
         name: PERSONA_NAMES[career] || "Imran Aziz",
-        title: `Senior ${role}`,
-        tagline: `A senior ${role.toLowerCase()} mentoring you toward this exact career.`,
+        title: `Senior ${career}`,
+        tagline: `A senior ${career.toLowerCase()} mentoring you toward this exact career.`,
     };
 }
 
