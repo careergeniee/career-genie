@@ -39,6 +39,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -48,7 +49,7 @@ const Login = () => {
     if (!isValidEmail(email)) { toast.error("Enter a valid email address."); return; }
     setLoading(true);
     try {
-      await login(email, password);
+      await login(email, password, rememberMe);
       toast.success("Welcome back!");
       navigate("/dashboard");
     } catch (err) {
@@ -135,7 +136,12 @@ const Login = () => {
 
             <div className="flex items-center justify-between mb-7">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="w-4 h-4 accent-primary rounded-sm" />
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 accent-primary rounded-sm"
+                />
                 <span className="text-sm text-muted-foreground">Remember me</span>
               </label>
               <Link to="/forgot-password" className="text-sm text-foreground font-medium hover:text-primary transition-colors">

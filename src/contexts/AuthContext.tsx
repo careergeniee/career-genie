@@ -9,6 +9,9 @@ import {
     sendPasswordResetEmail,
     sendEmailVerification,
     onAuthStateChanged,
+    setPersistence,
+    browserLocalPersistence,
+    browserSessionPersistence,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { initUserData, clearUserData } from "@/lib/userStore";
@@ -18,7 +21,7 @@ interface AuthContextType {
     loading: boolean;
     error: string | null;
     signup: (email: string, password: string) => Promise<void>;
-    login: (email: string, password: string) => Promise<void>;
+    login: (email: string, password: string, remember?: boolean) => Promise<void>;
     loginWithGoogle: () => Promise<void>;
     logout: () => Promise<void>;
     resetPassword: (email: string) => Promise<void>;
@@ -70,7 +73,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await sendEmailVerification(cred.user);
     };
 
-    const login = async (email: string, password: string) => {
+    const login = async (email: string, password: string, remember = true) => {
+        await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
         const cred = await signInWithEmailAndPassword(auth, email, password);
         if (!cred.user.emailVerified) {
             await signOut(auth);
