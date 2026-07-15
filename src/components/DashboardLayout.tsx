@@ -112,9 +112,6 @@ export const DashboardLayout = () => {
 
                 {/* Nav */}
                 <nav className="relative flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-                    <p className="px-3 pb-2 text-[10px] font-mono uppercase tracking-[0.2em] text-dash-sidebar-muted/60">
-                        // Navigation
-                    </p>
                     {navItems.map((item, i) => {
                         const showBadge = item.path === "/dashboard/instructor" && instructorPending;
                         return (
