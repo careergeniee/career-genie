@@ -3,7 +3,7 @@ import { requireUser } from "../_lib/auth";
 
 export const config = { api: { bodyParser: false } };
 
-const MAX_BYTES = 20 * 1024 * 1024; // 20MB — well under Vercel's request body ceiling
+const MAX_BYTES = 20 * 1024 * 1024; // Defense-in-depth cap for the request body; Vercel's own platform limit (~4.5MB on most plans) is smaller than this and will reject an oversized request first.
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== "POST") {
