@@ -196,18 +196,18 @@ export const DashboardLayout = () => {
 
             {/* Main content */}
             <main className="flex-1 overflow-auto min-w-0">
-                {/* Top bar */}
-                <div className="sticky top-0 z-30 flex items-center gap-3 px-4 h-14 border-b border-border/60 bg-background/90 backdrop-blur-sm">
+                {/* Top bar — floating pill, matching the homepage navbar */}
+                <div className="sticky top-4 z-30 mx-4 mb-2 flex items-center gap-3 h-16 px-3 pl-5 rounded-full bg-foreground/90 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.25)]">
                     <button
                         onClick={() => setSidebarOpen(true)}
-                        className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-secondary transition-colors"
+                        className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-background/10 text-background transition-colors"
                         aria-label="Open menu"
                     >
                         <Menu className="w-5 h-5" />
                     </button>
                     <div className="flex items-center gap-1">
                         <img src={genieLogo} alt="Career Genie" className="w-7 h-7 object-contain" />
-                        <span className="font-display font-bold text-sm leading-none">
+                        <span className="font-display font-bold text-sm leading-none text-background">
                             Career <span className="text-gradient-gold">Genie</span>
                         </span>
                     </div>
