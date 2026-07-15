@@ -826,8 +826,7 @@ The React SPA decomposes into the following major components:
 - `components/resume/ResumePDF.tsx` — @react-pdf/renderer PDF templates (6 templates)
 
 **Business Logic Libraries:**
-- `lib/ai.ts` — Generic LLM helpers: `aiText()` and `aiJson()` wrappers
-- `lib/groq.ts` — Groq SDK client initialization
+- `lib/ai.ts` — Generic LLM helpers: `aiText()` and `aiJson()` wrappers that call server-side proxy endpoints
 - `lib/careerEngine.ts` — Assessment feature building, ML API call, local fallback, skill gap analysis
 - `lib/roadmap.ts` — Roadmap generation, progress calculation, streak tracking
 - `lib/interview.ts` — Question generation, answer evaluation, session management
@@ -1004,11 +1003,18 @@ npm install
 
 **Environment Variables** (create `.env` file):
 ```
-VITE_GROQ_API_KEY=your_groq_api_key
-VITE_FIREBASE_API_KEY=your_firebase_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_ML_API_URL=http://localhost:8000   # or deployed FastAPI URL
+# Groq LLM API key — SERVER-SIDE ONLY. Used by api/ai/*.ts. Never expose to browser.
+GROQ_API_KEY=your_groq_api_key
+
+# Firebase service account (Project Settings > Service Accounts > Generate new private key).
+# SERVER-SIDE ONLY — used by api/_lib/auth.ts to verify ID tokens.
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your-project-id.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+
+# Optional: URL of the FastAPI ML service.
+# Leave blank to use the built-in offline scorer.
+VITE_ML_API_URL=http://localhost:8000
 ```
 
 **Run development server:**
@@ -1034,13 +1040,13 @@ Firebase is initialized once in `firebase.ts`, exporting `auth` and `db` instanc
 All application data is stored in `localStorage` using user-scoped keys in the format `cg:{uid}:{key}`. The `saveData<T>(key, value)` function serializes to JSON; `loadData<T>(key, defaultValue)` deserializes with a provided fallback. This single-file abstraction means every feature uses the same persistence interface and keys are automatically isolated per user.
 
 #### 6.2.3 AI Integration
-**Files:** `src/lib/groq.ts`, `src/lib/ai.ts`
+**File:** `src/lib/ai.ts`
 
-`groq.ts` initializes the Groq JS SDK client with the API key from `import.meta.env.VITE_GROQ_API_KEY`. `ai.ts` provides two helpers:
+The client does not directly use the Groq SDK. Instead, `ai.ts` provides two helpers that call server-side proxy endpoints in `api/ai/complete.ts` and `api/ai/transcribe.ts`:
 - `aiText(system, user, opts?)` — Returns a plain text completion string
 - `aiJson<T>(system, user, opts?)` — Returns a parsed JSON object of type T; strips markdown code fences before parsing
 
-Both helpers use `llama-3.3-70b-versatile` as the default model with sensible defaults for `max_tokens` and `temperature`.
+These helpers attach the user's Firebase ID token to each request, allowing the server to verify the user before calling the Groq API. The server-side endpoints hold the `GROQ_API_KEY` environment variable and use the `llama-3.3-70b-versatile` model with sensible defaults for `max_tokens` and `temperature`. This architecture keeps the API key secure and never exposes it to the browser.
 
 #### 6.2.4 Career Prediction Engine
 **File:** `src/lib/careerEngine.ts`
@@ -1192,7 +1198,7 @@ Return ONLY valid JSON. No markdown fences. No commentary.`;
 | US-008 | Last interview score | Sprint 1 (wired Sprint 5) | Home.tsx, userStore.ts | Done |
 | US-009 | Top career match on dashboard | Sprint 1 (wired Sprint 4) | Home.tsx, careerEngine.ts | Done |
 | US-010 | Feature navigation grid | Sprint 1 | Home.tsx | Done |
-| US-011 | AI career chat | Sprint 3 | Chat.tsx, groq.ts | Done |
+| US-011 | AI career chat | Sprint 3 | Chat.tsx, ai.ts (server-side proxy) | Done |
 | US-012 | Pakistani job market context | Sprint 3 | Chat.tsx (SYSTEM_PROMPT) | Done |
 | US-013 | Chat history persistence | Sprint 3 | Chat.tsx, localStorage | Done |
 | US-014 | Voice input for chat | Sprint 3 | useVoiceRecorder.ts, Groq Whisper | Done |
