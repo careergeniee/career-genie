@@ -14,7 +14,7 @@
  */
 
 import { aiText, aiJson } from "@/lib/ai";
-import { loadData, saveData, uid8, todayKey, dayDiff, KEYS } from "@/lib/userStore";
+import { loadData, saveData, uid8, todayKey, dayDiff, streakFromDates, KEYS } from "@/lib/userStore";
 import { loadAssessment, loadPrediction, analyzeSkillGap, traitScore } from "@/lib/careerEngine";
 import { PERSONALITY, type PersonalityKey } from "@/lib/mlSchema";
 import { getStack, flattenStack } from "@/lib/careerStacks";
@@ -312,19 +312,8 @@ export const hasPendingTaskToday = (tasks: DailyTask[]): boolean => {
 };
 
 /** Consecutive days (ending today or yesterday) with a completed task. */
-export const taskStreak = (tasks: DailyTask[]): number => {
-    const doneDates = Array.from(
-        new Set(tasks.filter((t) => t.done).map((t) => t.date))
-    ).sort().reverse();
-    if (doneDates.length === 0) return 0;
-    if (dayDiff(todayKey(), doneDates[0]) > 1) return 0;
-    let streak = 1;
-    for (let i = 0; i < doneDates.length - 1; i++) {
-        if (dayDiff(doneDates[i], doneDates[i + 1]) === 1) streak++;
-        else break;
-    }
-    return streak;
-};
+export const taskStreak = (tasks: DailyTask[]): number =>
+    streakFromDates(tasks.filter((t) => t.done).map((t) => t.date));
 
 /** How many days in the recent past had a task that was never completed. */
 export const missedTaskCount = (tasks: DailyTask[]): number =>

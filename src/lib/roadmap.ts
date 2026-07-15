@@ -1,5 +1,5 @@
 import { aiJson } from "@/lib/ai";
-import { uid8, todayKey, dayDiff } from "@/lib/userStore";
+import { uid8, todayKey, dayDiff, streakFromDates } from "@/lib/userStore";
 import { getStack, stackToPromptText, type StackGroup } from "@/lib/careerStacks";
 
 export const GOALS = [
@@ -137,17 +137,4 @@ export const totalProgress = (r: Roadmap) => {
 };
 
 /** Current streak: consecutive days (ending today or yesterday) with a completion. */
-export const currentStreak = (dates: string[]): number => {
-    if (dates.length === 0) return 0;
-    const uniq = Array.from(new Set(dates)).sort().reverse(); // newest first
-    const today = todayKey();
-    const gapFromToday = dayDiff(today, uniq[0]);
-    if (gapFromToday > 1) return 0; // streak broken (last activity > 1 day ago)
-
-    let streak = 1;
-    for (let i = 0; i < uniq.length - 1; i++) {
-        if (dayDiff(uniq[i], uniq[i + 1]) === 1) streak++;
-        else break;
-    }
-    return streak;
-};
+export const currentStreak = (dates: string[]): number => streakFromDates(dates);

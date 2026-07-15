@@ -146,3 +146,16 @@ export const dayDiff = (a: string, b: string) => {
     const db = new Date(b + "T00:00:00");
     return Math.round((da.getTime() - db.getTime()) / 86_400_000);
 };
+
+/** Longest run of consecutive days (ending today or yesterday) present in `dates`. 0 if the most recent date is more than 1 day old. */
+export function streakFromDates(dates: string[]): number {
+    if (dates.length === 0) return 0;
+    const uniq = Array.from(new Set(dates)).sort().reverse(); // newest first
+    if (dayDiff(todayKey(), uniq[0]) > 1) return 0;
+    let streak = 1;
+    for (let i = 0; i < uniq.length - 1; i++) {
+        if (dayDiff(uniq[i], uniq[i + 1]) === 1) streak++;
+        else break;
+    }
+    return streak;
+}
