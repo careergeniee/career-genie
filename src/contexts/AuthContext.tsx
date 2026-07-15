@@ -74,6 +74,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const login = async (email: string, password: string, remember = true) => {
+        // setPersistence mutates the shared auth singleton's persistence mode for all future
+        // sign-ins on this instance, not scoped to just this call. If loginWithGoogle or any
+        // other sign-in method is ever added without its own setPersistence call, it will
+        // silently inherit whatever mode the last email/password login attempt set.
         await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
         const cred = await signInWithEmailAndPassword(auth, email, password);
         if (!cred.user.emailVerified) {
