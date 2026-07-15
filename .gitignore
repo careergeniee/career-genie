@@ -38,3 +38,4 @@ package-lock.json
 *.sw?
 .vercel
 .env*
+.playwright-mcp
