@@ -47,7 +47,8 @@ export const onRequestPost = async ({ request, env }: Context): Promise<Response
             }),
         });
         if (!groqRes.ok) {
-            return jsonResponse(groqRes.status, { error: "AI request failed" });
+            const rawText = await groqRes.text().catch(() => "");
+            return jsonResponse(groqRes.status, { error: "AI request failed", _debug: rawText.slice(0, 500) });
         }
         const data = (await groqRes.json()) as { choices?: { message?: { content?: string } }[] };
         const content = data.choices?.[0]?.message?.content || "";
