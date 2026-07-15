@@ -34,6 +34,8 @@ const InterviewPage = () => {
     // active session
     const [session, setSession] = useState<InterviewSession | null>(null);
     const [qIndex, setQIndex] = useState(0);
+    const qIndexRef = useRef(qIndex);
+    useEffect(() => { qIndexRef.current = qIndex; }, [qIndex]);
     const [answer, setAnswer] = useState("");
     const [evaluating, setEvaluating] = useState(false);
     const [timeLeft, setTimeLeft] = useState(SECONDS_PER_Q);
@@ -43,11 +45,25 @@ const InterviewPage = () => {
     const [reviewing, setReviewing] = useState<InterviewSession | null>(null);
 
     // voice input — cross-browser via MediaRecorder + Groq Whisper
+    const recordingQIndexRef = useRef<number | null>(null);
     const onTranscript = useCallback(
-        (text: string) => setAnswer((prev) => prev ? prev + " " + text : text),
+        (text: string) => {
+            // Discard a transcript that arrives after the question it was recorded for
+            // has already been submitted/changed (e.g. user hit Submit while transcribing).
+            if (recordingQIndexRef.current !== qIndexRef.current) return;
+            setAnswer((prev) => prev ? prev + " " + text : text);
+        },
         []
     );
-    const { recording: listening, transcribing, toggle: toggleVoice, start: startVoice, stop: stopVoice } = useVoiceRecorder(onTranscript);
+    const { recording: listening, transcribing, toggle: toggleVoiceRaw, start: startVoiceRaw, stop: stopVoice } = useVoiceRecorder(onTranscript);
+    const startVoice = useCallback(() => {
+        recordingQIndexRef.current = qIndexRef.current;
+        startVoiceRaw();
+    }, [startVoiceRaw]);
+    const toggleVoice = useCallback(() => {
+        if (listening) stopVoice();
+        else startVoice();
+    }, [listening, startVoice, stopVoice]);
 
     useEffect(() => saveData(KEY, sessions), [sessions]);
 
@@ -101,6 +117,7 @@ const InterviewPage = () => {
 
     const submitAnswer = async () => {
         if (!session || evaluating) return;
+        stopVoice();
         setEvaluating(true);
         stopTimer();
         const timeUsed = SECONDS_PER_Q - timeLeft;
@@ -150,6 +167,7 @@ const InterviewPage = () => {
     }, [timeLeft, view]);
 
     const quitToSetup = () => {
+        stopVoice();
         stopTimer();
         setSession(null);
         setView("setup");
