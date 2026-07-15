@@ -1,12 +1,21 @@
 """
 Tests for the Career Genie ML service.   Run:  pytest -q
 Covers health, prediction correctness, input validation, clamping,
-determinism, and metadata. Requires career_model.pkl (run train.py first).
+determinism, metadata, auth, and the SHAP explanation. Requires
+career_model.pkl (run train.py first).
 """
 from fastapi.testclient import TestClient
 import app as A
+from auth import AuthError
 
 client = TestClient(A.app)
+
+# /predict requires a valid Firebase ID token in real use (see auth.py); that
+# needs a live Google JWKS round-trip we don't want in unit tests, so the
+# happy-path tests below override the auth dependency the standard FastAPI
+# way. test_predict_requires_auth() below restores the real dependency to
+# verify the guard itself actually rejects missing/invalid tokens.
+A.app.dependency_overrides[A.verify_auth] = lambda: "test-uid"
 
 DATA_SCIENTIST = {
     "analytical": 0.9, "problem_solving": 0.85, "python": 0.9,
@@ -44,6 +53,21 @@ def test_predict_data_scientist():
     assert total <= 1.0001  # top-5 of a proper distribution
     assert 0.0 <= body["confidence"] <= 1.0
     assert isinstance(body["uncertain"], bool)
+
+
+def test_predict_includes_shap_explanation():
+    r = client.post("/predict", json={"features": DATA_SCIENTIST, "top_k": 5})
+    body = r.json()
+    explanation = body["explanation"]
+    assert explanation is not None
+    assert 1 <= len(explanation) <= 5
+    for item in explanation:
+        assert item["feature"] in A.FEATURE_ORDER
+        assert isinstance(item["contribution"], float)
+    # The features this profile deliberately maxes out should dominate the
+    # explanation for its correctly-predicted top career.
+    top_features = {item["feature"] for item in explanation}
+    assert top_features & {"analytical", "python", "machine_learning", "statistics"}
 
 
 def test_predict_designer():
@@ -85,3 +109,65 @@ def test_nonfinite_sanitized():
 def test_unknown_features_ignored():
     r = client.post("/predict", json={"features": {"not_a_real_feature": 0.9, "python": 0.5}})
     assert r.status_code == 200
+
+
+# ---------------------------------------------------------------------------
+# Auth: temporarily drop the module-level override (see top of file) to
+# verify /predict's guard actually rejects requests, instead of just trusting
+# that wiring Depends(verify_auth) into app.py was enough.
+# ---------------------------------------------------------------------------
+
+def _drop_auth_override():
+    A.app.dependency_overrides.pop(A.verify_auth, None)
+
+
+def _restore_auth_override():
+    A.app.dependency_overrides[A.verify_auth] = lambda: "test-uid"
+
+
+def test_predict_requires_auth():
+    _drop_auth_override()
+    try:
+        r = client.post("/predict", json={"features": DATA_SCIENTIST})
+    finally:
+        _restore_auth_override()
+    assert r.status_code == 401
+
+
+def test_predict_rejects_malformed_authorization_header():
+    _drop_auth_override()
+    try:
+        r = client.post(
+            "/predict",
+            json={"features": DATA_SCIENTIST},
+            headers={"Authorization": "not-a-bearer-token"},
+        )
+    finally:
+        _restore_auth_override()
+    assert r.status_code == 401
+
+
+def test_verify_auth_dependency_maps_auth_error_to_401():
+    # Unit-level check of verify_auth itself, independent of the TestClient
+    # override plumbing above: a garbage token must raise AuthError, which
+    # verify_auth must turn into HTTPException(401) rather than a 500.
+    from fastapi import HTTPException
+    try:
+        A.verify_auth(authorization="Bearer not-a-real-jwt")
+        assert False, "expected verify_auth to raise"
+    except HTTPException as exc:
+        assert exc.status_code == 401
+
+
+def test_health_and_meta_do_not_require_auth():
+    # /health and /meta intentionally stay open even with the real auth
+    # dependency active (they're used for uptime checks and the frontend's
+    # unauthenticated cold-start warm-up ping).
+    _drop_auth_override()
+    try:
+        health_status = client.get("/health").status_code
+        meta_status = client.get("/meta").status_code
+    finally:
+        _restore_auth_override()
+    assert health_status == 200
+    assert meta_status == 200

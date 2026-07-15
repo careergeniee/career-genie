@@ -86,6 +86,12 @@ export const SKILL_CATEGORIES = [
     "Design",
 ] as const;
 
+/** Human-readable label for any of the 21 model features (traits + skills combined). */
+export const FEATURE_LABEL: Record<FeatureKey, string> = {
+    ...TRAIT_LABEL,
+    ...Object.fromEntries(SKILLS.map((s) => [s, SKILL_META[s].label])),
+} as Record<FeatureKey, string>;
+
 /**
  * Personality questionnaire. Each statement is answered on a 1-5 Likert
  * scale; answers for the same trait are averaged and scaled to 0..1.

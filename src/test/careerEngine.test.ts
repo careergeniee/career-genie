@@ -24,6 +24,7 @@ afterAll(() => {
     global.fetch = originalFetch;
 });
 
+import { auth } from "@/lib/firebase";
 import {
     traitScore, buildFeatures, analyzeSkillGap, emptySkillRatings,
     predictCareers, strongSkillsText, type Assessment,
@@ -184,6 +185,46 @@ describe("predictCareers (offline fallback — no ML API configured in tests)", 
         for (const p of result.predictions) {
             expect(Number.isFinite(p.probability)).toBe(true);
         }
+    });
+});
+
+describe("predictCareers (authenticated ML API call)", () => {
+    const zeroFeatures = Object.fromEntries(FEATURE_ORDER.map((f) => [f, 0])) as Record<
+        (typeof FEATURE_ORDER)[number],
+        number
+    >;
+    // The real Auth type declares currentUser readonly; the test double doesn't
+    // enforce that at runtime, so route assignment through an untyped view.
+    const mutableAuth = auth as unknown as { currentUser: unknown };
+
+    afterEach(() => {
+        mutableAuth.currentUser = null;
+    });
+
+    it("attaches the caller's Firebase ID token as a Bearer header when calling /predict", async () => {
+        const fetchMock = global.fetch as ReturnType<typeof vi.fn>;
+        fetchMock.mockClear();
+        mutableAuth.currentUser = { getIdToken: vi.fn().mockResolvedValue("fake-id-token") };
+
+        await predictCareers(zeroFeatures);
+
+        expect(fetchMock).toHaveBeenCalledWith(
+            expect.stringContaining("/predict"),
+            expect.objectContaining({
+                headers: expect.objectContaining({ Authorization: "Bearer fake-id-token" }),
+            })
+        );
+    });
+
+    it("skips the ML API call and falls back to local scoring when no user is signed in", async () => {
+        const fetchMock = global.fetch as ReturnType<typeof vi.fn>;
+        fetchMock.mockClear();
+        mutableAuth.currentUser = null;
+
+        const result = await predictCareers(zeroFeatures);
+
+        expect(fetchMock).not.toHaveBeenCalled();
+        expect(result.source).toBe("local");
     });
 });
 

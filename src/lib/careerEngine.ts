@@ -25,6 +25,7 @@ import {
 } from "@/lib/mlSchema";
 import { CAREER_LABELS, CAREERS, idealVector } from "@/lib/careerCatalog";
 import { loadData, saveData, removeData } from "@/lib/userStore";
+import { auth } from "@/lib/firebase";
 
 const ML_API_URL = import.meta.env.VITE_ML_API_URL as string | undefined;
 
@@ -59,6 +60,13 @@ export interface CareerPrediction {
     probability: number; // 0..1
 }
 
+/** One feature's signed contribution toward the predicted career (SHAP value from the ML API). */
+export interface FeatureContribution {
+    feature: FeatureKey;
+    /** Positive pushes toward the predicted career, negative pushes away. */
+    contribution: number;
+}
+
 export interface PredictionResult {
     predictions: CareerPrediction[];
     topCareer: string;
@@ -69,6 +77,8 @@ export interface PredictionResult {
     uncertain: boolean;
     /** Which engine produced this (e.g. "Random Forest" or "Offline scorer"). */
     algorithm: string;
+    /** Top SHAP feature contributors behind topCareer. Only set for "ml-api" predictions. */
+    explanation?: FeatureContribution[];
     createdAt: number;
 }
 
@@ -146,59 +156,76 @@ export async function predictCareers(
     topK = 5
 ): Promise<PredictionResult> {
     if (ML_API_URL) {
-        const url = `${ML_API_URL.replace(/\/$/, "")}/predict`;
-        for (let attempt = 0; attempt <= ML_RETRIES; attempt++) {
-            try {
-                const res = await fetchWithTimeout(
-                    url,
-                    {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ features, top_k: topK }),
-                    },
-                    ML_TIMEOUT_MS
-                );
-                if (res.ok) {
-                    const data = await res.json();
-                    const rawPredictions: CareerPrediction[] = (data.predictions || []).map(
-                        (p: { career: string; probability: number }) => ({
-                            career: p.career,
-                            probability: p.probability,
-                        })
+        // /predict requires a Firebase ID token (see ml-service/auth.py); predictCareers()
+        // only ever runs behind PrivateRoute, so a signed-in user should always have one.
+        // If getIdToken() fails for some reason, skip the authenticated call and fall
+        // through to the offline scorer rather than surfacing a 401 to the user.
+        const token = await auth.currentUser?.getIdToken().catch(() => undefined);
+        if (token) {
+            const url = `${ML_API_URL.replace(/\/$/, "")}/predict`;
+            for (let attempt = 0; attempt <= ML_RETRIES; attempt++) {
+                try {
+                    const res = await fetchWithTimeout(
+                        url,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${token}`,
+                            },
+                            body: JSON.stringify({ features, top_k: topK }),
+                        },
+                        ML_TIMEOUT_MS
                     );
-                    // Guard against label drift between the ML backend and the frontend
-                    // catalog — an unrecognized career would otherwise render a blank
-                    // detail panel, empty skill gap, and no roadmap stack with no warning.
-                    const knownLabels = new Set<string>(CAREER_LABELS);
-                    const predictions = rawPredictions.filter((p) => {
-                        if (knownLabels.has(p.career)) return true;
-                        console.warn(`CareerGenie: ML API returned unknown career "${p.career}" — dropping it.`);
-                        return false;
-                    });
-                    const wasFiltered = predictions.length !== rawPredictions.length;
-                    if (predictions.length) {
-                        const confidence =
-                            typeof data.confidence === "number" && !wasFiltered
-                                ? data.confidence
-                                : predictions[0].probability - (predictions[1]?.probability ?? 0);
-                        const topCareer = knownLabels.has(data.top_career) ? data.top_career : predictions[0].career;
-                        return {
-                            predictions,
-                            topCareer,
-                            source: "ml-api",
-                            confidence: Math.max(0, Math.round(confidence * 1000) / 1000),
-                            uncertain:
-                                typeof data.uncertain === "boolean"
-                                    ? data.uncertain
-                                    : confidence < UNCERTAIN_MARGIN,
-                            algorithm: data.algorithm || "ML model",
-                            createdAt: Date.now(),
-                        };
+                    if (res.ok) {
+                        const data = await res.json();
+                        const rawPredictions: CareerPrediction[] = (data.predictions || []).map(
+                            (p: { career: string; probability: number }) => ({
+                                career: p.career,
+                                probability: p.probability,
+                            })
+                        );
+                        // Guard against label drift between the ML backend and the frontend
+                        // catalog — an unrecognized career would otherwise render a blank
+                        // detail panel, empty skill gap, and no roadmap stack with no warning.
+                        const knownLabels = new Set<string>(CAREER_LABELS);
+                        const predictions = rawPredictions.filter((p) => {
+                            if (knownLabels.has(p.career)) return true;
+                            console.warn(`CareerGenie: ML API returned unknown career "${p.career}" — dropping it.`);
+                            return false;
+                        });
+                        const wasFiltered = predictions.length !== rawPredictions.length;
+                        if (predictions.length) {
+                            const confidence =
+                                typeof data.confidence === "number" && !wasFiltered
+                                    ? data.confidence
+                                    : predictions[0].probability - (predictions[1]?.probability ?? 0);
+                            const topCareer = knownLabels.has(data.top_career) ? data.top_career : predictions[0].career;
+                            const explanation: FeatureContribution[] | undefined = Array.isArray(data.explanation)
+                                ? data.explanation.filter(
+                                      (c: { feature?: string; contribution?: number }) =>
+                                          typeof c.feature === "string" && typeof c.contribution === "number"
+                                  )
+                                : undefined;
+                            return {
+                                predictions,
+                                topCareer,
+                                source: "ml-api",
+                                confidence: Math.max(0, Math.round(confidence * 1000) / 1000),
+                                uncertain:
+                                    typeof data.uncertain === "boolean"
+                                        ? data.uncertain
+                                        : confidence < UNCERTAIN_MARGIN,
+                                algorithm: data.algorithm || "ML model",
+                                explanation: explanation?.length ? explanation : undefined,
+                                createdAt: Date.now(),
+                            };
+                        }
                     }
+                    // Non-OK response: retry once, then fall back.
+                } catch {
+                    // Timeout/network error: retry once, then fall back.
                 }
-                // Non-OK response: retry once, then fall back.
-            } catch {
-                // Timeout/network error: retry once, then fall back.
             }
         }
     }

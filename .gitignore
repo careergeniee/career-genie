@@ -14,10 +14,12 @@ dist-ssr
 *.local
 coverage
 
-# ML model binary
-ml-service/career_model.pkl
+# ML service: the trained model IS committed intentionally (see ml-service/README.md
+# "Deploy" — Render serves the committed career_model.pkl instead of retraining on
+# boot), so it must stay out of this file. Only its build artifacts are ignored.
 ml-service/__pycache__/
 ml-service/*.pyc
+ml-service/.pytest_cache/
 
 # Lock files (using bun.lock)
 package-lock.json

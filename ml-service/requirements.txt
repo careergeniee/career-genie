@@ -5,6 +5,8 @@ pandas==2.2.3
 numpy==1.26.4
 joblib==1.4.2
 pydantic==2.11.5
+PyJWT[crypto]==2.10.1
+shap==0.52.0
 
 # dev / testing
 pytest==8.3.4

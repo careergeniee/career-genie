@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
     Sparkles, Target, ArrowRight, RefreshCw, Map, Loader2,
-    CheckCircle2, AlertTriangle, XCircle, Lightbulb,
+    CheckCircle2, AlertTriangle, XCircle, Lightbulb, BrainCircuit,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { aiText } from "@/lib/ai";
-import { PERSONALITY, TRAIT_LABEL } from "@/lib/mlSchema";
+import { PERSONALITY, TRAIT_LABEL, FEATURE_LABEL } from "@/lib/mlSchema";
 import { CAREER_BLURB } from "@/lib/careerCatalog";
 import {
     loadPrediction, loadAssessment, analyzeSkillGap, traitScore,
@@ -202,6 +202,43 @@ const CareersPage = () => {
                                 <p className="text-sm leading-relaxed">{explanations[selected]}</p>
                             )}
                         </div>
+
+                        {/* ML model explanation — only available for the top-ranked career,
+                            since that's the only class the backend runs SHAP against. */}
+                        {selected === prediction.topCareer &&
+                            prediction.source === "ml-api" &&
+                            prediction.explanation &&
+                            prediction.explanation.length > 0 && (
+                                <div className="rounded-xl border border-border/60 bg-secondary/20 p-4 mb-6">
+                                    <div className="flex items-center gap-2 text-xs font-semibold mb-2 text-muted-foreground">
+                                        <BrainCircuit className="w-4 h-4" /> What the model weighed most
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        {prediction.explanation.map((c) => {
+                                            const positive = c.contribution >= 0;
+                                            return (
+                                                <div key={c.feature} className="flex items-center gap-2 text-xs">
+                                                    <span
+                                                        className={cn(
+                                                            "w-5 text-center font-bold",
+                                                            positive ? "text-emerald-400" : "text-rose-400"
+                                                        )}
+                                                    >
+                                                        {positive ? "+" : "–"}
+                                                    </span>
+                                                    <span className="flex-1 text-muted-foreground">
+                                                        {FEATURE_LABEL[c.feature] ?? c.feature}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                    <p className="text-[11px] text-muted-foreground/70 mt-2.5">
+                                        From the Random Forest's own reasoning for this specific prediction,
+                                        not a general skill comparison.
+                                    </p>
+                                </div>
+                            )}
 
                         {/* Skill gap */}
                         <div className="flex items-center gap-2 mb-3">
