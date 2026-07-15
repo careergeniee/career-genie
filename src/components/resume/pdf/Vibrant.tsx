@@ -81,6 +81,7 @@ export const Vibrant = ({ d }: { d: ResumeData }) => (
                                 <Text style={[vibrant.asideText, { fontFamily: "Helvetica-Bold" }]}>{e.degree}</Text>
                                 <Text style={vibrant.asideText}>{e.school}</Text>
                                 <Text style={[vibrant.asideText, { color: "#888888" }]}>{[e.start, e.end].filter(Boolean).join(" – ")}</Text>
+                                {e.detail ? <Text style={vibrant.asideText}>{e.detail}</Text> : null}
                             </View>
                         ))}
                     </View>

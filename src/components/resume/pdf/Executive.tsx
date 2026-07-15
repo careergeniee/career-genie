@@ -54,6 +54,7 @@ export const Executive = ({ d }: { d: ResumeData }) => (
                             <Text style={[executive.sideText, { fontFamily: "Helvetica-Bold", color: "#ffffff" }]}>{e.degree}</Text>
                             <Text style={executive.sideText}>{e.school}</Text>
                             <Text style={[executive.sideText, { color: "#7fa3bf" }]}>{[e.start, e.end].filter(Boolean).join(" – ")}</Text>
+                            {e.detail ? <Text style={[executive.sideText, { color: "#7fa3bf" }]}>{e.detail}</Text> : null}
                         </View>
                     ))}
                 </>
