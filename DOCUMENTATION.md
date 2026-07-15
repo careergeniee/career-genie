@@ -778,8 +778,8 @@ Career Genie decomposes into four containers:
 
 **Container 1: React SPA (Frontend)**
 - Technology: React 18 + TypeScript + Vite
-- Responsibilities: All user-facing UI, client-side routing, state management, API calls to Groq and ML service, localStorage read/write, Firebase Auth integration
-- Communicates with: Firebase Auth (REST/SDK), Groq API (REST), FastAPI ML Service (REST), localStorage (browser API)
+- Responsibilities: All user-facing UI, client-side routing, state management, API calls to Career Genie's own `/api/ai/*` serverless functions and the FastAPI ML service, localStorage read/write, Firebase Auth integration
+- Communicates with: Firebase Auth (REST/SDK), Career Genie's own `/api/ai/*` serverless functions (REST, authenticated via a Firebase ID token — never Groq directly), FastAPI ML Service (REST), localStorage (browser API)
 
 **Container 2: Firebase Authentication**
 - Technology: Google Firebase Auth (SaaS)
@@ -789,7 +789,7 @@ Career Genie decomposes into four containers:
 **Container 3: Groq API**
 - Technology: Groq Cloud (third-party LLM inference API)
 - Responsibilities: LLM chat completions (Llama 3.3-70b), audio transcription (Whisper)
-- Communicates with: React SPA via HTTPS REST + Groq JS SDK
+- Communicates with: Career Genie's own `/api/ai/*` serverless functions only, server-side — `api/ai/complete.ts` via the Groq JS SDK, and `api/ai/transcribe.ts` via a direct REST call. It never communicates with the React SPA directly; the Groq API key and JS SDK are server-side only and are never bundled into or used by the browser.
 
 **Container 4: FastAPI ML Service**
 - Technology: Python 3.11, FastAPI, scikit-learn
@@ -826,7 +826,7 @@ The React SPA decomposes into the following major components:
 - `components/resume/ResumePDF.tsx` — @react-pdf/renderer PDF templates (6 templates)
 
 **Business Logic Libraries:**
-- `lib/ai.ts` — Generic LLM helpers: `aiText()` and `aiJson()` wrappers that call server-side proxy endpoints
+- `lib/ai.ts` — Generic LLM helpers: `aiChat()`, `aiText()`, and `aiJson()` wrappers that all call the single server-side proxy endpoint `api/ai/complete.ts`
 - `lib/careerEngine.ts` — Assessment feature building, ML API call, local fallback, skill gap analysis
 - `lib/roadmap.ts` — Roadmap generation, progress calculation, streak tracking
 - `lib/interview.ts` — Question generation, answer evaluation, session management
@@ -1042,11 +1042,12 @@ All application data is stored in `localStorage` using user-scoped keys in the f
 #### 6.2.3 AI Integration
 **File:** `src/lib/ai.ts`
 
-The client does not directly use the Groq SDK. Instead, `ai.ts` provides two helpers that call server-side proxy endpoints in `api/ai/complete.ts` and `api/ai/transcribe.ts`:
-- `aiText(system, user, opts?)` — Returns a plain text completion string
+The client does not directly use the Groq SDK. Instead, `ai.ts` provides three helpers that all funnel through an internal `callProxy()` function, which calls the single server-side proxy endpoint `api/ai/complete.ts`:
+- `aiChat(messages, opts?)` — Multi-turn chat completion; caller supplies the full message list (used by the Chat page)
+- `aiText(system, user, opts?)` — Plain text completion (with one retry and a timeout)
 - `aiJson<T>(system, user, opts?)` — Returns a parsed JSON object of type T; strips markdown code fences before parsing
 
-These helpers attach the user's Firebase ID token to each request, allowing the server to verify the user before calling the Groq API. The server-side endpoints hold the `GROQ_API_KEY` environment variable and use the `llama-3.3-70b-versatile` model with sensible defaults for `max_tokens` and `temperature`. This architecture keeps the API key secure and never exposes it to the browser.
+These helpers attach the user's Firebase ID token to each request, allowing the server to verify the user before calling the Groq API. The server-side endpoint holds the `GROQ_API_KEY` environment variable and uses the `llama-3.3-70b-versatile` model with sensible defaults for `max_tokens` and `temperature`. This architecture keeps the API key secure and never exposes it to the browser. Voice transcription is a separate, independent path — it does not go through `ai.ts` at all; see §6.2.8 — and POSTs the raw audio blob directly to the `api/ai/transcribe.ts` endpoint instead.
 
 #### 6.2.4 Career Prediction Engine
 **File:** `src/lib/careerEngine.ts`
@@ -1087,7 +1088,7 @@ The response is parsed from JSON and stored in localStorage.
 #### 6.2.8 Voice Input
 **File:** `src/hooks/useVoiceRecorder.ts`
 
-The hook uses the browser's `MediaRecorder` API to capture microphone audio. On `stop()`, the recorded audio blob is sent to the Groq Whisper API (`whisper-large-v3-turbo` model) via a `FormData` POST request. The transcription text is returned via the `onTranscript` callback, which in the Chat page auto-sends the message, and in the Interview page populates the answer textarea.
+The hook uses the browser's `MediaRecorder` API to capture microphone audio. On `stop()`, the recorded audio blob is POSTed directly as the raw request body (with a `Content-Type` header matching the recorder's mime type and the user's Firebase ID token attached) to Career Genie's own `api/ai/transcribe.ts` endpoint — the client never builds a `FormData` and never talks to Groq directly. That server-side endpoint verifies the token, reads the raw body, then builds a `FormData` and forwards it to the Groq Whisper API (`whisper-large-v3-turbo` model) using the server-held `GROQ_API_KEY`. The transcription text is returned via the `onTranscript` callback, which in the Chat page auto-sends the message, and in the Interview page populates the answer textarea.
 
 The hook exposes `toggle()` for desktop click-to-toggle behavior and separate `start()` / `stop()` for mobile press-and-hold.
 
