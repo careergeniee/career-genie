@@ -47,6 +47,17 @@ interface RawPhase {
     tasks: { text: string; resourceLabel?: string; resourceUrl?: string }[];
 }
 
+/** Only allow http(s) resource links — an LLM-hallucinated javascript:/data: URL must never reach an <a href>. */
+export function safeUrl(url: string | undefined): string | undefined {
+    if (!url) return undefined;
+    try {
+        const parsed = new URL(url);
+        return parsed.protocol === "http:" || parsed.protocol === "https:" ? url : undefined;
+    } catch {
+        return undefined;
+    }
+}
+
 /** Generate a personalized roadmap from a goal + the user's current skills. */
 export async function generateRoadmap(
     goal: string,
@@ -100,7 +111,7 @@ free resources (MDN, freeCodeCamp, official docs, Coursera, YouTube). Use real h
             text: t.text || "",
             done: false,
             resourceLabel: t.resourceLabel,
-            resourceUrl: t.resourceUrl,
+            resourceUrl: safeUrl(t.resourceUrl),
         })),
     }));
 
