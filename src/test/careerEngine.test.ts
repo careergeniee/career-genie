@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, vi, beforeAll, afterAll, beforeEach } from "vitest";
 
 // careerEngine.ts persists through userStore.ts, which pulls in Firebase —
 // stub it so these pure-logic tests never touch the real SDK.
@@ -27,6 +27,7 @@ afterAll(() => {
 import {
     traitScore, buildFeatures, analyzeSkillGap, emptySkillRatings,
     predictCareers, strongSkillsText, type Assessment,
+    loadAssessmentDraft, saveAssessmentDraft, clearAssessmentDraft,
 } from "@/lib/careerEngine";
 import { PERSONALITY, SKILLS, FEATURE_ORDER } from "@/lib/mlSchema";
 import { CAREER_LABELS } from "@/lib/careerCatalog";
@@ -182,5 +183,34 @@ describe("predictCareers (offline fallback — no ML API configured in tests)", 
         for (const p of result.predictions) {
             expect(Number.isFinite(p.probability)).toBe(true);
         }
+    });
+});
+
+describe("assessment draft persistence", () => {
+    beforeEach(() => {
+        localStorage.clear();
+    });
+
+    it("returns null when no draft has been saved", () => {
+        expect(loadAssessmentDraft()).toBeNull();
+    });
+
+    it("round-trips a saved draft", () => {
+        saveAssessmentDraft({
+            personalityAnswers: { ld1: 4 },
+            skillRatings: { ...emptySkillRatings(), python: 2 },
+            touchedSkillKeys: ["python"],
+        });
+        expect(loadAssessmentDraft()).toEqual({
+            personalityAnswers: { ld1: 4 },
+            skillRatings: { ...emptySkillRatings(), python: 2 },
+            touchedSkillKeys: ["python"],
+        });
+    });
+
+    it("removes the draft on clear", () => {
+        saveAssessmentDraft({ personalityAnswers: { ld1: 4 }, skillRatings: emptySkillRatings(), touchedSkillKeys: [] });
+        clearAssessmentDraft();
+        expect(loadAssessmentDraft()).toBeNull();
     });
 });

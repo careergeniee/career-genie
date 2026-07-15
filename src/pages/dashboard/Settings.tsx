@@ -58,6 +58,7 @@ const SettingsPage = () => {
 
     const clearKey = (key: keyof typeof KEYS, label: string) => {
         removeData(KEYS[key]);
+        if (key === "assessment") removeData(KEYS.assessmentDraft);
         setCleared((prev) => [...prev, key]);
         toast.success(`${label} cleared`);
     };
@@ -65,6 +66,7 @@ const SettingsPage = () => {
     const clearAll = () => {
         if (!window.confirm("Clear ALL your data? This cannot be undone.")) return;
         DATA_KEYS.forEach(({ key }) => removeData(KEYS[key]));
+        removeData(KEYS.assessmentDraft);
         setCleared(DATA_KEYS.map((d) => d.key));
         toast.success("All local data cleared");
     };

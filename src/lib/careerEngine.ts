@@ -24,7 +24,7 @@ import {
     type SkillKey,
 } from "@/lib/mlSchema";
 import { CAREER_LABELS, CAREERS, idealVector } from "@/lib/careerCatalog";
-import { loadData, saveData } from "@/lib/userStore";
+import { loadData, saveData, removeData } from "@/lib/userStore";
 
 const ML_API_URL = import.meta.env.VITE_ML_API_URL as string | undefined;
 
@@ -38,6 +38,20 @@ export interface Assessment {
     /** Self-rated skills (0-4) keyed by skill. */
     skillRatings: Record<SkillKey, number>;
     completedAt: number;
+}
+
+/**
+ * In-progress assessment answers, saved as the user goes so a refresh or
+ * switching device/tab mid-quiz doesn't lose progress. Deliberately stored
+ * under a separate key from Assessment — code elsewhere (Chat, Careers,
+ * instructor personas) treats loadAssessment() as a *completed* assessment
+ * and would otherwise build predictions/context off partial data.
+ */
+export interface AssessmentDraft {
+    personalityAnswers: Record<string, number>;
+    skillRatings: Record<SkillKey, number>;
+    /** Which skills the user has actually rated (skillRatings has every key pre-filled with 0). */
+    touchedSkillKeys: SkillKey[];
 }
 
 export interface CareerPrediction {
@@ -277,10 +291,14 @@ export function strongSkillsText(skillRatings: Record<SkillKey, number>): string
 // -------------------------------------------------------------------------
 
 const ASSESSMENT_KEY = "assessment";
+const ASSESSMENT_DRAFT_KEY = "assessmentDraft";
 const PREDICTION_KEY = "prediction";
 
 export const loadAssessment = () => loadData<Assessment | null>(ASSESSMENT_KEY, null);
 export const saveAssessment = (a: Assessment) => saveData(ASSESSMENT_KEY, a);
+export const loadAssessmentDraft = () => loadData<AssessmentDraft | null>(ASSESSMENT_DRAFT_KEY, null);
+export const saveAssessmentDraft = (d: AssessmentDraft) => saveData(ASSESSMENT_DRAFT_KEY, d);
+export const clearAssessmentDraft = () => removeData(ASSESSMENT_DRAFT_KEY);
 export const loadPrediction = () => loadData<PredictionResult | null>(PREDICTION_KEY, null);
 export const savePrediction = (p: PredictionResult) => saveData(PREDICTION_KEY, p);
 

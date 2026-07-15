@@ -14,6 +14,7 @@ export const KEYS = {
     instructorReminder: "instructorReminderTime",
     instructorLastNotified: "instructorLastNotified",
     assessment: "assessment",
+    assessmentDraft: "assessmentDraft",
     prediction: "prediction",
 } as const;
 

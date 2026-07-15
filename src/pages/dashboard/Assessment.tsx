@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Brain, ArrowRight, ArrowLeft, Loader2, ClipboardList,
@@ -16,6 +16,7 @@ import {
 import {
     type Assessment, buildFeatures, predictCareers, emptySkillRatings,
     saveAssessment, savePrediction, loadAssessment,
+    loadAssessmentDraft, saveAssessmentDraft, clearAssessmentDraft,
 } from "@/lib/careerEngine";
 
 const LIKERT = ["Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree"];
@@ -27,17 +28,20 @@ const AssessmentPage = () => {
     const navigate = useNavigate();
 
     const [step, setStep] = useState<Step>("intro");
+    // A draft (saved as the user goes) takes priority over a prior *completed*
+    // assessment — it's always the more recent state to resume from.
     const [answers, setAnswers] = useState<Record<string, number>>(
-        () => loadAssessment()?.personalityAnswers ?? {}
+        () => loadAssessmentDraft()?.personalityAnswers ?? loadAssessment()?.personalityAnswers ?? {}
     );
     const [skills, setSkills] = useState<Record<SkillKey, number>>(
-        () => loadAssessment()?.skillRatings ?? emptySkillRatings()
+        () => loadAssessmentDraft()?.skillRatings ?? loadAssessment()?.skillRatings ?? emptySkillRatings()
     );
-    // Tracks which skills the user has actually rated — a prior assessment's saved
-    // ratings count as touched (only the ones actually present, in case the skill
-    // schema has grown since that assessment was saved), but the all-zero default
-    // from emptySkillRatings() must not.
+    // Tracks which skills the user has actually rated — skillRatings has every key
+    // pre-filled with 0 by emptySkillRatings(), so "touched" can't be derived from
+    // which keys are present in it and must be tracked separately.
     const [touchedSkills, setTouchedSkills] = useState<Set<SkillKey>>(() => {
+        const draft = loadAssessmentDraft();
+        if (draft) return new Set(draft.touchedSkillKeys);
         const saved = loadAssessment()?.skillRatings;
         if (!saved) return new Set();
         return new Set(SKILLS.filter((s) => s in saved));
@@ -47,6 +51,20 @@ const AssessmentPage = () => {
     const answeredCount = Object.keys(answers).length;
     const personalityDone = answeredCount === PERSONALITY_QUESTIONS.length;
     const skillsDone = touchedSkills.size === SKILLS.length;
+
+    // Persist progress as the user answers, so a refresh or switching device/tab
+    // mid-quiz doesn't lose it. Debounced since this fires on every click.
+    useEffect(() => {
+        if (answeredCount === 0 && touchedSkills.size === 0) return;
+        const t = setTimeout(() => {
+            saveAssessmentDraft({
+                personalityAnswers: answers,
+                skillRatings: skills,
+                touchedSkillKeys: Array.from(touchedSkills),
+            });
+        }, 400);
+        return () => clearTimeout(t);
+    }, [answers, skills, touchedSkills, answeredCount]);
 
     const submit = async () => {
         if (!personalityDone) {
@@ -69,6 +87,7 @@ const AssessmentPage = () => {
             const result = await predictCareers(features);
             saveAssessment(assessment);
             savePrediction(result);
+            clearAssessmentDraft();
             toast.success("Career match ready");
             navigate("/dashboard/careers");
         } catch {
