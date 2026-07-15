@@ -1,8 +1,14 @@
 import React from "react";
 import { ResumeData } from "@/lib/resume";
 
+// Strips a leading markdown bullet/number marker (e.g. "* ", "- ", "1. ") that
+// AI-rewritten text sometimes includes despite being asked for plain lines —
+// the templates already render their own "•" prefix, so a leftover marker
+// would otherwise show as "• * text".
+const stripBulletMarker = (s: string) => s.replace(/^(?:[-*•]|\d+[.)])\s+/, "");
+
 export const bullets = (s: string) =>
-    s.split("\n").map((b) => b.trim()).filter(Boolean);
+    s.split("\n").map((b) => stripBulletMarker(b.trim())).filter(Boolean);
 
 export const contact = (p: ResumeData["personal"]) =>
     [p.email, p.phone, p.location, p.website].filter(Boolean);
