@@ -1,22 +1,19 @@
 import { useState, useRef, useCallback } from "react";
 import { toast } from "sonner";
+import { auth } from "@/lib/firebase";
 
 async function transcribeAudio(blob: Blob, mimeType: string): Promise<string> {
-    const ext = mimeType.includes("ogg") ? "ogg" : mimeType.includes("mp4") ? "mp4" : "webm";
-    const file = new File([blob], `voice.${ext}`, { type: mimeType });
+    const token = await auth.currentUser?.getIdToken();
+    if (!token) throw new Error("Not signed in");
 
-    const form = new FormData();
-    form.append("file", file, file.name);
-    form.append("model", "whisper-large-v3-turbo");
-
-    const res = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+    const res = await fetch("/api/ai/transcribe", {
         method: "POST",
-        headers: { Authorization: `Bearer ${import.meta.env.VITE_GROQ_API_KEY}` },
-        body: form,
+        headers: { "Content-Type": mimeType, Authorization: `Bearer ${token}` },
+        body: blob,
     });
 
-    if (!res.ok) throw new Error(`Groq ${res.status}`);
-    const data = await res.json() as { text: string };
+    if (!res.ok) throw new Error(`Transcribe ${res.status}`);
+    const data = (await res.json()) as { text: string };
     return data.text.trim();
 }
 
