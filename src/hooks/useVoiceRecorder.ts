@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { auth } from "@/lib/firebase";
 
@@ -26,8 +26,11 @@ export function useVoiceRecorder(onTranscript: (text: string) => void) {
     const [transcribing, setTranscribing] = useState(false);
     const recorderRef = useRef<MediaRecorder | null>(null);
     const chunksRef = useRef<Blob[]>([]);
+    const startingRef = useRef(false);
 
     const start = useCallback(async () => {
+        if (startingRef.current || recorderRef.current) return; // already starting/recording
+        startingRef.current = true;
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             const recorder = new MediaRecorder(stream);
@@ -39,6 +42,7 @@ export function useVoiceRecorder(onTranscript: (text: string) => void) {
 
             recorder.onstop = async () => {
                 stream.getTracks().forEach((t) => t.stop());
+                recorderRef.current = null;
                 const mimeType = recorder.mimeType || "audio/webm";
                 const blob = new Blob(chunksRef.current, { type: mimeType });
 
@@ -59,6 +63,8 @@ export function useVoiceRecorder(onTranscript: (text: string) => void) {
             setRecording(true);
         } catch {
             toast.error("Microphone access denied. Allow microphone in your browser settings.");
+        } finally {
+            startingRef.current = false;
         }
     }, [onTranscript]);
 
@@ -71,6 +77,14 @@ export function useVoiceRecorder(onTranscript: (text: string) => void) {
         if (recording) stop();
         else start();
     }, [recording, start, stop]);
+
+    // Stop any live recording (and release the mic) if the owning component unmounts.
+    useEffect(() => {
+        return () => {
+            recorderRef.current?.stop();
+            recorderRef.current = null;
+        };
+    }, []);
 
     return { recording, transcribing, toggle, start, stop };
 }
