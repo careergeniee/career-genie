@@ -25,49 +25,73 @@ An AI-powered career guidance platform that helps users discover their ideal car
 - **Styling**: Tailwind CSS, shadcn/ui (Radix UI primitives)
 - **Routing**: React Router v6
 - **State / Data**: TanStack Query, React Hook Form + Zod
-- **Auth**: Firebase Authentication
-- **AI / LLM**: Groq SDK — Llama 3.3-70B Versatile
+- **Auth**: Firebase Authentication, with Firestore for per-user data sync (localStorage-first, Firestore as backup/cross-device sync)
+- **AI / LLM**: Groq — Llama 3.3-70B Versatile — called exclusively from server-side proxy endpoints (`api/ai/*.ts`), never from the browser
+- **Backend**: Vercel Serverless Functions — proxy all Groq calls and verify Firebase ID tokens via `firebase-admin`
 - **ML Backend**: FastAPI (Random Forest); falls back to an in-browser offline scorer
 - **PDF**: `@react-pdf/renderer`
 - **Testing**: Vitest + Testing Library
+- **Package manager**: [Bun](https://bun.sh) — `bun.lock` is the committed lockfile; using `npm install` instead works but can resolve different transitive dependency versions, so prefer Bun locally when possible
+
+---
+
+## Deployments
+
+The app is deployed to **two** targets, both serving from `main`:
+
+| Deployment | Role |
+|---|---|
+| **Vercel** (`career-genie-*.vercel.app`) | Full app, including the `api/ai/*.ts` serverless functions that call Groq |
+| **Cloudflare Pages** (`career-genie.pages.dev`) | Static frontend only — has no working AI backend of its own |
+
+Cloudflare Pages can't run its own Groq proxy: Groq's bot-protection blocks requests originating from Cloudflare Workers' IP ranges at the network level, regardless of API key correctness. Instead, the Cloudflare-hosted frontend calls the Vercel deployment's `/api/ai/*` endpoints **cross-origin**, gated by CORS (`api/_lib/cors.ts`, allow-listing the Cloudflare Pages origin) and pointed there via the `VITE_API_BASE_URL` build-time env var (see below). Every other feature (auth, Firestore, ML predictions) works identically on both.
 
 ---
 
 ## Project Structure
 
 ```
+api/                       # Vercel serverless functions — the only code that ever sees GROQ_API_KEY
+├── ai/
+│   ├── complete.ts        # Chat/text/JSON completion proxy (used by aiText / aiJson / aiChat)
+│   └── transcribe.ts      # Voice-note transcription proxy (Whisper via Groq)
+└── _lib/
+    ├── auth.ts            # Verifies the caller's Firebase ID token (firebase-admin)
+    └── cors.ts            # Allow-lists the Cloudflare Pages origin for cross-origin calls
+
 src/
 ├── pages/
-│   ├── Index.tsx          # Landing page
-│   ├── About.tsx
-│   ├── Services.tsx / ServiceDetail.tsx
-│   ├── Contact.tsx
+│   ├── Index.tsx           # Landing page
+│   ├── About.tsx / Contact.tsx
 │   ├── Login.tsx / Signup.tsx / ForgotPassword.tsx
 │   └── dashboard/
-│       ├── Home.tsx       # Dashboard overview
-│       ├── Assessment.tsx # Career assessment form
-│       ├── Careers.tsx    # ML predictions & skill gaps
-│       ├── Chat.tsx       # AI chatbot
-│       ├── Resume.tsx     # Resume builder
-│       ├── Interview.tsx  # Interview prep
-│       ├── Roadmap.tsx    # Career roadmap
-│       └── Instructor.tsx # Senior instructor module
+│       ├── Home.tsx        # Dashboard overview
+│       ├── Assessment.tsx  # Career assessment form
+│       ├── Careers.tsx     # ML predictions & skill gaps
+│       ├── Chat.tsx        # AI chatbot (reply/copy/delete message actions)
+│       ├── Resume.tsx / ResumeForm.tsx  # Resume builder + live preview
+│       ├── Interview.tsx / InterviewSession.tsx  # Mock interview flow
+│       ├── Roadmap.tsx     # Career roadmap
+│       ├── Instructor.tsx  # Senior instructor module (+ instructor/ tab components)
+│       └── Settings.tsx    # Profile + local data management
 ├── components/
 │   ├── Layout.tsx / DashboardLayout.tsx
 │   ├── Navbar.tsx / Footer.tsx
-│   └── ui/               # shadcn/ui component library
+│   ├── resume/            # Resume preview + PDF templates (6 each)
+│   └── ui/                # shadcn/ui component library
 ├── lib/
-│   ├── ai.ts             # Groq LLM helpers (aiText / aiJson)
-│   ├── careerEngine.ts   # ML pipeline: features → prediction → skill gap
-│   ├── mlSchema.ts       # Feature definitions, career labels, ideal vectors
-│   ├── resume.ts         # Resume generation logic
-│   ├── interview.ts      # Interview question generation
-│   ├── roadmap.ts        # Roadmap generation
-│   ├── instructor.ts     # Instructor task/quiz generation
-│   ├── userStore.ts      # Per-user localStorage persistence
-│   └── firebase.ts       # Firebase app + auth init
+│   ├── ai.ts              # Client-side proxy calls (aiText / aiJson / aiChat) → api/ai/*.ts
+│   ├── careerEngine.ts    # ML pipeline: features → prediction → skill gap
+│   ├── careerCatalog.ts / careerStacks.ts  # Career labels + curated tech stacks per field
+│   ├── mlSchema.ts        # Feature definitions, career labels, ideal vectors
+│   ├── resume.ts / interview.ts / roadmap.ts / instructor.ts  # Per-feature AI + domain logic
+│   ├── userStore.ts       # Per-user localStorage persistence (Firestore-synced)
+│   ├── authErrors.ts      # Firebase auth error → user-facing message mapping
+│   └── firebase.ts        # Firebase app + auth + Firestore init
 └── contexts/
-    └── AuthContext.tsx   # Firebase auth context + PrivateRoute
+    └── AuthContext.tsx    # Firebase auth context + PrivateRoute
+
+firestore.rules             # users/{userId} readable/writable only by that uid
 ```
 
 ---
@@ -110,6 +134,11 @@ FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY----
 # Optional: URL of the FastAPI ML service.
 # Leave blank to use the built-in offline scorer.
 VITE_ML_API_URL=https://your-ml-service.onrender.com
+
+# Only needed on deployments that can't call the api/ai/*.ts functions directly
+# (i.e. Cloudflare Pages — see "Deployments" above). Leave blank on Vercel;
+# same-origin relative paths are used by default.
+VITE_API_BASE_URL=
 ```
 
 The AI chatbot, resume, interview, and roadmap features call server-side proxy endpoints (`api/ai/*.ts`) that hold the Groq key — it is never exposed to the browser. When running locally with `npm run dev`, use `npx vercel dev` instead so these API routes are served.
@@ -150,8 +179,10 @@ The career prediction pipeline works as follows:
 
 ## Authentication Flow
 
-- Firebase Authentication handles sign-up, login, and password reset.
+- Firebase Authentication handles sign-up, login, and password reset. Login requires a verified email.
 - All `/dashboard/*` routes are protected by a `PrivateRoute` component that redirects unauthenticated users to `/login`.
+- The `api/ai/*.ts` functions independently verify the caller's Firebase ID token server-side (`api/_lib/auth.ts`) — the client-side route guard is a UX convenience, not the security boundary.
+- Firestore access is restricted by `firestore.rules`: a `users/{userId}` document is only readable/writable by the matching authenticated uid. Deploy rule changes with `firebase deploy --only firestore:rules`.
 
 ---
 
@@ -166,3 +197,5 @@ The career prediction pipeline works as follows:
 | `npm run lint` | Run ESLint |
 | `npm run test` | Run tests once |
 | `npm run test:watch` | Run tests in watch mode |
+| `npm run test:coverage` | Run tests with coverage report |
+| `npm run typecheck` | Type-check the whole project (`tsc -b --noEmit`) |
