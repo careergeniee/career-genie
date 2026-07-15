@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { requireUser } from "../_lib/auth";
+import { requireUser } from "../_lib/auth.js";
 
 export const config = { api: { bodyParser: false } };
 
