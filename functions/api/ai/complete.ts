@@ -4,7 +4,6 @@ import { jsonResponse } from "../_lib/http.js";
 interface Env {
     GROQ_API_KEY: string;
     FIREBASE_PROJECT_ID: string;
-    DEBUG_TOKEN?: string;
 }
 
 interface Context {
@@ -48,14 +47,6 @@ export const onRequestPost = async ({ request, env }: Context): Promise<Response
             }),
         });
         if (!groqRes.ok) {
-            // TEMPORARY: only reveals detail to a request carrying the exact server-side
-            // debug secret; ordinary callers (including the real app) never see this.
-            const isDebugRequest =
-                !!env.DEBUG_TOKEN && request.headers.get("x-debug-token") === env.DEBUG_TOKEN;
-            if (isDebugRequest) {
-                const rawText = await groqRes.text().catch(() => "");
-                return jsonResponse(groqRes.status, { error: "AI request failed", _debug: rawText.slice(0, 800) });
-            }
             return jsonResponse(groqRes.status, { error: "AI request failed" });
         }
         const data = (await groqRes.json()) as { choices?: { message?: { content?: string } }[] };
