@@ -52,7 +52,7 @@ export function useVoiceRecorder(onTranscript: (text: string) => void) {
                     if (text) onTranscript(text);
                     else toast.info("Didn't catch that — try again.");
                 } catch {
-                    toast.error("Transcription failed. Check your API key and try again.");
+                    toast.error("Transcription failed. Please try again.");
                 } finally {
                     setTranscribing(false);
                 }
