@@ -1,5 +1,7 @@
 # Port AI API to Cloudflare Pages Functions Implementation Plan
 
+> **STATUS: ABANDONED.** This plan was fully implemented (the `functions/` tree existed with all handlers below), then reverted in commit `af8fe2f` ("fix: point Cloudflare Pages frontend at the working Vercel AI proxy"). Groq blocks Cloudflare Workers' IP ranges at the network level (confirmed via live testing + community.groq.com/t/ip-address-range-blocked-by-cloudflare/728) — calling Groq directly from a Cloudflare Pages Function returns 403 regardless of auth/key correctness, with no fix available on our end. This is an unfixable platform constraint, not a bug — **do not re-attempt this plan.** The current, working architecture (Cloudflare Pages frontend calling the Vercel `api/ai/*` proxy cross-origin via CORS) is documented in `README.md` § Deployments. This file is kept for historical context only.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make the AI chatbot and voice transcription work on the Cloudflare Pages deployment (`career-genie.pages.dev`) by porting the existing Vercel serverless functions (`api/ai/complete.ts`, `api/ai/transcribe.ts`, `api/_lib/auth.ts`) to Cloudflare Pages Functions.
