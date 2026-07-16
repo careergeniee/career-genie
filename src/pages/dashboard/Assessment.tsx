@@ -239,7 +239,7 @@ const AssessmentPage = () => {
                                                                     setTouchedSkills((t) => new Set(t).add(s));
                                                                 }}
                                                                 className={cn(
-                                                                    "rounded-md border px-2 py-1.5 text-[10px] transition-all",
+                                                                    "rounded-md border px-2 py-1.5 text-[10px] transition-all max-sm:flex max-sm:min-h-11 max-sm:items-center max-sm:justify-center max-sm:break-words max-sm:text-center",
                                                                     active
                                                                         ? "border-primary bg-primary/15 text-primary font-semibold"
                                                                         : "border-border/60 text-muted-foreground hover:border-primary/40"
@@ -256,7 +256,7 @@ const AssessmentPage = () => {
                                 </div>
                             );
                         })}
-                        <div className="flex justify-between pt-2">
+                        <div className="flex max-sm:flex-col max-sm:gap-3 justify-between pt-2">
                             <Button variant="ghost" onClick={() => setStep("personality")}>
                                 <ArrowLeft className="w-4 h-4" /> Back
                             </Button>
