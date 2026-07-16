@@ -121,7 +121,7 @@ const RoadmapPage = () => {
                                     setCustomGoal("");
                                 }}
                                 className={cn(
-                                    "text-left text-sm px-3 py-2 rounded-lg border transition-all",
+                                    "text-left text-sm px-3 py-2 max-sm:py-3 rounded-lg border transition-all",
                                     goal === g && !customGoal
                                         ? "border-primary/60 bg-primary/10 text-foreground"
                                         : "border-border/60 bg-secondary/30 text-muted-foreground hover:text-foreground"
@@ -269,7 +269,7 @@ const RoadmapPage = () => {
                                             >
                                                 <button
                                                     onClick={() => toggleTask(phase.id, task.id)}
-                                                    className="mt-0.5 shrink-0"
+                                                    className="shrink-0 mt-0.5 max-sm:mt-0 max-sm:w-11 max-sm:h-11 max-sm:flex max-sm:items-center max-sm:justify-center"
                                                 >
                                                     {task.done ? (
                                                         <CheckCircle2 className="w-5 h-5 text-primary" />
