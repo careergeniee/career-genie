@@ -352,3 +352,29 @@ git commit -m "fix: center scroll position on HeroShowcase open so all cards are
 git add src/components/ui/input.tsx
 git commit -m "fix: bump shared Input component to 44px tap target on mobile"
 ```
+
+---
+
+### Task 17: DashboardLayout nav links + DailyTaskReminder tap-target fix
+
+**Files:**
+- Modify: `src/components/DashboardLayout.tsx`
+- Modify: `src/components/DailyTaskReminder.tsx`
+
+**Interfaces:** None.
+
+**Background:** Task 5's QA pass on `/dashboard` noticed two more undersized tap targets outside its own file scope, both rendered as part of the dashboard shell on every dashboard page:
+
+- `DashboardLayout.tsx` nav-drawer links (`pl-4 pr-3 py-2.5`, lines ~125, ~179, ~189) render at ~42px height — just under the 44px guideline.
+- `DailyTaskReminder.tsx` (rendered inside `DashboardLayout`, mounted on every dashboard page except `/dashboard/instructor`) has several small pill-style buttons well under 44px: the "Mark done" / "Open instructor" buttons in the pending-task banner (`px-3 py-1.5`, ~28px height, lines ~95-107), and the "Get task" / dismiss (✕) buttons in the soft-prompt pill (line ~121-133, dismiss button has no explicit padding and is sized only by its `w-3.5 h-3.5` icon — likely ~14-16px).
+
+These are small, compact "pill" controls where naively padding them to 44px (per the standard Fix Recipe) would visually balloon them out of proportion with their current design intent. Use judgment: prefer extending the *invisible* hit area (e.g. a `min-h-11`/`min-w-11` wrapper, or increasing padding only via `max-sm:` so desktop's tighter, mouse-appropriate sizing is preserved) over changing the visible pill's padding/size at every breakpoint, unless the visual size increase is itself acceptable — check the shared Fix Recipes and Task 1/16/4's `max-sm:` precedent for the general pattern, then decide per-button what looks right.
+
+- [ ] Apply the local QA auth bypass (see one-time setup) to reach `/dashboard`.
+- [ ] Screenshot/measure `DashboardLayout`'s nav drawer (open it via the hamburger) at 375px — measure each nav link's rendered height via `getBoundingClientRect()`.
+- [ ] `DailyTaskReminder` has two mutually-exclusive states (pending-task banner vs. soft-prompt pill) driven by localStorage data (see Task 5's report for how to seed representative `dailyTasks`/instructor state via `evaluate_script` if neither state renders by default) — QA both states' buttons at 375px.
+- [ ] Fix each undersized target found, using your judgment per the Background note above. Re-measure to confirm ≥44px (or ≥44px invisible hit area) at 375px.
+- [ ] Spot-check 768px and desktop (1280px) to confirm no visual regression — pill controls should look the same as before at desktop widths, only their reachable tap area (and, where you chose to, mobile-only visible size) should differ.
+- [ ] Revert the auth bypass in `src/App.tsx`; confirm `git diff src/App.tsx` is empty.
+- [ ] Run: `bun run typecheck` — expect no errors.
+- [ ] Commit: `git add src/components/DashboardLayout.tsx src/components/DailyTaskReminder.tsx && git commit -m "fix: enlarge undersized tap targets in dashboard nav and DailyTaskReminder"`
