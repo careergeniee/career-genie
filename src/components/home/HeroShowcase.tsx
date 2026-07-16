@@ -1,4 +1,4 @@
-import { useEffect, useState, type RefObject } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
 import { Link } from "react-router-dom";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -234,13 +234,78 @@ export const HeroShowcase = ({ containerRef }: HeroShowcaseProps = {}) => {
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState<number | null>(null);
     const selectedCard = selected !== null ? CARDS[selected] : null;
+    const rowRef = useRef<HTMLDivElement>(null);
+    // Screen-space (getBoundingClientRect) left offsets of each card, captured the instant
+    // BEFORE an open/close toggle. Below `lg`, toggling `open` also flips the row's
+    // `justify-content` (center <-> start) so every card gets a distinct natural position
+    // reachable by scroll — see the row div below. But `justify-content` isn't animatable:
+    // it changes layout instantly, while each card's `transform` is mid-way through (or
+    // about to start) a CSS transition computed against the OLD layout. Left alone, this
+    // produces a real, large (~300px+ at 375px) instant jump the frame the class flips,
+    // before the intended fan animation even begins (confirmed empirically). We use the
+    // FLIP technique to fix it: capture "before" screen positions pre-toggle, then in
+    // useLayoutEffect (after React has applied the new layout + new target transform, but
+    // before paint) measure the "after" natural position, inject the delta as an un-transitioned
+    // transform so the first painted frame still matches the pre-toggle screen position, then
+    // restore the true declared transform+transition so the browser animates from that visually
+    // continuous starting point to the real target — smoothly, with no snap either direction.
+    const prevRectsRef = useRef<number[] | null>(null);
+
+    const captureCardLefts = () => {
+        const row = rowRef.current;
+        if (!row) return null;
+        return Array.from(row.children).map(
+            (el) => (el as HTMLElement).getBoundingClientRect().left,
+        );
+    };
+    const openRow = () => { prevRectsRef.current = captureCardLefts(); setOpen(true); };
+    const closeRow = () => { prevRectsRef.current = captureCardLefts(); setOpen(false); };
+    const toggleRow = () => { prevRectsRef.current = captureCardLefts(); setOpen((v) => !v); };
+
+    useLayoutEffect(() => {
+        const row = rowRef.current;
+        const prev = prevRectsRef.current;
+        prevRectsRef.current = null;
+        if (!row || !prev) return;
+        const children = Array.from(row.children) as HTMLElement[];
+        const trueTransitions = children.map((el) => el.style.transition);
+        const trueTransforms = children.map((el) => el.style.transform);
+
+        // Phase 1: freeze every card's transition BEFORE measuring. Without this, a
+        // transition already kicked off the instant React committed the new transform
+        // (old value -> trueTransform), so getBoundingClientRect() below would read a
+        // value still mid-interpolation (effectively "new layout base + old transform"),
+        // not the true settled target -- silently corrupting the whole calculation.
+        children.forEach((el) => { el.style.transition = "none"; });
+        void row.offsetHeight; // flush the transition:none writes before measuring
+
+        // Phase 2: now that each card is pinned at its true target (no animation),
+        // measure it and inject a compensating translateX so this still-frozen frame
+        // renders at exactly the pre-toggle screen position -- no jump yet.
+        children.forEach((el, i) => {
+            if (prev[i] === undefined) return;
+            const delta = prev[i] - el.getBoundingClientRect().left;
+            if (Math.abs(delta) < 0.5) return;
+            el.style.transform = `translateX(${delta}px) ${trueTransforms[i]}`;
+        });
+        void row.offsetHeight; // flush so the compensated, un-transitioned frame actually paints
+
+        // Phase 3: restore the real transition + real transform. The browser now
+        // animates FROM the compensated (visually continuous) position TO the true
+        // target, using the same duration/stagger delay React already declared.
+        children.forEach((el, i) => {
+            el.style.transition = trueTransitions[i];
+            el.style.transform = trueTransforms[i];
+        });
+    }, [open]);
 
     // On open, center the scroll position within the overflow so both the leading and
-    // trailing cards (clipped at rest by justify-center) are reachable by scrolling in
-    // either direction, instead of starting pinned at scrollLeft: 0. The cards spread out
-    // via a staggered CSS transform transition rather than an instant layout change, so
-    // scrollWidth doesn't reach its expanded value until that transition finishes — we
-    // wait for it before measuring, otherwise we'd center against the still-stacked width.
+    // trailing cards (reachable now that the row switches to justify-start below lg — see
+    // the row div below) are visible by scrolling in either direction, instead of starting
+    // pinned at scrollLeft: 0. The cards spread out via a staggered CSS transform transition
+    // rather than an instant layout change, so scrollWidth doesn't reach its expanded value
+    // until that transition finishes — we wait for it before measuring, otherwise we'd
+    // center against the still-stacked width.
     useEffect(() => {
         if (!open) return;
         const row = containerRef?.current;
@@ -254,13 +319,26 @@ export const HeroShowcase = ({ containerRef }: HeroShowcaseProps = {}) => {
     return (
         <div
             className="overflow-visible cursor-pointer"
-            onMouseEnter={() => setOpen(true)}
-            onMouseLeave={() => setOpen(false)}
-            onClick={() => setOpen((v) => !v)}
+            onMouseEnter={openRow}
+            onMouseLeave={closeRow}
+            onClick={toggleRow}
         >
             {/* Flex row — natural positions ARE the spread positions.
-                translateX pulls cards to center when stacked. */}
-            <div className="flex justify-center overflow-visible" style={{ gap: GAP }}>
+                translateX pulls cards to center when stacked. Below lg, switch to
+                justify-start while open so every card (including the leading ones)
+                gets a distinct natural position included in scrollWidth — with
+                justify-center, only trailing-edge overflow is scrollable, permanently
+                stranding the first couple of cards. Desktop (lg+) never overflows, so
+                it stays on justify-center unconditionally to avoid a no-op-turned-regression.
+                (See the FLIP compensation above for why this doesn't visually jump.) */}
+            <div
+                ref={rowRef}
+                className={cn(
+                    "flex overflow-visible lg:justify-center",
+                    open ? "justify-start" : "justify-center",
+                )}
+                style={{ gap: GAP }}
+            >
                 {CARDS.map((card, i) => {
                     const tx  = open ? 0 : stackShift(i);
                     const rot = open ? 0 : (i - 3) * 2.5;
