@@ -5,5 +5,5 @@ export default defineConfig({
     preset: "2023",
   },
   preset: minimal2023Preset,
-  images: ["src/assets/genie-logo.png"],
+  images: ["public/genie-logo-source.png"],
 });
