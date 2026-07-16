@@ -127,8 +127,11 @@ export const DailyTaskReminder = () => {
                         className="relative inline-flex items-center gap-1 font-semibold text-primary hover:text-primary-glow transition-colors shrink-0"
                     >
                         {/* Invisible hit-area extension, mobile-only — this pill's text-only
-                            button is far under 44px; keep its visible size but widen the tap box. */}
-                        <span className="absolute inset-0 max-sm:-inset-4" aria-hidden="true" />
+                            button is far under 44px; keep its visible size but widen the tap box.
+                            The right/inward side (facing "Dismiss", only ~12px away) is shrunk to
+                            -5px instead of -16px so the two hit areas never bleed into each
+                            other's visible box — see task-A17-report.md Fix Round 1. */}
+                        <span className="absolute inset-0 max-sm:-inset-y-4 max-sm:-left-4 max-sm:-right-[5px]" aria-hidden="true" />
                         Get task <ArrowRight className="w-3 h-3" />
                     </button>
                     <button
@@ -136,7 +139,9 @@ export const DailyTaskReminder = () => {
                         className="relative text-muted-foreground/60 hover:text-foreground shrink-0 ml-0.5"
                         aria-label="Dismiss"
                     >
-                        <span className="absolute inset-0 max-sm:-inset-4" aria-hidden="true" />
+                        {/* Left/inward side (facing "Get task") shrunk to -5px for the same
+                            overlap-avoidance reason as above. */}
+                        <span className="absolute inset-0 max-sm:-inset-y-4 max-sm:-right-4 max-sm:-left-[5px]" aria-hidden="true" />
                         <X className="w-3.5 h-3.5" />
                     </button>
                 </div>
