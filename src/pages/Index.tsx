@@ -101,7 +101,7 @@ const Index = () => {
             <h2 className="font-display font-bold text-3xl tracking-tight">Your Toolkit</h2>
             <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground font-medium">7 modules</span>
           </div>
-          <div className="w-full overflow-visible px-8">
+          <div className="w-full overflow-x-auto px-8">
             <HeroShowcase />
           </div>
         </section>
