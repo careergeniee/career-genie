@@ -14,7 +14,7 @@
 
 - Must render cleanly (no horizontal overflow, no clipping) at 375px width; spot-check 768px after each fix.
 - Do not change desktop (`lg`+) layout or behavior — only add/adjust classes scoped below `sm`/`md`.
-- No new dependencies — Tailwind classes only.
+- No new dependencies — Tailwind classes only, with one named, user-approved exception: Task 14 (added after Task 2 uncovered a bug no CSS-only fix could fully resolve) makes a small JS behavior change to `HeroShowcase.tsx`.
 - Interactive elements (buttons, links, icons) need ≥44×44px tap targets with reasonable spacing between adjacent ones.
 - `bun run typecheck` must pass after every task; `bun run test` must still pass at the end.
 
@@ -257,7 +257,68 @@ This page most likely has the split "form editor + live preview" layout called o
 
 ---
 
-### Task 14: Final regression pass
+### Task 14: HeroShowcase mobile carousel scroll-centering fix
+
+**Files:**
+- Modify: `src/components/home/HeroShowcase.tsx`
+
+**Interfaces:** None — internal component behavior only, no exported signature changes.
+
+**Background:** Task 2 found and partially fixed a real mobile bug in the homepage's "Your Toolkit" card showcase. The 7 preview cards render in a `flex justify-center` row with fixed pixel widths (`CARD_W = 148`, `GAP = 14`, natural row width ≈1120px) inside a ~311px-wide container at 375px viewport. Task 2's fix changed the wrapper in `src/pages/Index.tsx` from `overflow-visible` to `overflow-x-auto`, which made the trailing ~5 of 7 cards reachable by horizontal scroll when the user taps to open the showcase (there's no `hover` on touch devices, so tap is the only way to trigger the open state). However, because the row is `justify-center`, the *leading* 1-2 cards remain clipped and unreachable at the default `scrollLeft: 0` position — centered-flex overflow only exposes trailing-edge overflow to scrolling, not leading-edge, per standard CSS overflow/alignment behavior. Two CSS-only alternatives (`justify-start`, `justify-[safe_center]`) were tried and rejected because both broke the default (closed) centered resting view.
+
+This task is an explicit, user-approved exception to the plan's "Tailwind classes only, no restructuring" scope — a small JS behavior change is required and has been authorized specifically for this component.
+
+- [ ] **Step 1: Read the current component**
+
+Read `src/components/home/HeroShowcase.tsx` in full to find: the ref (or add one) to the scrollable row element, the state variable that tracks open/closed (referred to as `open` in Task 2's report), and the row's DOM structure (the `flex justify-center` container holding the 7 cards).
+
+- [ ] **Step 2: Center the scroll position when the showcase opens**
+
+Add a `useEffect` (or equivalent, matching the file's existing patterns — check whether it already uses `useEffect`/`useRef` elsewhere in this file or the codebase's general style) that, when the open state becomes `true`, sets the row's `scrollLeft` so the natural centered content is scrolled into a position where all 7 cards are reachable in both directions. A simple, robust approach: on open, set `scrollLeft = (row.scrollWidth - row.clientWidth) / 2` — this centers the scroll position within the overflow, making both the leading and trailing edges reachable by scrolling in either direction from the middle, rather than starting pinned at 0 (which only exposes the trailing edge).
+
+Example shape (adapt names/structure to match the actual file):
+
+```tsx
+const rowRef = useRef<HTMLDivElement>(null);
+
+useEffect(() => {
+  if (!open) return;
+  const row = rowRef.current;
+  if (!row) return;
+  row.scrollLeft = (row.scrollWidth - row.clientWidth) / 2;
+}, [open]);
+```
+
+Attach `ref={rowRef}` to the same element that carries `overflow-x-auto` (the wrapper in `Index.tsx`) or, if the scrollable element is actually inside `HeroShowcase.tsx` itself, to that internal element — inspect the actual DOM structure from Step 1 to determine which. If the scrollable element lives in `Index.tsx` (the parent), you may need to lift the ref up or accept a `containerRef` prop into `HeroShowcase` — pick whichever is more consistent with the existing prop/ref patterns already used between these two files.
+
+- [ ] **Step 3: Verify in the browser**
+
+Reuse the existing dev server (`curl -sf http://localhost:8080 >/dev/null && echo running` — do not start a second instance; see `.superpowers/sdd/mobile-audit-shared-context.md` for why). Navigate to `/`, resize to 375×667, tap to open the showcase, and use `evaluate_script` to confirm: (a) `scrollLeft` after opening is no longer `0`, (b) scrolling left from that position reveals the previously-clipped leading card(s) fully (no clipped text/edges), (c) scrolling right still reveals the trailing cards fully, (d) closing and reopening the showcase re-centers correctly (no leftover scroll position from a prior interaction). Take screenshots as evidence for the report.
+
+- [ ] **Step 4: Confirm the closed (default) state is unaffected**
+
+Screenshot the closed state at 375px before any tap — must be pixel-equivalent to before this change (single centered stacked card, no visible scrollbar, no layout shift).
+
+- [ ] **Step 5: Spot-check 768px and desktop (1280px)**
+
+Confirm the same open/scroll-centering behavior works reasonably at 768px, and that desktop (`lg`+, where `HeroShowcase` presumably uses `hover` instead of tap per Task 2's report) is entirely unaffected by this change — the `useEffect` should only run on `open`, and desktop's hover-triggered open (if that's how it works there) should still look and behave exactly as before. Read the component to confirm whether desktop uses the same `open` state or a separate hover mechanism before concluding this.
+
+- [ ] **Step 6: Run typecheck**
+
+Run: `bun run typecheck` — expect no errors.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add src/components/home/HeroShowcase.tsx src/pages/Index.tsx
+git commit -m "fix: center scroll position on HeroShowcase open so all cards are reachable on mobile"
+```
+
+(Include `src/pages/Index.tsx` in the add only if Step 2's ref-wiring required a change there.)
+
+---
+
+### Task 15: Final regression pass
 
 **Files:** None (verification only).
 
