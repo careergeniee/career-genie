@@ -61,7 +61,7 @@ export function Creative({ d }: { d: ResumeData }) {
                         {d.projects.filter((p) => p.name).map((p) => (
                             <div key={p.id} className="mb-3">
                                 <p className="text-[13px] font-bold">{p.name}</p>
-                                {p.link && <p className="text-[11px] text-[#4f46e5]">{p.link}</p>}
+                                {p.link && <p className="text-[11px] text-[#4f46e5] break-words">{p.link}</p>}
                                 <p className="text-[12px] text-[#555]">{p.description}</p>
                             </div>
                         ))}

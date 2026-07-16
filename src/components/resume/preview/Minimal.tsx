@@ -31,9 +31,9 @@ export function Minimal({ d }: { d: ResumeData }) {
                 <MinSec title="Projects">
                     {d.projects.filter((p) => p.name).map((p) => (
                         <div key={p.id} className="mb-3">
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                                 <span className="text-[13px] font-bold">{p.name}</span>
-                                {p.link && <span className="text-[10px] text-gray-400">{p.link}</span>}
+                                {p.link && <span className="text-[10px] text-gray-400 break-words min-w-0 text-right">{p.link}</span>}
                             </div>
                             <p className="text-[11px] text-[#444]">{p.description}</p>
                         </div>

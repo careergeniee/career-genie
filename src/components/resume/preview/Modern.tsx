@@ -5,10 +5,10 @@ export function Modern({ d }: { d: ResumeData }) {
     return (
         <div className="flex min-h-full text-[#1a1a1a]">
             <div className="w-[35%] bg-[#0f172a] text-white p-7">
-                <h1 className="text-[22px] font-bold leading-tight text-white">
+                <h1 className="text-[22px] font-bold leading-tight text-white break-words">
                     {d.personal.fullName || "Your Name"}
                 </h1>
-                <p className="text-[#9fd0ff] text-[13px] mb-5">{d.personal.title}</p>
+                <p className="text-[#9fd0ff] text-[13px] mb-5 break-words">{d.personal.title}</p>
 
                 <Section dark title="Contact">
                     {contact(d.personal).map((c, i) => (
@@ -65,7 +65,7 @@ export function Modern({ d }: { d: ResumeData }) {
                         {d.projects.filter((p) => p.name).map((p) => (
                             <div key={p.id} className="mb-3">
                                 <p className="text-[12px] font-bold">{p.name}</p>
-                                {p.link && <p className="text-[11px] text-[#1f6feb]">{p.link}</p>}
+                                {p.link && <p className="text-[11px] text-[#1f6feb] break-words">{p.link}</p>}
                                 <p className="text-[11px] text-[#444]">{p.description}</p>
                             </div>
                         ))}

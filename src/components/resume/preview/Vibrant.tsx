@@ -14,7 +14,7 @@ export function Vibrant({ d }: { d: ResumeData }) {
                 </div>
             </div>
 
-            <div className="flex">
+            <div className="flex flex-col sm:flex-row">
                 <div className="flex-1 p-7">
                     {d.personal.summary && (
                         <p className="text-[13px] text-[#555] leading-relaxed mb-5 pb-4 border-b border-gray-100">
@@ -44,7 +44,7 @@ export function Vibrant({ d }: { d: ResumeData }) {
                             {d.projects.filter((p) => p.name).map((p) => (
                                 <div key={p.id} className="mb-4">
                                     <p className="text-[13px] font-bold">{p.name}</p>
-                                    {p.link && <p className="text-[11px] text-[#0d9488]">{p.link}</p>}
+                                    {p.link && <p className="text-[11px] text-[#0d9488] break-words">{p.link}</p>}
                                     <p className="text-[12px] text-[#555]">{p.description}</p>
                                 </div>
                             ))}
@@ -52,7 +52,7 @@ export function Vibrant({ d }: { d: ResumeData }) {
                     )}
                 </div>
 
-                <div className="w-[195px] shrink-0 bg-[#f0fdf9] border-l border-[#ccfbf1] p-5">
+                <div className="w-full sm:w-[195px] sm:shrink-0 bg-[#f0fdf9] border-t sm:border-t-0 sm:border-l border-[#ccfbf1] p-5">
                     {d.skills.length > 0 && (
                         <div className="mb-6">
                             <p className="text-[10px] font-bold uppercase tracking-widest text-[#0d9488] mb-3">Skills</p>

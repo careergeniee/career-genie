@@ -48,7 +48,7 @@ export function Classic({ d }: { d: ResumeData }) {
                         <div key={p.id} className="mb-2">
                             <p className="text-[13px] font-bold">{p.name}</p>
                             <p className="text-[11px] text-[#444]">{p.description}</p>
-                            {p.link && <p className="text-[11px] text-[#444]">{p.link}</p>}
+                            {p.link && <p className="text-[11px] text-[#444] break-words">{p.link}</p>}
                         </div>
                     ))}
                 </ClassicSec>

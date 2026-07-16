@@ -5,11 +5,11 @@ export function Executive({ d }: { d: ResumeData }) {
     return (
         <div className="flex min-h-full text-[#1a1a1a]">
             <div className="w-[42%] bg-[#0a2540] text-white p-8">
-                <h1 className="text-[22px] font-bold leading-tight text-white">
+                <h1 className="text-[22px] font-bold leading-tight text-white break-words">
                     {d.personal.fullName || "Your Name"}
                 </h1>
                 {d.personal.title && (
-                    <p className="text-[#c9a227] text-[13px] mt-1 mb-7 font-semibold">{d.personal.title}</p>
+                    <p className="text-[#c9a227] text-[13px] mt-1 mb-7 font-semibold break-words">{d.personal.title}</p>
                 )}
 
                 <ExecSideSec title="Contact">
@@ -23,7 +23,7 @@ export function Executive({ d }: { d: ResumeData }) {
                         {d.skills.map((s, i) => (
                             <div key={i} className="flex items-center gap-2 mb-2">
                                 <span className="w-2 h-2 rounded-full bg-[#c9a227] shrink-0" />
-                                <span className="text-[12px] text-[#c8d8e8]">{s}</span>
+                                <span className="text-[12px] text-[#c8d8e8] break-words min-w-0">{s}</span>
                             </div>
                         ))}
                     </ExecSideSec>
@@ -68,7 +68,7 @@ export function Executive({ d }: { d: ResumeData }) {
                         {d.projects.filter((p) => p.name).map((p) => (
                             <div key={p.id} className="mb-4">
                                 <p className="text-[13px] font-bold">{p.name}</p>
-                                {p.link && <p className="text-[11px] text-[#c9a227]">{p.link}</p>}
+                                {p.link && <p className="text-[11px] text-[#c9a227] break-words">{p.link}</p>}
                                 <p className="text-[12px] text-[#444]">{p.description}</p>
                             </div>
                         ))}
