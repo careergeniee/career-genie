@@ -57,7 +57,7 @@ export const Navbar = () => {
             <Link to="/login">Login</Link>
           </Button>
           <button
-            className="lg:hidden w-10 h-10 flex items-center justify-center rounded-full hover:bg-background/10 text-background transition"
+            className="lg:hidden w-11 h-11 flex items-center justify-center rounded-full hover:bg-background/10 text-background transition"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >

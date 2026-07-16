@@ -102,7 +102,7 @@ export const DashboardLayout = () => {
                     <button
                         ref={closeButtonRef}
                         onClick={() => setSidebarOpen(false)}
-                        className="ml-auto w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-dash-sidebar-foreground transition-colors"
+                        className="ml-auto w-11 h-11 flex items-center justify-center rounded-lg hover:bg-white/10 text-dash-sidebar-foreground transition-colors"
                         aria-label="Close menu"
                     >
                         <X className="w-4 h-4" />
@@ -211,7 +211,7 @@ export const DashboardLayout = () => {
                 <div className="sticky top-4 z-30 mx-4 mb-2 flex items-center gap-3 h-16 px-3 pl-5 rounded-full bg-foreground/90 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.25)]">
                     <button
                         onClick={() => setSidebarOpen(true)}
-                        className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-background/10 text-background transition-colors"
+                        className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-background/10 text-background transition-colors"
                         aria-label="Open menu"
                     >
                         <Menu className="w-5 h-5" />
