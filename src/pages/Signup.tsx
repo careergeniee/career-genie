@@ -129,7 +129,7 @@ const Signup = () => {
                                     placeholder="Min. 6 characters" className="pl-10 pr-10 h-12"
                                     value={password} onChange={(e) => setPassword(e.target.value)} />
                                 <button type="button" onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center justify-center w-11 h-11 text-muted-foreground hover:text-foreground">
+                                    className="absolute right-3.5 max-sm:right-0 top-1/2 -translate-y-1/2 flex items-center justify-center w-4 h-4 max-sm:w-11 max-sm:h-11 text-muted-foreground hover:text-foreground">
                                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                 </button>
                             </div>
