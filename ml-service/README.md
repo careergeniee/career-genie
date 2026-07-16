@@ -1,43 +1,109 @@
 # Career Genie — ML Service
 
 A small Python service that powers the **Career Prediction** module.
-It trains a **Random Forest** classifier (scikit-learn) on personality +
-skill features and serves ranked career predictions over a REST API
-(FastAPI). The React frontend calls it; if it's offline, the frontend
+It trains a calibrated scikit-learn classifier (currently **Gradient
+Boosting**, selected by cross-validated comparison) on **real Stack
+Overflow Developer Survey 2024 data** — actual developers' tech stacks
+vs. their actual jobs — and serves ranked career predictions over a REST
+API (FastAPI). The React frontend calls it; if it's offline, the frontend
 falls back to an in-browser scorer so the app never breaks.
 
 ```
-career_data.py   schema + synthetic dataset generator (domain-driven)
-train.py         trains the Random Forest, prints metrics, saves model
-app.py           FastAPI service (/health, /predict, /meta)
-auth.py          verifies the Firebase ID token required by /predict
-career_model.pkl trained model (regenerate anytime with train.py)
-model_meta.json  feature order, labels, accuracy, feature importance
+career_data.py     schema + synthetic dataset generator (legacy/demo)
+preprocess_so.py   builds real_dataset_so.csv from the SO 2024 survey
+real_dataset_so.csv processed training data (15,724 real professionals)
+train.py           compares 4 algorithms, calibrates winner, saves model
+app.py             FastAPI service (/health, /predict, /meta)
+auth.py            verifies the Firebase ID token required by /predict
+career_model.pkl   trained model (regenerate with the steps below)
+model_meta.json    feature order, labels, metrics, feature importance
 ```
+
+## Dataset (v3): Stack Overflow Developer Survey 2024
+
+The model is trained on the **official Stack Overflow Annual Developer Survey
+2024** (65,437 respondents; data: `github.com/StackExchange/Survey`,
+`packages/archive/2024/results.csv`, ODbL-style survey release):
+
+- **Label** = `DevType`, the respondent's **actual current job** — filtered to
+  "I am a developer by profession", mapped onto our 10 career labels.
+- **Features** = technologies the respondent **actually reported using**
+  (languages, frameworks, databases, platforms, tools), graded 0–1.
+- **15,724 rows** after filtering, mapping, and capping the two giant classes
+  (Backend, Full Stack) at 4,000 rows each.
+
+**Why v3 exists — the leakage audit.** Earlier versions trained on a Kaggle
+"CS students" dataset whose preprocessing copied each row's career label into
+its features (O*NET profile imputation + per-career minimum floors). An
+ablation audit showed: full pipeline 96% accuracy → leakage removed 22% —
+exactly the majority-class baseline. The 96% was an artifact; the Kaggle data
+contains no real skill→career signal. The v3 dataset is built so that **no
+feature is ever derived from, floored by, or imputed from the label.**
+
+**Honest limitations** (state these in the report — they are features of
+honesty, not bugs):
+- The 6 personality traits, `networking_security`, and `ui_ux_design` have no
+  counterpart in the survey; they are constant 0 in training, so the ML model
+  ignores them (the in-app offline scorer still uses them). Consequently the
+  model cannot identify **Cybersecurity Analysts** or **UI/UX Designers** —
+  those rely on the offline scorer path.
+- Survey features are binary "have used" flags; the app sends 0–1
+  self-ratings. Tree splits tolerate this shift, but it is a real
+  train/serve distribution difference.
+- **Machine Learning Engineer** is nearly indistinguishable from Data
+  Scientist by tech stack alone (the survey itself merged them until 2024).
 
 ## Model at a glance (for your report)
 
-- **Selection:** four algorithms are compared with 5-fold cross-validation
-  (Random Forest, Gradient Boosting, K-Nearest Neighbors, Logistic Regression).
-  The winner by accuracy is Logistic Regression (~96.0%), but **Random Forest**
-  (~95.1%) is selected under a documented policy: prefer the interpretable model
-  when it is within 2% of the best. Random Forest is the only candidate that
-  yields feature-importance scores, which we surface to users.
-- **Calibration:** the chosen model is wrapped in `CalibratedClassifierCV`
-  (isotonic, 5-fold) so the probabilities shown as "match %" are well-calibrated
-  (test log-loss ~0.13).
-- **Type:** scikit-learn `Pipeline` (StandardScaler + classifier), 300 trees.
-- **Features (21):** 6 personality traits + 15 self-rated skills, all 0–1.
+- **Selection:** four algorithms compared with 5-fold cross-validation.
+  On the real data: **Gradient Boosting 55.4%**, Logistic Regression 55.0%,
+  Random Forest 49.8%, KNN 49.7%. Gradient Boosting is selected (the
+  interpretability-preference policy only overrides within 2 pp; RF is 5.6 pp
+  behind, too far).
+- **Baseline context:** majority-class baseline is 25.4%, random guess 10%.
+  54.1% test accuracy = **2.1× the majority baseline** — real signal, honestly
+  measured. Strong classes: Mobile (F1 0.72), Frontend (0.62), Data Scientist
+  (0.56), Backend (0.55), Full Stack (0.53).
+- **Calibration:** the winner is wrapped in `CalibratedClassifierCV`
+  (isotonic, 5-fold) so the probabilities shown as "match %" are calibrated
+  (test log-loss 1.23 across 10 classes).
+- **Explainability:** SHAP `TreeExplainer` when the deployed model supports it
+  (e.g. Random Forest); otherwise a batched single-feature **ablation**
+  fallback (~16 ms) with the same signed-contribution semantics, so
+  `/predict.explanation` works for any model.
+- **Features (21):** 6 personality traits + 15 skills, all 0–1 (traits are
+  currently inert in the ML model — see limitations above).
 - **Classes (10):** Data Scientist, ML Engineer, Data Analyst, Frontend,
   Backend, Full Stack, Cybersecurity, Cloud/DevOps, Mobile, UI/UX.
-- **Data:** synthetic, generated from domain-knowledge role profiles with
-  Gaussian noise (no public dataset exists at this granularity).
-- **Performance:** ~0.95 test accuracy, ~0.951 mean 5-fold CV, macro-F1 ~0.95.
+- **Performance:** 0.541 test accuracy, 0.554 mean 5-fold CV, macro-F1 0.32
+  (dragged down by the classes the dataset can't support — report per-class).
 
-`python train.py` prints the algorithm comparison, classification report,
-confusion matrix, and feature importances. `model_meta.json` stores all of it
-(including `algorithm_comparison` and `selected_for`). The figures used in the
-report are regenerated by `python gen_figures.py`.
+`python train.py --data real_dataset_so.csv` prints the algorithm comparison,
+classification report, confusion matrix, and feature importances.
+`model_meta.json` stores all of it (including `dataset`,
+`algorithm_comparison`, and `selected_for`). The figures used in the report
+are regenerated by `python gen_figures.py`.
+
+## Retrain from scratch (full steps)
+
+```bash
+cd ml-service
+pip install -r requirements.txt
+
+# 1. Download the official SO 2024 survey data (~152 MB, Git LFS):
+mkdir -p data
+curl -L -o data/so_2024_results.csv \
+  https://media.githubusercontent.com/media/StackExchange/Survey/main/packages/archive/2024/results.csv
+
+# 2. Build the training dataset (label-leakage-free by construction):
+python preprocess_so.py          # -> real_dataset_so.csv (15,724 rows)
+
+# 3. Train, compare, calibrate, save:
+python train.py --data real_dataset_so.csv   # -> career_model.pkl + model_meta.json
+
+# 4. Verify the service against the new model:
+python -m pytest -q
+```
 
 ## Reliability
 
@@ -116,8 +182,9 @@ Then point the frontend at it — in the project root `.env`:
 VITE_ML_API_URL=http://localhost:8000
 ```
 
-Restart `npm run dev`. The Career Match page will show the
-**"Random Forest model"** badge instead of "Offline scorer".
+Restart `npm run dev`. The Career Match page will show the model badge
+(the algorithm name from `/health`, e.g. **"Gradient Boosting"**) instead
+of "Offline scorer".
 
 ## Deploy (free options)
 

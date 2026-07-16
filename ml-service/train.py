@@ -40,7 +40,7 @@ from sklearn.metrics import (
 from career_data import generate_dataset, FEATURE_ORDER, CAREER_LABELS
 
 HERE = os.path.dirname(__file__)
-MODEL_VERSION = "2.0"
+MODEL_VERSION = "3.0"
 
 # Selection policy: we prefer an interpretable model (Random Forest gives
 # feature-importance scores we show to students) when its accuracy is within
@@ -165,6 +165,7 @@ def main() -> None:
     joblib.dump(model, f"{HERE}/career_model.pkl", compress=3)
     meta = {
         "model_version": MODEL_VERSION,
+        "dataset": os.path.basename(data_path) if data_path else "synthetic",
         "chosen_algorithm": best_name,
         "selected_for": selection_reason,
         "best_by_accuracy": top["algorithm"],

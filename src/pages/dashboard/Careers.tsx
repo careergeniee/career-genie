@@ -234,7 +234,7 @@ const CareersPage = () => {
                                         })}
                                     </div>
                                     <p className="text-[11px] text-muted-foreground/70 mt-2.5">
-                                        From the Random Forest's own reasoning for this specific prediction,
+                                        From the ML model's own reasoning for this specific prediction,
                                         not a general skill comparison.
                                     </p>
                                 </div>

@@ -20,6 +20,9 @@ coverage
 ml-service/__pycache__/
 ml-service/*.pyc
 ml-service/.pytest_cache/
+# Raw Stack Overflow survey download (~152 MB) — regenerate real_dataset_so.csv
+# from it with preprocess_so.py; only the processed CSV is committed.
+ml-service/data/
 
 # Lock files (using bun.lock)
 package-lock.json

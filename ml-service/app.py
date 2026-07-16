@@ -113,8 +113,16 @@ def get_explainer():
         pipe = _underlying_tree_pipeline(get_model())
         clf = pipe.named_steps.get("clf") if pipe is not None else None
         if clf is not None and clf.__class__.__name__ in ("RandomForestClassifier", "GradientBoostingClassifier"):
-            import shap
-            _explainer = shap.TreeExplainer(clf)
+            # Construction itself can raise (e.g. SHAP rejects multiclass
+            # GradientBoostingClassifier) -- that must degrade to the ablation
+            # fallback, never propagate out of /predict.
+            try:
+                import shap
+                _explainer = shap.TreeExplainer(clf)
+            except Exception as exc:
+                log.info("SHAP TreeExplainer unavailable for %s (%s); using ablation fallback.",
+                         clf.__class__.__name__, exc)
+                _explainer = False
         else:
             _explainer = False  # sentinel: "checked, not explainable" (vs. None = "not checked yet")
     return _explainer or None
@@ -122,27 +130,52 @@ def get_explainer():
 
 def explain_top_class(vec: np.ndarray, top_class: str, top_n: int = 5) -> list[dict] | None:
     """
-    Per-prediction SHAP feature contributions toward `top_class`, ranked by
-    |contribution| descending. Returns None (never raises) if the model isn't
-    a supported tree ensemble or SHAP isn't available -- explainability is a
-    nice-to-have and must never break the actual prediction.
+    Per-prediction feature contributions toward `top_class`, ranked by
+    |contribution| descending. Uses SHAP when the model is a tree ensemble
+    SHAP supports; otherwise falls back to batched single-feature ablation
+    (~16 ms). Returns None (never raises) if both paths fail --
+    explainability is a nice-to-have and must never break the prediction.
     """
     explainer = get_explainer()
-    if explainer is None:
-        return None
-    pipe = _underlying_tree_pipeline(get_model())
+    if explainer is not None:
+        pipe = _underlying_tree_pipeline(get_model())
+        try:
+            scaler = pipe.named_steps.get("scaler")
+            vec_scaled = scaler.transform(vec) if scaler is not None else vec
+            classes = list(pipe.named_steps["clf"].classes_)
+            idx = classes.index(top_class)
+            sv = np.asarray(explainer.shap_values(vec_scaled))
+            # TreeExplainer returns (n_samples, n_features, n_classes) for multiclass RF.
+            row = sv[0, :, idx] if sv.ndim == 3 else sv[idx][0]
+            ranked = sorted(zip(FEATURE_ORDER, row), key=lambda t: -abs(t[1]))
+            return [{"feature": f, "contribution": round(float(c), 4)} for f, c in ranked[:top_n]]
+        except Exception as exc:
+            log.warning("SHAP explanation failed (%s); falling back to ablation.", exc)
+    return _ablation_explanation(vec, top_class, top_n)
+
+
+def _ablation_explanation(vec: np.ndarray, top_class: str, top_n: int = 5) -> list[dict] | None:
+    """
+    Model-agnostic fallback: zero out one feature at a time (as a single
+    batched predict_proba call) and measure how much P(top_class) drops.
+    Positive contribution = the feature pushes toward the predicted career,
+    matching the sign convention of the SHAP path.
+    """
     try:
-        scaler = pipe.named_steps.get("scaler")
-        vec_scaled = scaler.transform(vec) if scaler is not None else vec
-        classes = list(pipe.named_steps["clf"].classes_)
+        model = get_model()
+        classes = list(model.classes_)
         idx = classes.index(top_class)
-        sv = np.asarray(explainer.shap_values(vec_scaled))
-        # TreeExplainer returns (n_samples, n_features, n_classes) for multiclass RF.
-        row = sv[0, :, idx] if sv.ndim == 3 else sv[idx][0]
-        ranked = sorted(zip(FEATURE_ORDER, row), key=lambda t: -abs(t[1]))
+        base = float(model.predict_proba(vec)[0][idx])
+        n = vec.shape[1]
+        batch = np.repeat(vec, n, axis=0)
+        for i in range(n):
+            batch[i, i] = 0.0
+        probs = model.predict_proba(batch)[:, idx]
+        contribs = base - probs
+        ranked = sorted(zip(FEATURE_ORDER, contribs), key=lambda t: -abs(t[1]))
         return [{"feature": f, "contribution": round(float(c), 4)} for f, c in ranked[:top_n]]
     except Exception as exc:
-        log.warning("SHAP explanation failed, omitting it from the response: %s", exc)
+        log.warning("Ablation explanation failed, omitting it from the response: %s", exc)
         return None
 
 
