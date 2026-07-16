@@ -1,8 +1,11 @@
 fastapi==0.115.6
 uvicorn[standard]==0.34.0
-scikit-learn==1.6.1
+# scikit-learn/numpy must match the environment career_model.pkl was trained
+# in (sklearn 1.8 / numpy 2.4) — unpickling a newer-sklearn model in an older
+# sklearn is unsupported and can fail at /predict time.
+scikit-learn==1.8.0
 pandas==2.2.3
-numpy==1.26.4
+numpy==2.4.4
 joblib==1.4.2
 pydantic==2.11.5
 PyJWT[crypto]==2.10.1
