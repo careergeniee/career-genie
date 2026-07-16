@@ -330,3 +330,25 @@ git commit -m "fix: center scroll position on HeroShowcase open so all cards are
 - [ ] Re-screenshot all 16 routes at 375px one more time in sequence as a final sanity pass (reuse the QA bypass locally if needed for the dashboard routes, and revert it again afterward).
 - [ ] Spot-check two or three pages at 1280px (desktop) to confirm nothing regressed there.
 - [ ] Commit any final stragglers with a message summarizing the pass, e.g. `git commit -m "fix: final mobile regression pass across marketing + dashboard pages"` (skip if there's nothing left to commit).
+
+---
+
+### Task 16: Shared Input tap-target fix
+
+**Files:**
+- Modify: `src/components/ui/input.tsx`
+
+**Interfaces:** None — this is a shared, already-exported component (`Input`) used across nearly every form in the app (Login, Signup, Contact, Assessment, Resume Builder, Settings, etc.). No signature/props change, only its rendered height changes below the `sm` breakpoint.
+
+**Background:** Task 3 found that `Input` renders at `h-10` (40px), just under the plan's 44px tap-target guideline, on both `/about`/`/contact`'s contact form and, implicitly, every other form in the app that uses this component. Rather than flag this repeatedly across every remaining page task, fix it once here, out of numeric order (dispatched immediately after Task 3, before Task 4), so every subsequent task's mobile QA checklist pass already sees the corrected height.
+
+- [ ] Read `src/components/ui/input.tsx` and find the current height class (`h-10`).
+- [ ] Change it to be 44px (`h-11`) below `sm`, keeping the existing `h-10` at `sm` and above — e.g. `h-11 sm:h-10` (or equivalent using the file's existing class-composition pattern, such as `cn()`/`cva()` if this file uses one — match whatever pattern is already there rather than introducing a new one). This follows the plan's global constraint of not changing desktop/larger-breakpoint appearance.
+- [ ] Reuse the existing dev server (see `.superpowers/sdd/mobile-audit-shared-context.md` — do not start a second instance). Spot-check at least two pages that use `Input` (e.g. `/contact` and `/login`) at 375px to confirm the new height renders correctly with no layout breakage (label alignment, icon alignment if any inputs have leading/trailing icons, spacing within forms), and at `sm`/desktop widths to confirm the height is unchanged from before.
+- [ ] Run: `bun run typecheck` — expect no errors.
+- [ ] Commit:
+
+```bash
+git add src/components/ui/input.tsx
+git commit -m "fix: bump shared Input component to 44px tap target on mobile"
+```
