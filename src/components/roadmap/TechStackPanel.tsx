@@ -26,9 +26,9 @@ export const TechStackPanel = ({ goal, skills, stack }: TechStackPanelProps) => 
     return (
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 mb-5">
             <div className="flex items-center justify-between gap-2 mb-3">
-                <div className="flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-primary" />
-                    <h4 className="font-display font-bold text-sm">
+                <div className="flex items-start gap-2 min-w-0 flex-1">
+                    <Layers className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                    <h4 className="font-display font-bold text-sm min-w-0 break-words">
                         Technologies for {goal}
                     </h4>
                 </div>

@@ -154,15 +154,17 @@ const RoadmapPage = () => {
                     <button
                         onClick={build}
                         disabled={loading}
-                        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-gold text-primary-foreground font-semibold hover:shadow-[0_0_24px_hsl(48_96%_53%_/_0.5)] transition-all disabled:opacity-60"
+                        className="w-full flex items-start justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-gold text-primary-foreground font-semibold hover:shadow-[0_0_24px_hsl(48_96%_53%_/_0.5)] transition-all disabled:opacity-60"
                     >
                         {loading ? (
                             <>
-                                <Loader2 className="w-4 h-4 animate-spin" /> Building your roadmap...
+                                <Loader2 className="w-4 h-4 shrink-0 mt-0.5 animate-spin" />
+                                <span className="min-w-0 text-center">Building your roadmap...</span>
                             </>
                         ) : (
                             <>
-                                <img src={genieLogo3} alt="" className="w-4 h-4 object-contain" /> Generate roadmap for {effectiveGoal}
+                                <img src={genieLogo3} alt="" className="w-4 h-4 object-contain shrink-0 mt-0.5" />
+                                <span className="min-w-0 text-center">Generate roadmap for {effectiveGoal}</span>
                             </>
                         )}
                     </button>
