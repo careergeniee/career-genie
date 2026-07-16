@@ -33,7 +33,7 @@ export const InterviewSession = ({
         <div className="min-h-screen p-6 lg:p-8 max-w-3xl mx-auto">
             <div className="flex items-center justify-between mb-4">
                 <button onClick={onQuit}
-                    className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+                    className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground max-sm:min-h-11">
                     <ArrowLeft className="w-4 h-4" /> Quit
                 </button>
                 <div className={cn(
@@ -54,7 +54,7 @@ export const InterviewSession = ({
                 <p className="text-xs text-primary font-semibold uppercase tracking-wide mb-2">
                     Question {qIndex + 1}
                 </p>
-                <h2 className="font-display text-xl font-bold leading-snug">
+                <h2 className="font-display text-xl font-bold leading-snug break-words">
                     {session.questions[qIndex]}
                 </h2>
             </div>
@@ -94,7 +94,7 @@ export const InterviewSession = ({
                         disabled={transcribing}
                         title={listening ? "Release to stop" : "Hold to speak (mobile) · Click to toggle (desktop)"}
                         className={cn(
-                            "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all select-none",
+                            "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all select-none max-sm:min-h-11",
                             listening
                                 ? "bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse"
                                 : transcribing

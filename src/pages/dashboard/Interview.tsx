@@ -202,7 +202,7 @@ const InterviewPage = () => {
                                     setCustomRole("");
                                 }}
                                 className={cn(
-                                    "text-left text-sm px-3 py-2 rounded-lg border transition-all",
+                                    "text-left text-sm px-3 py-2 rounded-lg border transition-all max-sm:flex max-sm:min-h-11 max-sm:items-center",
                                     role === r && !customRole
                                         ? "border-primary/60 bg-primary/10 text-foreground"
                                         : "border-border/60 bg-secondary/30 text-muted-foreground hover:text-foreground"
@@ -298,13 +298,13 @@ const InterviewPage = () => {
                                             setReviewing(s);
                                             setView("review");
                                         }}
-                                        className="text-xs font-medium text-primary hover:text-primary-glow flex items-center gap-1"
+                                        className="text-xs font-medium text-primary hover:text-primary-glow flex items-center gap-1 max-sm:min-h-11"
                                     >
                                         Review <ChevronRight className="w-3.5 h-3.5" />
                                     </button>
                                     <button
                                         onClick={() => deleteSession(s.id)}
-                                        className="text-muted-foreground hover:text-destructive"
+                                        className="text-muted-foreground hover:text-destructive max-sm:flex max-sm:min-w-11 max-sm:min-h-11 max-sm:items-center max-sm:justify-center"
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
@@ -345,7 +345,7 @@ const InterviewPage = () => {
             <div className="min-h-screen p-6 lg:p-8 max-w-3xl mx-auto">
                 <button
                     onClick={quitToSetup}
-                    className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-4"
+                    className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-4 max-sm:min-h-11"
                 >
                     <ArrowLeft className="w-4 h-4" /> Back to setup
                 </button>
@@ -375,7 +375,7 @@ const InterviewPage = () => {
                                     <p className="text-xs text-primary font-semibold mb-1">
                                         Question {i + 1}
                                     </p>
-                                    <p className="font-display font-bold text-sm leading-snug">
+                                    <p className="font-display font-bold text-sm leading-snug break-words">
                                         {a.question}
                                     </p>
                                 </div>
@@ -389,12 +389,12 @@ const InterviewPage = () => {
                                 </div>
                             </div>
 
-                            <div className="text-xs text-muted-foreground mb-3 p-3 rounded-lg bg-secondary/30 border border-border/40">
+                            <div className="text-xs text-muted-foreground mb-3 p-3 rounded-lg bg-secondary/30 border border-border/40 break-words">
                                 <span className="text-foreground/70 font-medium">Your answer: </span>
                                 {a.answer || <span className="italic">(no answer)</span>}
                             </div>
 
-                            <p className="text-sm text-foreground/90 mb-2">
+                            <p className="text-sm text-foreground/90 mb-2 break-words">
                                 <span className="font-semibold text-primary">Feedback: </span>
                                 {a.feedback}
                             </p>
@@ -406,7 +406,7 @@ const InterviewPage = () => {
                                     </p>
                                     <ul className="space-y-0.5">
                                         {a.idealPoints.map((p, j) => (
-                                            <li key={j} className="text-xs text-muted-foreground pl-3">
+                                            <li key={j} className="text-xs text-muted-foreground pl-3 break-words">
                                                 • {p}
                                             </li>
                                         ))}
