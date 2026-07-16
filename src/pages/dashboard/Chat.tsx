@@ -329,7 +329,7 @@ const ChatPage = () => {
                 </div>
                 <button
                     onClick={startNewChat}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary hover:bg-secondary/80 text-sm font-medium transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 max-sm:min-h-11 rounded-xl bg-secondary hover:bg-secondary/80 text-sm font-medium transition-colors"
                 >
                     <Plus className="w-4 h-4" /> New Session
                 </button>
@@ -368,7 +368,7 @@ const ChatPage = () => {
                                     <button
                                         type="button"
                                         title="Message options"
-                                        className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground opacity-70 hover:opacity-100 hover:bg-secondary hover:text-foreground data-[state=open]:opacity-100 data-[state=open]:bg-secondary transition-opacity"
+                                        className="shrink-0 w-7 h-7 max-sm:min-w-11 max-sm:min-h-11 rounded-full flex items-center justify-center text-muted-foreground opacity-70 hover:opacity-100 hover:bg-secondary hover:text-foreground data-[state=open]:opacity-100 data-[state=open]:bg-secondary transition-opacity"
                                     >
                                         <MoreVertical className="w-3.5 h-3.5" />
                                     </button>
@@ -408,7 +408,7 @@ const ChatPage = () => {
                                 onPointerLeave={clearLongPress}
                                 onContextMenu={handleBubbleContextMenu(msg.id)}
                                 className={cn(
-                                "max-w-[70%] rounded-2xl px-4 py-3 text-sm leading-relaxed select-none sm:select-text",
+                                "max-w-[70%] min-w-0 break-words rounded-2xl px-4 py-3 text-sm leading-relaxed select-none sm:select-text",
                                 msg.sender === "genie"
                                     ? "bg-card border border-border/60 rounded-bl-sm text-foreground"
                                     : "bg-primary text-primary-foreground rounded-br-sm"
@@ -505,7 +505,7 @@ const ChatPage = () => {
                         disabled={transcribing || isTyping}
                         title={recording ? "Release to send" : "Hold to speak (mobile) · Click to toggle (desktop)"}
                         className={cn(
-                            "w-9 h-9 rounded-xl flex items-center justify-center transition-all shrink-0 select-none",
+                            "w-9 h-9 max-sm:min-w-11 max-sm:min-h-11 rounded-xl flex items-center justify-center transition-all shrink-0 select-none",
                             recording
                                 ? "bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse"
                                 : "bg-secondary text-muted-foreground hover:text-foreground border border-border/60 disabled:opacity-40"
@@ -520,7 +520,7 @@ const ChatPage = () => {
                     <button
                         type="submit"
                         disabled={isTyping || !input.trim()}
-                        className="w-9 h-9 rounded-xl bg-gradient-gold flex items-center justify-center disabled:opacity-40 hover:shadow-[0_0_20px_hsl(48_96%_53%_/_0.5)] transition-all shrink-0"
+                        className="w-9 h-9 max-sm:min-w-11 max-sm:min-h-11 rounded-xl bg-gradient-gold flex items-center justify-center disabled:opacity-40 hover:shadow-[0_0_20px_hsl(48_96%_53%_/_0.5)] transition-all shrink-0"
                     >
                         <Send className="w-4 h-4 text-primary-foreground" />
                     </button>
