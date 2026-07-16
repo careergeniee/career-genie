@@ -94,14 +94,18 @@ export const DailyTaskReminder = () => {
                     <div className="flex gap-2 mt-3">
                         <button
                             onClick={markDone}
-                            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-400 text-black hover:brightness-110 transition"
+                            className="relative inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-400 text-black hover:brightness-110 transition"
                         >
+                            {/* Invisible hit-area extension, mobile-only — keeps the visible pill
+                                compact while pushing the tappable box to the 44px guideline. */}
+                            <span className="absolute inset-0 max-sm:-inset-2" aria-hidden="true" />
                             <Check className="w-3.5 h-3.5" /> Mark done
                         </button>
                         <button
                             onClick={() => navigate("/dashboard/instructor")}
-                            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-amber-400/40 text-amber-300 hover:bg-amber-400/10 transition"
+                            className="relative inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-amber-400/40 text-amber-300 hover:bg-amber-400/10 transition"
                         >
+                            <span className="absolute inset-0 max-sm:-inset-2" aria-hidden="true" />
                             Open instructor <ArrowRight className="w-3.5 h-3.5" />
                         </button>
                     </div>
@@ -120,15 +124,19 @@ export const DailyTaskReminder = () => {
                     <span className="text-muted-foreground">Today's task from your instructor is ready.</span>
                     <button
                         onClick={() => navigate("/dashboard/instructor")}
-                        className="inline-flex items-center gap-1 font-semibold text-primary hover:text-primary-glow transition-colors shrink-0"
+                        className="relative inline-flex items-center gap-1 font-semibold text-primary hover:text-primary-glow transition-colors shrink-0"
                     >
+                        {/* Invisible hit-area extension, mobile-only — this pill's text-only
+                            button is far under 44px; keep its visible size but widen the tap box. */}
+                        <span className="absolute inset-0 max-sm:-inset-4" aria-hidden="true" />
                         Get task <ArrowRight className="w-3 h-3" />
                     </button>
                     <button
                         onClick={dismissPrompt}
-                        className="text-muted-foreground/60 hover:text-foreground shrink-0 ml-0.5"
+                        className="relative text-muted-foreground/60 hover:text-foreground shrink-0 ml-0.5"
                         aria-label="Dismiss"
                     >
+                        <span className="absolute inset-0 max-sm:-inset-4" aria-hidden="true" />
                         <X className="w-3.5 h-3.5" />
                     </button>
                 </div>

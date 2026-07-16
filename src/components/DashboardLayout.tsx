@@ -122,7 +122,7 @@ export const DashboardLayout = () => {
                                 onClick={() => setSidebarOpen(false)}
                                 style={{ animationDelay: `${i * 40}ms` }}
                                 className={({ isActive }) => cn(
-                                    "relative flex items-center gap-3 pl-4 pr-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group animate-fade-in-up border",
+                                    "relative flex items-center gap-3 pl-4 pr-3 py-2.5 max-sm:py-3 rounded-lg text-sm font-medium transition-all duration-200 group animate-fade-in-up border",
                                     isActive
                                         ? "bg-primary/10 text-primary border-primary/30 shadow-[0_0_16px_hsl(19_86%_40%_/_0.15)]"
                                         : "text-dash-sidebar-muted border-transparent hover:text-dash-sidebar-foreground hover:bg-white/5 hover:border-white/10"
@@ -176,7 +176,7 @@ export const DashboardLayout = () => {
                         to="/dashboard/settings"
                         onClick={() => setSidebarOpen(false)}
                         className={({ isActive }) => cn(
-                            "flex items-center gap-3 pl-4 pr-3 py-2.5 rounded-lg text-sm font-medium transition-all border",
+                            "flex items-center gap-3 pl-4 pr-3 py-2.5 max-sm:py-3 rounded-lg text-sm font-medium transition-all border",
                             isActive ? "bg-primary/10 text-primary border-primary/30" : "text-dash-sidebar-muted border-transparent hover:text-dash-sidebar-foreground hover:bg-white/5 hover:border-white/10"
                         )}
                     >
@@ -186,7 +186,7 @@ export const DashboardLayout = () => {
 
                     <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-3 pl-4 pr-3 py-2.5 rounded-lg text-sm font-medium transition-all border border-transparent text-dash-sidebar-muted hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20"
+                        className="w-full flex items-center gap-3 pl-4 pr-3 py-2.5 max-sm:py-3 rounded-lg text-sm font-medium transition-all border border-transparent text-dash-sidebar-muted hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20"
                     >
                         <LogOut className="w-5 h-5 shrink-0" />
                         <span>Logout</span>
