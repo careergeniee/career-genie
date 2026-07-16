@@ -112,7 +112,7 @@ const DashboardHome = () => {
 
                 {/* Career match — full-width pill when available */}
                 {topCareer && (
-                    <div className="dash-card px-6 py-4 mb-8 flex items-center justify-between animate-pop-in" style={{ animationDelay: "160ms" }}>
+                    <div className="dash-card px-6 py-4 mb-8 flex flex-col items-start gap-3 max-sm:gap-2 sm:flex-row sm:items-center sm:justify-between animate-pop-in" style={{ animationDelay: "160ms" }}>
                         <div className="flex items-center gap-3">
                             <Award className="w-5 h-5 text-primary" />
                             <div>
@@ -120,7 +120,7 @@ const DashboardHome = () => {
                                 <p className="font-display font-semibold text-lg leading-tight mt-0.5">{topCareer}</p>
                             </div>
                         </div>
-                        <Link to="/dashboard/careers" className="text-xs text-primary font-semibold flex items-center gap-1 hover:gap-2 transition-all">
+                        <Link to="/dashboard/careers" className="text-xs text-primary font-semibold flex items-center gap-1 hover:gap-2 transition-all max-sm:min-h-11 max-sm:py-2">
                             View details <ArrowRight className="w-3 h-3" />
                         </Link>
                     </div>
