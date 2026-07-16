@@ -98,7 +98,7 @@ export const DailyTaskTab = ({ persona, ctx }: TabProps) => {
                 ) : today ? (
                     <div className={cn("rounded-xl border p-4", today.done ? "border-emerald-400/30 bg-emerald-400/5" : "border-amber-400/40 bg-amber-400/5")}>
                         <div className="flex items-start gap-3">
-                            <button onClick={() => setDone(!today.done)} className="mt-0.5 shrink-0">
+                            <button onClick={() => setDone(!today.done)} className="mt-0.5 shrink-0 max-sm:min-w-11 max-sm:min-h-11 max-sm:flex max-sm:items-center max-sm:justify-center">
                                 {today.done ? <CheckCircle2 className="w-6 h-6 text-emerald-400" /> : <div className="w-6 h-6 rounded-full border-2 border-amber-400" />}
                             </button>
                             <div className="flex-1">
@@ -117,7 +117,7 @@ export const DailyTaskTab = ({ persona, ctx }: TabProps) => {
                         )}
                     </div>
                 ) : (
-                    <button onClick={generate} className="text-sm text-primary font-medium">Assign today's task</button>
+                    <button onClick={generate} className="text-sm text-primary font-medium max-sm:inline-flex max-sm:items-center max-sm:min-h-11">Assign today's task</button>
                 )}
 
                 <div className="flex flex-wrap gap-2 mt-4">
@@ -129,7 +129,7 @@ export const DailyTaskTab = ({ persona, ctx }: TabProps) => {
                             generate();
                         }}
                         disabled={loading}
-                        className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-border/60 hover:bg-secondary/50 transition disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-border/60 hover:bg-secondary/50 transition disabled:opacity-50 max-sm:min-h-11"
                     >
                         <RotateCcw className="w-3.5 h-3.5" /> New task
                     </button>
@@ -152,7 +152,7 @@ export const DailyTaskTab = ({ persona, ctx }: TabProps) => {
                         onChange={(e) => { setReminderTime(e.target.value); saveReminderTime(e.target.value); }}
                         className="bg-secondary/50 border border-border/60 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-primary/60"
                     />
-                    <button onClick={enableReminders} className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-gradient-gold text-primary-foreground">
+                    <button onClick={enableReminders} className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-gradient-gold text-primary-foreground max-sm:min-h-11">
                         <BellRing className="w-3.5 h-3.5" /> Enable browser reminders
                     </button>
                 </div>

@@ -55,7 +55,7 @@ export const QuizTab = ({ persona, ctx }: TabProps) => {
                         ))}
                     </div>
                 )}
-                <div className="flex gap-2">
+                <div className="flex gap-2 max-sm:flex-col">
                     <input
                         value={topic}
                         onChange={(e) => setTopic(e.target.value)}
@@ -64,7 +64,7 @@ export const QuizTab = ({ persona, ctx }: TabProps) => {
                         className="flex-1 bg-secondary/50 border border-border/60 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary/60"
                     />
                     <button onClick={() => start(topic)} disabled={loading || !topic.trim()}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-gold text-primary-foreground text-sm font-semibold disabled:opacity-50">
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-gold text-primary-foreground text-sm font-semibold disabled:opacity-50 max-sm:min-h-11">
                         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} Quiz me
                     </button>
                 </div>

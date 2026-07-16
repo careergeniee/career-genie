@@ -29,7 +29,7 @@ export const ProgressTab = ({ persona, ctx }: TabProps) => {
                     {persona.name} reviews where you stand on your path to {ctx.career || "your career"} and tells you what to focus on next.
                 </p>
                 <button onClick={run} disabled={loading}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-gold text-primary-foreground text-sm font-semibold disabled:opacity-50">
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-gold text-primary-foreground text-sm font-semibold disabled:opacity-50 max-sm:min-h-11">
                     {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Reviewing…</> : <><Sparkles className="w-4 h-4" /> Review my progress</>}
                 </button>
             </div>

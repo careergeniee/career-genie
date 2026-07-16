@@ -49,13 +49,13 @@ const InstructorPage = () => {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-2 mb-6 overflow-x-auto">
+            <div className="flex gap-2 mb-6 overflow-x-auto max-sm:flex-wrap">
                 {tabs.map((t) => (
                     <button
                         key={t.id}
                         onClick={() => setTab(t.id)}
                         className={cn(
-                            "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all",
+                            "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all max-sm:min-h-11",
                             tab === t.id
                                 ? "bg-gradient-gold text-primary-foreground"
                                 : "bg-secondary/50 text-muted-foreground hover:text-foreground"
