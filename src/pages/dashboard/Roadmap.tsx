@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import {
-    Map, Sparkles, Loader2, Flame, CheckCircle2, Circle, ExternalLink,
+    Map, Loader2, Flame, CheckCircle2, Circle, ExternalLink,
     RotateCcw, Trophy, Target, Clock,
 } from "lucide-react";
+import genieLogo3 from "@/assets/genie-logo3.png";
 import { cn } from "@/lib/utils";
 import { loadData, saveData, removeData, todayKey } from "@/lib/userStore";
 import { toast } from "sonner";
@@ -161,7 +162,7 @@ const RoadmapPage = () => {
                             </>
                         ) : (
                             <>
-                                <Sparkles className="w-4 h-4" /> Generate roadmap for {effectiveGoal}
+                                <img src={genieLogo3} alt="" className="w-4 h-4 object-contain" /> Generate roadmap for {effectiveGoal}
                             </>
                         )}
                     </button>
