@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/Layout";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { usePwaUpdatePrompt } from "@/hooks/usePwaUpdatePrompt";
 
 const DashboardLayout = lazy(() =>
   import("@/components/DashboardLayout").then((m) => ({ default: m.DashboardLayout }))
@@ -50,51 +51,54 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   return user ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Sonner />
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <ScrollToTop />
-          <ErrorBoundary>
-            <Suspense fallback={<Loader />}>
-            <Routes>
-              {/* Public routes */}
-              <Route element={<Layout />}>
-                <Route path="/" element={<Index />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-              </Route>
+const App = () => {
+  usePwaUpdatePrompt();
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Sonner />
+          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <ScrollToTop />
+            <ErrorBoundary>
+              <Suspense fallback={<Loader />}>
+              <Routes>
+                {/* Public routes */}
+                <Route element={<Layout />}>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
+                </Route>
 
-              {/* Auth routes */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
+                {/* Auth routes */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
 
-              {/* Protected dashboard routes */}
-              <Route path="/dashboard" element={
-                <PrivateRoute><DashboardLayout /></PrivateRoute>
-              }>
-                <Route index element={<DashboardHome />} />
-                <Route path="assessment" element={<AssessmentPage />} />
-                <Route path="careers" element={<CareersPage />} />
-                <Route path="instructor" element={<InstructorPage />} />
-                <Route path="chat" element={<ChatPage />} />
-                <Route path="resume" element={<ResumePage />} />
-                <Route path="interview" element={<InterviewPage />} />
-                <Route path="roadmap" element={<RoadmapPage />} />
-                <Route path="settings" element={<SettingsPage />} />
-              </Route>
+                {/* Protected dashboard routes */}
+                <Route path="/dashboard" element={
+                  <PrivateRoute><DashboardLayout /></PrivateRoute>
+                }>
+                  <Route index element={<DashboardHome />} />
+                  <Route path="assessment" element={<AssessmentPage />} />
+                  <Route path="careers" element={<CareersPage />} />
+                  <Route path="instructor" element={<InstructorPage />} />
+                  <Route path="chat" element={<ChatPage />} />
+                  <Route path="resume" element={<ResumePage />} />
+                  <Route path="interview" element={<InterviewPage />} />
+                  <Route path="roadmap" element={<RoadmapPage />} />
+                  <Route path="settings" element={<SettingsPage />} />
+                </Route>
 
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-          </ErrorBoundary>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+            </ErrorBoundary>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
