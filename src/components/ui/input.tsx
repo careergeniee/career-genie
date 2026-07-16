@@ -5,6 +5,10 @@ import { cn } from "@/lib/utils";
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
   ({ className, type, ...props }, ref) => {
     return (
+      // max-sm: (not sm:) is deliberate: some consumers (Signup, ForgotPassword) pass their
+      // own h-12 override className. sm:h-10 would win that cascade at desktop, shrinking
+      // those inputs back down to 40px; max-sm:h-11 can't, since it's false at sm+ regardless
+      // of class order/specificity.
       <input
         type={type}
         className={cn(
