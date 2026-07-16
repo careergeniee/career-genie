@@ -170,7 +170,7 @@ const SettingsPage = () => {
                                 ) : (
                                     <button
                                         onClick={() => clearKey(key, label)}
-                                        className="text-xs text-muted-foreground hover:text-destructive transition-colors font-medium"
+                                        className="max-sm:min-w-11 max-sm:min-h-11 max-sm:flex max-sm:items-center max-sm:justify-center text-xs text-muted-foreground hover:text-destructive transition-colors font-medium"
                                     >
                                         Clear
                                     </button>
