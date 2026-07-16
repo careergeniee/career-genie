@@ -29,7 +29,7 @@ const navItems = [
 export const DashboardLayout = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const closeButtonRef = useRef<HTMLButtonElement>(null);
-    const { user, logout } = useAuth();
+    const { user, logout, dataVersion } = useAuth();
     const navigate = useNavigate();
 
     const handleLogout = async () => {
@@ -224,7 +224,11 @@ export const DashboardLayout = () => {
                     </div>
                 </div>
                 <DailyTaskReminder />
-                <Outlet />
+                {/* Keying on dataVersion remounts whichever page is active once Firestore
+                    hydration lands, so pages that seeded their state from localStorage on
+                    mount (before that hydration finished) pick up the real data instead of
+                    staying stuck on what a fresh device/browser had — nothing. */}
+                <Outlet key={dataVersion} />
             </main>
         </div>
     );

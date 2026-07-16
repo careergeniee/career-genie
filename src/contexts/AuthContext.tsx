@@ -20,6 +20,15 @@ interface AuthContextType {
     user: User | null;
     loading: boolean;
     error: string | null;
+    /**
+     * Bumped once Firestore hydration (initUserData) finishes for the current
+     * sign-in. Dashboard pages that seed their state from localStorage on
+     * mount (useState(() => loadX())) capture whatever was there *before*
+     * that hydration lands — on a fresh device this is nothing, and without
+     * this signal nothing tells them to re-read once the real data arrives.
+     * Consumers should key a remount (or re-run their load) off this value.
+     */
+    dataVersion: number;
     signup: (email: string, password: string) => Promise<void>;
     login: (email: string, password: string, remember?: boolean) => Promise<void>;
     loginWithGoogle: () => Promise<void>;
@@ -39,6 +48,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [dataVersion, setDataVersion] = useState(0);
     const hydratedUidRef = useRef<string | null>(null);
 
     useEffect(() => {
@@ -53,7 +63,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     // token refresh, which would race with and clobber any local write made
                     // since the last Firestore mirror (saveData's Firestore write is fire-and-forget).
                     hydratedUidRef.current = u.uid;
-                    initUserData().catch(() => {});
+                    // Rendering isn't gated on this finishing (see `loading` above), so pages
+                    // already mid-render — or about to mount — can easily win the race and
+                    // read localStorage before this write lands. Bumping dataVersion once it
+                    // settles gives them a signal to re-read instead of staying stuck empty.
+                    initUserData().finally(() => setDataVersion((v) => v + 1));
                 }
                 if (!u) {
                     hydratedUidRef.current = null;
@@ -101,7 +115,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const resetPassword = (email: string) => sendPasswordResetEmail(auth, email);
 
     return (
-        <AuthContext.Provider value={{ user, loading, error, signup, login, loginWithGoogle, logout, resetPassword }}>
+        <AuthContext.Provider value={{ user, loading, error, dataVersion, signup, login, loginWithGoogle, logout, resetPassword }}>
             {!loading && children}
         </AuthContext.Provider>
     );

@@ -21,19 +21,21 @@ const PROMPT_DISMISS_KEY = "instructorPromptDismissed";
 export const DailyTaskReminder = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { user } = useAuth();
+    const { user, dataVersion } = useAuth();
     const [tasks, setTasks] = useState<DailyTask[]>(loadTasks());
     const [promptDismissed, setPromptDismissed] = useState(
         loadData<string>(PROMPT_DISMISS_KEY, "") === todayKey()
     );
 
-    // Re-read tasks on navigation and when the instructor page signals a change.
+    // Re-read tasks on navigation, when the instructor page signals a change, and once
+    // Firestore hydration lands (dataVersion) — the initial loadTasks() above can run
+    // before that hydration finishes on a fresh device, same as every other page here.
     useEffect(() => {
         const refresh = () => setTasks(loadTasks());
         refresh();
         window.addEventListener("instructor:update", refresh);
         return () => window.removeEventListener("instructor:update", refresh);
-    }, [location.pathname]);
+    }, [location.pathname, dataVersion]);
 
     // Browser notification scheduler (works while the app/tab is open).
     useEffect(() => {
