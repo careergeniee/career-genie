@@ -62,3 +62,42 @@ Each page gets a before/after mobile screenshot. No automated visual
 regression suite exists for this, so verification is manual via the browser
 tools, plus running `typecheck` and the existing test suite (`vitest run`) at
 the end to confirm no regressions from the class/markup changes.
+
+## PWA install support
+
+In addition to the layout pass above, make the app installable to a phone's
+home screen ("Add to Home Screen" / native install prompt), opening in
+standalone mode (no browser chrome) with a full offline app shell.
+
+**Approach:** `vite-plugin-pwa` (Workbox under the hood) — the standard
+solution for Vite apps, generates the manifest and service worker from
+config rather than hand-rolling either.
+
+- **Manifest**: name "Career Genie", short_name "CareerGenie",
+  `display: "standalone"`, theme/background colors pulled from the existing
+  CSS custom properties (`--background`, `--primary`) rather than
+  invented values, `start_url: "/"`.
+- **Icons**: generate the full required set (192, 512, maskable variants)
+  from `src/assets/genie-logo.png` via `@vite-pwa/assets-generator`, since
+  the source isn't currently a square icon. Output goes to `public/`.
+- **Service worker**: `registerType: "autoUpdate"`, `generateSW` strategy.
+  Precache built JS/CSS/image assets and use a navigation fallback so the
+  app shell (routing, static UI) loads with no network at all.
+- **Data stays network-only**: Firebase calls and any other API/data
+  fetches are explicitly *not* cached by the service worker — offline means
+  "the app opens and navigates," not "you see stale data." Screens that need
+  live data show their existing loading/error states when offline.
+- **Update handling**: since `autoUpdate` swaps in a new service worker
+  silently, add a small toast/prompt (via the existing `sonner` toast setup)
+  when a new version is ready, so users aren't stuck on stale JS after a
+  deploy without knowing a refresh would fix it.
+
+**Out of scope for this addendum:** push notifications, background sync,
+any offline *write* capability (e.g., filling out the resume form with no
+network and syncing later) — those are meaningfully larger features, not
+"can I install and open the app."
+
+**Verification:** build the app (`vite build`), serve the production build
+locally, and use Chrome DevTools to confirm the manifest is valid, the
+service worker installs, an install prompt/option is available, and the app
+still opens (showing the shell) with the network throttled to "offline."
