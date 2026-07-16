@@ -148,7 +148,7 @@ const CareersPage = () => {
                 )}
                 {!prediction.uncertain && <div className="mb-8" />}
 
-                <div className="grid lg:grid-cols-[340px_1fr] gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6">
                     {/* Ranked predictions */}
                     <div className="space-y-3">
                         {prediction.predictions.map((p, i) => {
@@ -254,12 +254,14 @@ const CareersPage = () => {
                                 {gap.map((g) => {
                                     const S = STATUS_STYLE[g.status];
                                     return (
-                                        <div key={g.skill} className="flex items-center gap-3">
-                                            <span className={cn("flex items-center gap-1.5 text-[11px] px-2 py-1 rounded-md border shrink-0 w-[104px] justify-center", S.cls)}>
-                                                <S.icon className="w-3.5 h-3.5" /> {S.label}
-                                            </span>
-                                            <span className="text-sm font-medium flex-1">{g.label}</span>
-                                            <div className="w-28 h-1.5 rounded-full bg-secondary overflow-hidden relative shrink-0">
+                                        <div key={g.skill} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                                            <div className="flex items-center gap-3 sm:contents">
+                                                <span className={cn("flex items-center gap-1.5 text-[11px] px-2 py-1 rounded-md border shrink-0 w-[104px] justify-center", S.cls)}>
+                                                    <S.icon className="w-3.5 h-3.5" /> {S.label}
+                                                </span>
+                                                <span className="text-sm font-medium flex-1">{g.label}</span>
+                                            </div>
+                                            <div className="w-full sm:w-28 h-1.5 rounded-full bg-secondary overflow-hidden relative shrink-0">
                                                 <div className="absolute top-0 bottom-0 w-px bg-foreground/40" style={{ left: `${g.required * 100}%` }} title="target" />
                                                 <div className="h-full rounded-full bg-gradient-gold" style={{ width: `${g.current * 100}%` }} />
                                             </div>
