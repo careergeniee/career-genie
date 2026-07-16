@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState, type RefObject } from "react";
 import { Link } from "react-router-dom";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -215,10 +215,41 @@ const GAP    = 14;
 // Amount each card translates to collapse onto the center card (index 3)
 const stackShift = (i: number) => (3 - i) * (CARD_W + GAP);
 
-export const HeroShowcase = () => {
+// Transform transition timing (kept as named constants so the scroll-centering effect
+// below can wait for the same duration it takes the cards to visually finish spreading).
+const CARD_TRANSITION_MS = 520; // matches the "0.52s" transform transition
+const OPEN_STAGGER_MS    = 55;  // per-card delay step, left → right, when opening
+const CLOSE_STAGGER_MS   = 38;  // per-card delay step, right → left, when closing
+// Time for the last (most-delayed) card's open transition to finish.
+const OPEN_ANIMATION_MS = (CARDS.length - 1) * OPEN_STAGGER_MS + CARD_TRANSITION_MS;
+
+interface HeroShowcaseProps {
+    /** Ref to the ancestor scroll container (the `overflow-x-auto` wrapper in Index.tsx).
+     *  Used to re-center the horizontal scroll position when the showcase opens, so the
+     *  leading cards — clipped by the `justify-center` row at rest — become reachable. */
+    containerRef?: RefObject<HTMLDivElement>;
+}
+
+export const HeroShowcase = ({ containerRef }: HeroShowcaseProps = {}) => {
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState<number | null>(null);
     const selectedCard = selected !== null ? CARDS[selected] : null;
+
+    // On open, center the scroll position within the overflow so both the leading and
+    // trailing cards (clipped at rest by justify-center) are reachable by scrolling in
+    // either direction, instead of starting pinned at scrollLeft: 0. The cards spread out
+    // via a staggered CSS transform transition rather than an instant layout change, so
+    // scrollWidth doesn't reach its expanded value until that transition finishes — we
+    // wait for it before measuring, otherwise we'd center against the still-stacked width.
+    useEffect(() => {
+        if (!open) return;
+        const row = containerRef?.current;
+        if (!row) return;
+        const id = window.setTimeout(() => {
+            row.scrollLeft = (row.scrollWidth - row.clientWidth) / 2;
+        }, OPEN_ANIMATION_MS);
+        return () => window.clearTimeout(id);
+    }, [open, containerRef]);
 
     return (
         <div
@@ -235,7 +266,7 @@ export const HeroShowcase = () => {
                     const rot = open ? 0 : (i - 3) * 2.5;
                     const ty  = open ? 0 : Math.abs(i - 3) * 4;
                     // left → right stagger when opening; right → left when closing
-                    const delay = open ? i * 55 : (CARDS.length - 1 - i) * 38;
+                    const delay = open ? i * OPEN_STAGGER_MS : (CARDS.length - 1 - i) * CLOSE_STAGGER_MS;
 
                     return (
                         <div
@@ -244,7 +275,7 @@ export const HeroShowcase = () => {
                             style={{
                                 width: CARD_W,
                                 transform: `translateX(${tx}px) translateY(${ty}px) rotate(${rot}deg)`,
-                                transition: `transform 0.52s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms`,
+                                transition: `transform ${CARD_TRANSITION_MS}ms cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms`,
                                 zIndex: open ? 1 : 10 - Math.abs(i - 3),
                                 position: "relative",
                             }}

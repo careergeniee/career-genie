@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { HeroShowcase } from "@/components/home/HeroShowcase";
@@ -10,6 +11,8 @@ import FadeContent from "@/components/FadeContent";
 import { ArrowRight } from "lucide-react";
 
 const Index = () => {
+  const toolkitScrollRef = useRef<HTMLDivElement>(null);
+
   return (
     <div className="bg-background text-foreground">
 
@@ -101,8 +104,8 @@ const Index = () => {
             <h2 className="font-display font-bold text-3xl tracking-tight">Your Toolkit</h2>
             <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground font-medium">7 modules</span>
           </div>
-          <div className="w-full overflow-x-auto px-8">
-            <HeroShowcase />
+          <div ref={toolkitScrollRef} className="w-full overflow-x-auto px-8">
+            <HeroShowcase containerRef={toolkitScrollRef} />
           </div>
         </section>
       </div>
