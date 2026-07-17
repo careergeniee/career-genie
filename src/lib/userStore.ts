@@ -21,6 +21,8 @@ export const KEYS = {
 /**
  * Anonymous per-browser id for signed-out visitors, so two different people on the
  * same shared/public machine never read or write the same "guest" data bucket.
+ * Deliberately local-only, never mirrored: it isn't account data, it's just a
+ * namespace so pre-login usage doesn't collide with another visitor's.
  */
 const ANON_ID_KEY = "cg:_anon_id";
 let _anonId: string | null = null;
@@ -61,29 +63,175 @@ const checkStorageQuota = () => {
     } catch { /* noop */ }
 };
 
+// ---------------------------------------------------------------------------
+// Envelope: every value saved after this change carries an updatedAt
+// timestamp, so concurrent writes from two devices can be resolved by
+// last-write-wins instead of whichever network request happens to land
+// last. Data written before this change (and any hand-edited Firestore
+// field) has no envelope — treated as the oldest possible write so real
+// envelopes always take precedence, and loadData() still returns the bare
+// value either way so no caller needs to know the difference.
+// ---------------------------------------------------------------------------
+interface Envelope<T> {
+    __cg: true;
+    value: T;
+    updatedAt: number;
+}
+const isEnvelope = (x: unknown): x is Envelope<unknown> =>
+    typeof x === "object" && x !== null && (x as { __cg?: unknown }).__cg === true;
+
+const wrap = <T>(value: T, updatedAt: number): Envelope<T> => ({ __cg: true, value, updatedAt });
+
+/** Extracts the updatedAt from a raw (already-parsed) stored value; -1 for pre-envelope/unrecognized data. */
+const envelopeTimestamp = (raw: unknown): number => (isEnvelope(raw) ? raw.updatedAt : -1);
+
 export function loadData<T>(key: string, fallback: T): T {
     try {
         const raw = localStorage.getItem(fullKey(key));
         if (!raw) return fallback;
-        return JSON.parse(raw) as T;
+        const parsed = JSON.parse(raw);
+        return (isEnvelope(parsed) ? parsed.value : parsed) as T;
     } catch {
         return fallback;
     }
 }
 
-export function saveData<T>(key: string, value: T): void {
+// ---------------------------------------------------------------------------
+// Pending-writes queue: saveData()'s Firestore mirror is fire-and-forget, so
+// a write can fail silently (offline, transient Firestore error) leaving the
+// cloud copy stale. Failed writes go in here, keyed by data key (only the
+// latest value per key is kept — no need to replay history, just the most
+// recent state), and get retried when connectivity looks like it's back.
+// ---------------------------------------------------------------------------
+type PendingEntry = { raw: string; updatedAt: number };
+const pendingStorageKey = () => `cg:${uid()}:_pending`;
+
+const getPending = (): Record<string, PendingEntry> => {
     try {
-        localStorage.setItem(fullKey(key), JSON.stringify(value));
+        return JSON.parse(localStorage.getItem(pendingStorageKey()) ?? "{}");
+    } catch {
+        return {};
+    }
+};
+
+const SYNC_STATUS_EVENT = "cg:sync-status";
+
+const setPending = (map: Record<string, PendingEntry>): void => {
+    try {
+        if (Object.keys(map).length === 0) localStorage.removeItem(pendingStorageKey());
+        else localStorage.setItem(pendingStorageKey(), JSON.stringify(map));
+    } catch { /* noop */ }
+    try {
+        window.dispatchEvent(new Event(SYNC_STATUS_EVENT));
+    } catch { /* noop (non-browser test environment) */ }
+};
+
+/** Number of keys with a write that hasn't reached Firestore yet — drives the "sync failed" UI indicator. */
+export function getPendingCount(): number {
+    return Object.keys(getPending()).length;
+}
+
+/** Subscribe to pending-write-count changes. Returns an unsubscribe function. */
+export function onSyncStatusChange(cb: () => void): () => void {
+    window.addEventListener(SYNC_STATUS_EVENT, cb);
+    return () => window.removeEventListener(SYNC_STATUS_EVENT, cb);
+}
+
+let _flushing = false;
+
+/**
+ * Push every queued write to Firestore, resolving conflicts by last-write-wins:
+ * for each pending key, compares its updatedAt against whatever's currently in
+ * Firestore (which another device may have written more recently) before
+ * overwriting. A stale queued write loses to newer remote data — the remote
+ * value is adopted locally instead of blindly pushing the stale one over it.
+ */
+export async function flushPendingWrites(): Promise<void> {
+    const userId = auth.currentUser?.uid;
+    if (!userId || _flushing) return;
+    const pending = getPending();
+    const keys = Object.keys(pending);
+    if (keys.length === 0) return;
+
+    _flushing = true;
+    try {
+        const snap = await getDoc(doc(db, "users", userId));
+        const remote: Record<string, unknown> = snap.exists() ? snap.data() : {};
+        const toWrite: Record<string, string> = {};
+
+        for (const key of keys) {
+            const entry = pending[key];
+            const remoteRaw = remote[key];
+            let remoteUpdatedAt = -1;
+            if (typeof remoteRaw === "string") {
+                try {
+                    remoteUpdatedAt = envelopeTimestamp(JSON.parse(remoteRaw));
+                } catch { /* unparseable remote value — treat as oldest, our queued write wins */ }
+            }
+            if (entry.updatedAt >= remoteUpdatedAt) {
+                toWrite[key] = entry.raw;
+            } else if (typeof remoteRaw === "string") {
+                // Remote is newer — another device already flushed a later write.
+                // This device's queued value is stale; adopt remote instead of pushing over it.
+                localStorage.setItem(`cg:${userId}:${key}`, remoteRaw);
+                console.info(`CareerGenie: discarded stale queued write for "${key}" — a newer version was already synced`);
+            }
+        }
+
+        if (Object.keys(toWrite).length > 0) {
+            await setDoc(doc(db, "users", userId), toWrite, { merge: true });
+        }
+        setPending({});
+        console.info(`CareerGenie: flushed ${keys.length} pending write(s)`);
+    } catch (err) {
+        console.warn("CareerGenie: pending-write flush failed, will retry later —", err);
+    } finally {
+        _flushing = false;
+    }
+}
+
+let _retryTimer: ReturnType<typeof setTimeout> | null = null;
+const scheduleRetry = (): void => {
+    if (_retryTimer) return;
+    _retryTimer = setTimeout(() => {
+        _retryTimer = null;
+        void flushPendingWrites();
+    }, 15_000);
+};
+
+if (typeof window !== "undefined") {
+    window.addEventListener("online", () => void flushPendingWrites());
+}
+
+export function saveData<T>(key: string, value: T): void {
+    const updatedAt = Date.now();
+    const envelope = wrap(value, updatedAt);
+    const raw = JSON.stringify(envelope);
+    try {
+        localStorage.setItem(fullKey(key), raw);
         checkStorageQuota();
     } catch {
         console.warn("CareerGenie: localStorage write failed — storage may be full.");
     }
-    // Async mirror to Firestore — fire-and-forget, localStorage is always the primary
+
     const userId = auth.currentUser?.uid;
-    if (userId) {
-        setDoc(doc(db, "users", userId), { [key]: JSON.stringify(value) }, { merge: true })
-            .catch((err) => console.warn("CareerGenie: Firestore sync failed —", err));
-    }
+    if (!userId) return; // guests: local-only, nothing to mirror or queue
+
+    setDoc(doc(db, "users", userId), { [key]: raw }, { merge: true })
+        .then(() => {
+            const pending = getPending();
+            if (pending[key]) {
+                delete pending[key];
+                setPending(pending);
+            }
+        })
+        .catch((err) => {
+            console.warn("CareerGenie: Firestore sync failed, queued for retry —", err);
+            const pending = getPending();
+            pending[key] = { raw, updatedAt };
+            setPending(pending);
+            scheduleRetry();
+        });
 }
 
 export function removeData(key: string): void {
@@ -91,6 +239,11 @@ export function removeData(key: string): void {
         localStorage.removeItem(fullKey(key));
     } catch {
         /* noop */
+    }
+    const pending = getPending();
+    if (pending[key]) {
+        delete pending[key];
+        setPending(pending);
     }
     // Mirror the deletion to Firestore — without this, a cleared key just
     // resurrects on the next login/device from the still-present remote copy.
@@ -130,6 +283,10 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
  * a single failed attempt here shouldn't permanently strand the user without
  * their data for the rest of the session (the caller marks hydration "done"
  * for this uid regardless of outcome, so there's no retry above this layer).
+ *
+ * Conflict-aware: a key with an unsynced local write (still in the pending
+ * queue) is never downgraded by an older remote value — that write gets
+ * flushed instead once hydration confirms Firestore is reachable.
  */
 export async function initUserData(): Promise<void> {
     const userId = auth.currentUser?.uid;
@@ -140,14 +297,26 @@ export async function initUserData(): Promise<void> {
             const snap = await getDoc(doc(db, "users", userId));
             if (snap.exists()) {
                 const remote = snap.data();
+                const pending = getPending();
                 const keys = Object.keys(remote);
+                let applied = 0;
                 Object.entries(remote).forEach(([key, val]) => {
+                    const pendingEntry = pending[key];
+                    if (pendingEntry) {
+                        let remoteUpdatedAt = -1;
+                        try {
+                            remoteUpdatedAt = envelopeTimestamp(JSON.parse(val as string));
+                        } catch { /* unparseable remote — local pending write wins */ }
+                        if (pendingEntry.updatedAt >= remoteUpdatedAt) return; // keep the newer local value
+                    }
                     localStorage.setItem(`cg:${userId}:${key}`, val as string);
+                    applied++;
                 });
-                console.info(`CareerGenie: hydrated ${keys.length} field(s) from Firestore —`, keys);
+                console.info(`CareerGenie: hydrated ${applied} field(s) from Firestore (${keys.length - applied} skipped for newer local data)`);
             } else {
                 console.info("CareerGenie: no Firestore document found for this user yet");
             }
+            if (getPendingCount() > 0) void flushPendingWrites();
             return;
         } catch (err) {
             if (attempt === MAX_ATTEMPTS) {

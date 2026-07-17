@@ -11,19 +11,29 @@ vi.mock("@/lib/firebase", () => ({
     },
     db: {},
 }));
-const { updateDocMock, getDocMock } = vi.hoisted(() => ({
+const { updateDocMock, getDocMock, setDocMock } = vi.hoisted(() => ({
     updateDocMock: vi.fn().mockResolvedValue(undefined),
     getDocMock: vi.fn().mockResolvedValue({ exists: () => false, data: () => ({}) }),
+    setDocMock: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock("firebase/firestore", () => ({
     doc: vi.fn(),
-    setDoc: vi.fn().mockResolvedValue(undefined),
+    setDoc: setDocMock,
     getDoc: getDocMock,
     updateDoc: updateDocMock,
     deleteField: vi.fn(() => "DELETE_FIELD_SENTINEL"),
 }));
 
-import { loadData, saveData, removeData, clearUserData, initUserData, KEYS, todayKey, dayDiff } from "@/lib/userStore";
+import {
+    loadData, saveData, removeData, clearUserData, initUserData,
+    flushPendingWrites, getPendingCount, onSyncStatusChange,
+    KEYS, todayKey, dayDiff,
+} from "@/lib/userStore";
+
+// Flushes the microtask queue so saveData()'s unawaited setDoc(...).then/.catch
+// handlers (which run the pending-queue bookkeeping this file asserts on) settle
+// before an assertion runs.
+const flushMicrotasks = () => new Promise((r) => setTimeout(r, 0));
 
 describe("userStore", () => {
     beforeEach(() => {
@@ -32,6 +42,8 @@ describe("userStore", () => {
         updateDocMock.mockClear();
         getDocMock.mockClear();
         getDocMock.mockResolvedValue({ exists: () => false, data: () => ({}) });
+        setDocMock.mockClear();
+        setDocMock.mockResolvedValue(undefined);
     });
 
     it("round-trips data through loadData/saveData", () => {
@@ -112,6 +124,113 @@ describe("userStore", () => {
         expect(loadData(KEYS.resume, null)).toBeNull();
         currentUserRef.current = { uid: "user-b" };
         expect(loadData(KEYS.resume, null)).toEqual({ name: "B" });
+    });
+
+    it("loadData reads pre-envelope (legacy) data written before the updatedAt envelope existed", () => {
+        currentUserRef.current = { uid: "user-a" };
+        localStorage.setItem("cg:user-a:resume", JSON.stringify({ name: "Legacy" }));
+        expect(loadData(KEYS.resume, null)).toEqual({ name: "Legacy" });
+    });
+
+    it("a failed Firestore write is queued for retry and getPendingCount() reflects it", async () => {
+        currentUserRef.current = { uid: "user-a" };
+        setDocMock.mockRejectedValueOnce(new Error("offline"));
+        saveData(KEYS.resume, { name: "Taha" });
+        await flushMicrotasks();
+        expect(getPendingCount()).toBe(1);
+    });
+
+    it("a successful write is not queued, and clears any earlier queued entry for the same key", async () => {
+        currentUserRef.current = { uid: "user-a" };
+        setDocMock.mockRejectedValueOnce(new Error("offline"));
+        saveData(KEYS.resume, { name: "v1" });
+        await flushMicrotasks();
+        expect(getPendingCount()).toBe(1);
+
+        setDocMock.mockResolvedValueOnce(undefined);
+        saveData(KEYS.resume, { name: "v2" });
+        await flushMicrotasks();
+        expect(getPendingCount()).toBe(0);
+    });
+
+    it("onSyncStatusChange notifies subscribers when the pending queue changes", async () => {
+        currentUserRef.current = { uid: "user-a" };
+        const cb = vi.fn();
+        const unsubscribe = onSyncStatusChange(cb);
+
+        setDocMock.mockRejectedValueOnce(new Error("offline"));
+        saveData(KEYS.chat, ["hi"]);
+        await flushMicrotasks();
+
+        expect(cb).toHaveBeenCalled();
+        unsubscribe();
+    });
+
+    it("flushPendingWrites pushes a queued write to Firestore once reconnected", async () => {
+        currentUserRef.current = { uid: "user-a" };
+        setDocMock.mockRejectedValueOnce(new Error("offline"));
+        saveData(KEYS.roadmap, { step: 1 });
+        await flushMicrotasks();
+        expect(getPendingCount()).toBe(1);
+
+        setDocMock.mockClear();
+        setDocMock.mockResolvedValue(undefined);
+        getDocMock.mockResolvedValueOnce({ exists: () => false, data: () => ({}) });
+
+        await flushPendingWrites();
+
+        expect(setDocMock).toHaveBeenCalledTimes(1);
+        expect(getPendingCount()).toBe(0);
+    });
+
+    it("flushPendingWrites discards a stale queued write when Firestore already has a newer version (last-write-wins)", async () => {
+        currentUserRef.current = { uid: "user-a" };
+
+        // Simulate an offline edit made on this device.
+        setDocMock.mockRejectedValueOnce(new Error("offline"));
+        saveData(KEYS.roadmap, { step: "old" });
+        await flushMicrotasks();
+        expect(getPendingCount()).toBe(1);
+
+        // Meanwhile, another device already flushed a newer write straight to Firestore.
+        const newerRemote = JSON.stringify({
+            __cg: true, value: { step: "new-from-other-device" }, updatedAt: Date.now() + 100_000,
+        });
+        getDocMock.mockResolvedValueOnce({ exists: () => true, data: () => ({ [KEYS.roadmap]: newerRemote }) });
+        setDocMock.mockClear();
+
+        await flushPendingWrites();
+
+        // The stale queued write must never be pushed over the newer remote value...
+        expect(setDocMock).not.toHaveBeenCalled();
+        // ...the conflict is resolved either way (nothing left dangling in the queue)...
+        expect(getPendingCount()).toBe(0);
+        // ...and this device adopts the newer remote value instead of keeping its stale one.
+        expect(loadData(KEYS.roadmap, null)).toEqual({ step: "new-from-other-device" });
+    });
+
+    it("initUserData does not downgrade a key that has a newer unsynced local write than Firestore", async () => {
+        currentUserRef.current = { uid: "user-a" };
+
+        // A local write that's still queued (an offline edit not yet flushed).
+        setDocMock.mockRejectedValueOnce(new Error("offline"));
+        saveData(KEYS.roadmap, { step: "local-newer" });
+        await flushMicrotasks();
+        expect(getPendingCount()).toBe(1);
+
+        // Firestore has an OLDER version of the same key. Use mockResolvedValue (not
+        // -Once) since initUserData may also fire its own end-of-hydration flush,
+        // which calls getDoc/setDoc again — both should stay harmless no-ops here.
+        const olderRemote = JSON.stringify({
+            __cg: true, value: { step: "remote-older" }, updatedAt: Date.now() - 100_000,
+        });
+        getDocMock.mockResolvedValue({ exists: () => true, data: () => ({ [KEYS.roadmap]: olderRemote }) });
+        setDocMock.mockResolvedValue(undefined);
+
+        await initUserData();
+
+        // Local keeps its newer value rather than being overwritten by the older remote one.
+        expect(loadData(KEYS.roadmap, null)).toEqual({ step: "local-newer" });
     });
 
     it("initUserData retries a transient failure and hydrates localStorage once a later attempt succeeds", async () => {

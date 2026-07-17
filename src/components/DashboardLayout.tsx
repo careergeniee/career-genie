@@ -3,7 +3,7 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
     Bot, FileText, MessageSquare, Map, GraduationCap,
     LogOut, Settings, ChevronRight,
-    LayoutDashboard, ClipboardList, Target, Menu, X, Flame
+    LayoutDashboard, ClipboardList, Target, Menu, X, Flame, CloudOff
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import genieLogo from "@/assets/genie-logo.png";
@@ -13,6 +13,7 @@ import { DailyTaskReminder } from "@/components/DailyTaskReminder";
 import { loadData } from "@/lib/userStore";
 import { loadTasks, hasPendingTaskToday } from "@/lib/instructor";
 import { currentStreak, type Roadmap } from "@/lib/roadmap";
+import { useSyncStatus } from "@/hooks/useSyncStatus";
 import Iridescence from "@/components/Iridescence";
 
 const navItems = [
@@ -31,6 +32,7 @@ export const DashboardLayout = () => {
     const closeButtonRef = useRef<HTMLButtonElement>(null);
     const { user, logout, dataVersion } = useAuth();
     const navigate = useNavigate();
+    const pendingSyncCount = useSyncStatus();
 
     const handleLogout = async () => {
         await logout();
@@ -222,6 +224,15 @@ export const DashboardLayout = () => {
                             Career <span className="text-gradient-gold">Genie</span>
                         </span>
                     </div>
+                    {pendingSyncCount > 0 && (
+                        <div
+                            className="ml-auto flex items-center gap-1.5 pl-3 pr-3.5 py-1.5 rounded-full border border-amber-400/30 bg-amber-400/10 text-amber-400 text-xs font-medium shrink-0"
+                            title={`${pendingSyncCount} change${pendingSyncCount === 1 ? "" : "s"} saved on this device but not yet synced to your account — will retry automatically once you're back online.`}
+                        >
+                            <CloudOff className="w-3.5 h-3.5" />
+                            <span className="max-sm:hidden">Sync pending</span>
+                        </div>
+                    )}
                 </div>
                 <DailyTaskReminder />
                 {/* Keying on dataVersion remounts whichever page is active once Firestore
