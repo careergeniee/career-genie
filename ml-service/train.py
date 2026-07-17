@@ -81,6 +81,17 @@ def main() -> None:
     data_path = None
     if "--data" in sys.argv:
         data_path = sys.argv[sys.argv.index("--data") + 1]
+    else:
+        # Render's build command invokes `python train.py` with no arguments --
+        # without this, that silently retrained on the synthetic dataset on
+        # every single deploy, discarding the real, calibrated, committed
+        # model regardless of what career_model.pkl already held. If the real
+        # dataset is sitting right here (it's committed to the repo), use it
+        # by default; only fall back to synthetic if it's genuinely absent
+        # (e.g. a fresh clone that hasn't run preprocess_so.py yet).
+        default_real_path = os.path.join(HERE, "real_dataset_so.csv")
+        if os.path.exists(default_real_path):
+            data_path = default_real_path
 
     if data_path:
         import pandas as pd
