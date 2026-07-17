@@ -67,7 +67,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     // already mid-render — or about to mount — can easily win the race and
                     // read localStorage before this write lands. Bumping dataVersion once it
                     // settles gives them a signal to re-read instead of staying stuck empty.
-                    initUserData().finally(() => setDataVersion((v) => v + 1));
+                    console.info("CareerGenie: starting Firestore hydration for uid", u.uid);
+                    initUserData().finally(() =>
+                        setDataVersion((v) => {
+                            console.info("CareerGenie: hydration settled, bumping dataVersion", v, "->", v + 1);
+                            return v + 1;
+                        })
+                    );
                 }
                 if (!u) {
                     hydratedUidRef.current = null;

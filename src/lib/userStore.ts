@@ -128,12 +128,19 @@ export async function initUserData(): Promise<void> {
         const snap = await getDoc(doc(db, "users", userId));
         if (snap.exists()) {
             const remote = snap.data();
+            const keys = Object.keys(remote);
             Object.entries(remote).forEach(([key, val]) => {
                 localStorage.setItem(`cg:${userId}:${key}`, val as string);
             });
+            console.info(`CareerGenie: hydrated ${keys.length} field(s) from Firestore —`, keys);
+        } else {
+            console.info("CareerGenie: no Firestore document found for this user yet");
         }
-    } catch {
-        // Firestore unavailable or rules not configured — localStorage still works
+    } catch (err) {
+        // Firestore unavailable or rules not configured — localStorage still works,
+        // but logging this is the only way to tell "no remote data yet" apart from
+        // "every sync is silently being rejected" (e.g. undeployed security rules).
+        console.warn("CareerGenie: Firestore hydration failed —", err);
     }
 }
 
