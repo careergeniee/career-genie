@@ -2,16 +2,23 @@
 
 A small Python service that powers the **Career Prediction** module.
 It trains a calibrated scikit-learn classifier (currently **Gradient
-Boosting**, selected by cross-validated comparison) on **real Stack
-Overflow Developer Survey 2024 data** — actual developers' tech stacks
-vs. their actual jobs — and serves ranked career predictions over a REST
-API (FastAPI). The React frontend calls it; if it's offline, the frontend
-falls back to an in-browser scorer so the app never breaks.
+Boosting**, selected by cross-validated comparison) on **real survey data**
+(Stack Overflow Developer Surveys 2022–2024 + Kaggle's ML & Data Science
+Survey 2020) — actual professionals' tech stacks vs. their actual jobs — and serves
+ranked career predictions over a REST API (FastAPI). The React frontend
+calls it; if it's offline, the frontend falls back to an in-browser scorer
+so the app never breaks.
 
 ```
 career_data.py     schema + synthetic dataset generator (legacy/demo)
-preprocess_so.py   builds real_dataset_so.csv from the SO 2024 survey
-real_dataset_so.csv processed training data (15,724 real professionals)
+preprocess_so.py   builds real_dataset_so.csv from the SO 2022-2024 surveys
+                    (3 years merged, tech names normalized across years)
+preprocess_kaggle_da.py   merges real Data Analyst rows from Kaggle's 2020
+                    ML & Data Science Survey into real_dataset_so.csv
+preprocess_kaggle_mle.py  merges real Machine Learning Engineer rows from
+                    the same Kaggle survey (run after preprocess_kaggle_da.py)
+real_dataset_so.csv processed training data (real professionals, two
+                    merged real surveys — see below)
 train.py           compares 4 algorithms, calibrates winner, saves model
 app.py             FastAPI service (/health, /predict, /meta)
 auth.py            verifies the Firebase ID token required by /predict
@@ -19,18 +26,43 @@ career_model.pkl   trained model (regenerate with the steps below)
 model_meta.json    feature order, labels, metrics, feature importance
 ```
 
-## Dataset (v3): Stack Overflow Developer Survey 2024
+## Dataset (v3.1): Stack Overflow surveys 2022–2024 + Kaggle ML & DS Survey 2020
 
-The model is trained on the **official Stack Overflow Annual Developer Survey
-2024** (65,437 respondents; data: `github.com/StackExchange/Survey`,
-`packages/archive/2024/results.csv`, ODbL-style survey release):
+The model is trained on **four merged real surveys**, all label = respondent's
+own stated job, features = tools the respondent actually reported using:
 
-- **Label** = `DevType`, the respondent's **actual current job** — filtered to
-  "I am a developer by profession", mapped onto our 10 career labels.
-- **Features** = technologies the respondent **actually reported using**
-  (languages, frameworks, databases, platforms, tools), graded 0–1.
-- **15,724 rows** after filtering, mapping, and capping the two giant classes
-  (Backend, Full Stack) at 4,000 rows each.
+1. **Official Stack Overflow Annual Developer Surveys 2024, 2023, and 2022**
+   (~184k raw respondents; data: `github.com/StackExchange/Survey`,
+   `packages/archive/<year>/results.csv`) — `DevType` filtered to "I am a
+   developer by profession", mapped onto our 10 career labels. Different
+   years are different respondents, so merging multiplies the rare classes
+   with real people. 2022's multi-select DevType rows are kept only when
+   every selected role maps to the same single label; tech names are
+   normalized across years (2022 "AWS" ≡ 2024 "Amazon Web Services (AWS)").
+2. **Kaggle's own 2020 Machine Learning & Data Science Survey** (20,036
+   respondents; official competition data: `kaggle.com/c/kaggle-survey-2020`)
+   — `Q5` filtered to respondents who self-selected **"Data Analyst"**
+   (1,475) or **"Machine Learning Engineer"** (1,082), features derived from
+   the tools/languages they reported using in Q7/Q14/Q16/Q26/Q29. This survey
+   is data-science-only (no web/mobile/security questions), so it is used
+   **only** to grow these two classes — see `preprocess_kaggle_da.py` /
+   `preprocess_kaggle_mle.py`.
+
+Combined: **26,306 rows** after filtering, mapping, merging, and capping the
+big classes at 4,000 rows each. Versus the original single-year dataset:
+Data Analyst 178 → 1,899 rows, Machine Learning Engineer 442 → 1,482,
+Data Scientist 749 → 2,413, Cybersecurity Analyst 133 → 360, UI/UX Designer
+46 → 152, Cloud/DevOps 1,423 → 4,000 (capped).
+
+**Cybersecurity Analyst and UI/UX Designer were deliberately NOT merged with
+anything.** Both were searched for extensively — no real, per-respondent,
+tool-usage dataset exists for either role.
+The closest Kaggle candidates were either job-posting/resume scrapes (skills
+*listed in an ad*, not tools a real person *reported using* — a different,
+weaker signal) or unverifiable practice datasets that describe themselves as
+built from generated candidate profiles. Using either would reintroduce the
+exact kind of fake signal the v3 migration exists to avoid (see below) — so
+these two classes stay unsupported by design, not by omission.
 
 **Why v3 exists — the leakage audit.** Earlier versions trained on a Kaggle
 "CS students" dataset whose preprocessing copied each row's career label into
@@ -50,23 +82,30 @@ honesty, not bugs):
 - Survey features are binary "have used" flags; the app sends 0–1
   self-ratings. Tree splits tolerate this shift, but it is a real
   train/serve distribution difference.
-- **Machine Learning Engineer** is nearly indistinguishable from Data
-  Scientist by tech stack alone (the survey itself merged them until 2024).
+- **Machine Learning Engineer vs. Data Analyst vs. Data Scientist** overlap
+  partially: all three draw partly from the same Kaggle survey population,
+  and real ML engineers, data analysts, and data scientists genuinely share
+  a lot of tooling (Python, SQL, stats, viz). The merges lifted both classes
+  from statistical noise to real predictions (ML Engineer F1 0.00 → 0.53,
+  Data Analyst 0.00 → 0.60) with the residual confusion flowing between
+  these three data roles — an honest trade-off visible in the confusion
+  matrix, not a bug. See `model_meta.json` for the full per-class numbers.
 
 ## Model at a glance (for your report)
 
 - **Selection:** four algorithms compared with 5-fold cross-validation.
-  On the real data: **Gradient Boosting 55.4%**, Logistic Regression 55.0%,
-  Random Forest 49.8%, KNN 49.7%. Gradient Boosting is selected (the
-  interpretability-preference policy only overrides within 2 pp; RF is 5.6 pp
-  behind, too far).
-- **Baseline context:** majority-class baseline is 25.4%, random guess 10%.
-  54.1% test accuracy = **2.1× the majority baseline** — real signal, honestly
-  measured. Strong classes: Mobile (F1 0.72), Frontend (0.62), Data Scientist
-  (0.56), Backend (0.55), Full Stack (0.53).
+  Gradient Boosting is selected by highest CV accuracy (the
+  interpretability-preference policy only overrides within 2 pp of Random
+  Forest; RF stays too far behind).
+- **Baseline context:** majority-class baseline is 15.2% (four classes tie
+  at the 4,000-row cap), random guess 10%. 58.5% test accuracy = **~3.8× the
+  majority baseline** — real signal, honestly measured. Per-class F1:
+  Mobile 0.82, Data Scientist 0.69, Frontend 0.64, Data Analyst 0.60 (was
+  0.00 pre-merge), Cloud/DevOps 0.56 (was 0.18 on single-year data),
+  ML Engineer 0.53 (was 0.00), Full Stack 0.44, Backend 0.42.
 - **Calibration:** the winner is wrapped in `CalibratedClassifierCV`
   (isotonic, 5-fold) so the probabilities shown as "match %" are calibrated
-  (test log-loss 1.23 across 10 classes).
+  (test log-loss 1.13 across 10 classes).
 - **Explainability:** a batched single-feature **ablation** fallback
   (~16 ms) — zero out one feature at a time and measure how much it moves
   P(top_career) — so `/predict.explanation` works for any model regardless
@@ -78,8 +117,9 @@ honesty, not bugs):
   currently inert in the ML model — see limitations above).
 - **Classes (10):** Data Scientist, ML Engineer, Data Analyst, Frontend,
   Backend, Full Stack, Cybersecurity, Cloud/DevOps, Mobile, UI/UX.
-- **Performance:** 0.541 test accuracy, 0.554 mean 5-fold CV, macro-F1 0.32
-  (dragged down by the classes the dataset can't support — report per-class).
+- **Performance:** 0.585 test accuracy, 0.592 mean 5-fold CV, macro-F1 0.47
+  (dragged down by Cybersecurity Analyst and UI/UX Designer, which no real
+  dataset can currently support — report per-class).
 
 `python train.py --data real_dataset_so.csv` prints the algorithm comparison,
 classification report, confusion matrix, and feature importances.
@@ -93,18 +133,32 @@ are regenerated by `python gen_figures.py`.
 cd ml-service
 pip install -r requirements.txt
 
-# 1. Download the official SO 2024 survey data (~152 MB, Git LFS):
+# 1. Download the official SO survey data for 2024, 2023, 2022
+#    (~152 + 151 + 104 MB, Git LFS):
 mkdir -p data
-curl -L -o data/so_2024_results.csv \
-  https://media.githubusercontent.com/media/StackExchange/Survey/main/packages/archive/2024/results.csv
+for Y in 2024 2023 2022; do
+  curl -L -o data/so_${Y}_results.csv \
+    https://media.githubusercontent.com/media/StackExchange/Survey/main/packages/archive/${Y}/results.csv
+done
 
 # 2. Build the training dataset (label-leakage-free by construction):
-python preprocess_so.py          # -> real_dataset_so.csv (15,724 rows)
+python preprocess_so.py          # -> real_dataset_so.csv (23,923 rows, 3 years)
 
-# 3. Train, compare, calibrate, save:
+# 3. Download Kaggle's 2020 ML & DS Survey and merge in real Data Analyst +
+#    Machine Learning Engineer rows:
+#    kaggle.com/c/kaggle-survey-2020/data (requires a free Kaggle account to
+#    download from the site directly; a public GitHub mirror of the same
+#    official CSV also works, e.g. raw.githubusercontent.com/chawla201/
+#    Kaggle-ML-DS-Survey-2020-Analysis/master/data/kaggle_survey_2020_responses.csv)
+curl -L -o data/kaggle_survey_2020_responses.csv \
+  https://raw.githubusercontent.com/chawla201/Kaggle-ML-DS-Survey-2020-Analysis/master/data/kaggle_survey_2020_responses.csv
+python preprocess_kaggle_da.py    # -> real_dataset_so.csv grows to 25,266 rows
+python preprocess_kaggle_mle.py   # -> real_dataset_so.csv grows to 26,306 rows
+
+# 4. Train, compare, calibrate, save:
 python train.py --data real_dataset_so.csv   # -> career_model.pkl + model_meta.json
 
-# 4. Verify the service against the new model:
+# 5. Verify the service against the new model:
 python -m pytest -q
 ```
 

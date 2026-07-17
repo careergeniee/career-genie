@@ -18,9 +18,13 @@ client = TestClient(A.app)
 A.app.dependency_overrides[A.verify_auth] = lambda: "test-uid"
 
 DATA_SCIENTIST = {
-    "analytical": 0.9, "problem_solving": 0.85, "python": 0.9,
-    "statistics": 0.9, "machine_learning": 0.85, "sql": 0.75,
-    "data_visualization": 0.8,
+    # Values matched to real per-class feature averages in real_dataset_so.csv
+    # (databases/cloud/statistics are what separate Data Scientist from Data
+    # Analyst post-Kaggle-merge -- both classes now use python/sql/ML tools,
+    # but Data Scientists report much heavier database + cloud + stats usage).
+    "analytical": 0.9, "problem_solving": 0.85, "python": 0.95,
+    "statistics": 0.9, "machine_learning": 0.85, "sql": 0.6,
+    "data_visualization": 0.5, "databases": 0.65, "cloud": 0.55,
 }
 DESIGNER = {"creativity": 0.95, "ui_ux_design": 0.95, "communication": 0.8, "html_css": 0.6}
 

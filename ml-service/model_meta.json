@@ -2,7 +2,7 @@
   "model_version": "3.0",
   "dataset": "real_dataset_so.csv",
   "chosen_algorithm": "Gradient Boosting",
-  "selected_for": "highest CV accuracy (0.5540)",
+  "selected_for": "highest CV accuracy (0.5923)",
   "best_by_accuracy": "Gradient Boosting",
   "calibration": "isotonic",
   "feature_order": [
@@ -40,51 +40,51 @@
     "Mobile App Developer",
     "UI/UX Designer"
   ],
-  "test_accuracy": 0.5412,
-  "macro_f1": 0.3182,
-  "log_loss": 1.2325,
-  "cv_accuracy_mean": 0.554,
-  "cv_accuracy_std": 0.0039,
+  "test_accuracy": 0.5846,
+  "macro_f1": 0.4703,
+  "log_loss": 1.1642,
+  "cv_accuracy_mean": 0.5923,
+  "cv_accuracy_std": 0.008,
   "algorithm_comparison": [
     {
       "algorithm": "Gradient Boosting",
-      "cv_accuracy_mean": 0.554,
-      "cv_accuracy_std": 0.0039,
-      "cv_time_sec": 32.18
+      "cv_accuracy_mean": 0.5923,
+      "cv_accuracy_std": 0.008,
+      "cv_time_sec": 204.33
     },
     {
       "algorithm": "Logistic Regression",
-      "cv_accuracy_mean": 0.5502,
-      "cv_accuracy_std": 0.0055,
-      "cv_time_sec": 0.56
+      "cv_accuracy_mean": 0.5865,
+      "cv_accuracy_std": 0.0054,
+      "cv_time_sec": 3.92
     },
     {
       "algorithm": "Random Forest",
-      "cv_accuracy_mean": 0.4978,
-      "cv_accuracy_std": 0.0074,
-      "cv_time_sec": 8.86
+      "cv_accuracy_mean": 0.5542,
+      "cv_accuracy_std": 0.0063,
+      "cv_time_sec": 47.91
     },
     {
       "algorithm": "K-Nearest Neighbors",
-      "cv_accuracy_mean": 0.4968,
-      "cv_accuracy_std": 0.0064,
-      "cv_time_sec": 0.7
+      "cv_accuracy_mean": 0.5305,
+      "cv_accuracy_std": 0.0059,
+      "cv_time_sec": 7.41
     }
   ],
   "feature_importance": {
-    "linux_devops": 0.1672,
-    "mobile_dev": 0.1046,
-    "databases": 0.1041,
-    "backend_apis": 0.0915,
-    "cloud": 0.0907,
-    "html_css": 0.0759,
-    "machine_learning": 0.0742,
-    "statistics": 0.0567,
-    "sql": 0.0526,
-    "python": 0.0482,
-    "data_visualization": 0.048,
-    "javascript": 0.045,
-    "react": 0.0413,
+    "linux_devops": 0.169,
+    "mobile_dev": 0.1099,
+    "databases": 0.0968,
+    "machine_learning": 0.078,
+    "cloud": 0.0775,
+    "backend_apis": 0.0761,
+    "html_css": 0.0744,
+    "statistics": 0.0736,
+    "data_visualization": 0.067,
+    "sql": 0.0522,
+    "python": 0.0489,
+    "javascript": 0.0451,
+    "react": 0.0316,
     "leadership": 0.0,
     "creativity": 0.0,
     "communication": 0.0,
@@ -94,5 +94,5 @@
     "networking_security": 0.0,
     "ui_ux_design": 0.0
   },
-  "trained_samples": 12579
+  "trained_samples": 21044
 }
