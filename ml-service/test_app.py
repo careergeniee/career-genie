@@ -82,14 +82,19 @@ def test_predict_mobile_developer():
     assert r.json()["top_career"] == "Mobile App Developer"
 
 
-def test_designer_profile_returns_valid_prediction():
-    # Known limitation, documented in the README: the SO 2024 survey asks no
-    # design-tool questions, so ui_ux_design carries no signal and the model
-    # cannot single out designers (the in-app offline scorer covers them).
-    # The service must still answer such profiles with a valid prediction.
+def test_predict_designer():
+    # Backed by the disclosed O*NET-profile synthetic rows (augment_profiles.py):
+    # a design-heavy profile must rank UI/UX Designer first.
     r = client.post("/predict", json={"features": DESIGNER})
-    assert r.status_code == 200
-    assert r.json()["top_career"] in A.CAREER_LABELS
+    assert r.json()["top_career"] == "UI/UX Designer"
+
+
+def test_predict_cybersecurity():
+    # Same augmentation covers Cybersecurity Analyst (SOC 15-1212.00).
+    r = client.post("/predict", json={
+        "features": {"networking_security": 0.95, "linux_devops": 0.7,
+                     "python": 0.55, "cloud": 0.55}})
+    assert r.json()["top_career"] == "Cybersecurity Analyst"
 
 
 def test_probabilities_descending():

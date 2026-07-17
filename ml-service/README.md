@@ -17,6 +17,8 @@ preprocess_kaggle_da.py   merges real Data Analyst rows from Kaggle's 2020
                     ML & Data Science Survey into real_dataset_so.csv
 preprocess_kaggle_mle.py  merges real Machine Learning Engineer rows from
                     the same Kaggle survey (run after preprocess_kaggle_da.py)
+augment_profiles.py adds disclosed synthetic O*NET-profile rows for the two
+                    classes no real survey covers (Cybersecurity, UI/UX)
 real_dataset_so.csv processed training data (real professionals, two
                     merged real surveys — see below)
 train.py           compares 4 algorithms, calibrates winner, saves model
@@ -54,15 +56,26 @@ Data Analyst 178 → 1,899 rows, Machine Learning Engineer 442 → 1,482,
 Data Scientist 749 → 2,413, Cybersecurity Analyst 133 → 360, UI/UX Designer
 46 → 152, Cloud/DevOps 1,423 → 4,000 (capped).
 
-**Cybersecurity Analyst and UI/UX Designer were deliberately NOT merged with
-anything.** Both were searched for extensively — no real, per-respondent,
-tool-usage dataset exists for either role.
-The closest Kaggle candidates were either job-posting/resume scrapes (skills
-*listed in an ad*, not tools a real person *reported using* — a different,
-weaker signal) or unverifiable practice datasets that describe themselves as
-built from generated candidate profiles. Using either would reintroduce the
-exact kind of fake signal the v3 migration exists to avoid (see below) — so
-these two classes stay unsupported by design, not by omission.
+**Cybersecurity Analyst and UI/UX Designer: disclosed synthetic rows
+(v3.2).** Both roles were searched for extensively — no real, per-respondent,
+tool-usage dataset exists for either (the closest Kaggle candidates are
+job-posting scrapes or generated practice datasets: fake signal). But the
+app *does* collect `networking_security` and `ui_ux_design` self-ratings and
+needs the model to act on them, so `augment_profiles.py` adds **1,500
+synthetic rows per class**, sampled (Gaussian noise) around the **O*NET
+occupational profiles** in `career_data.py` (US Dept. of Labor data: SOC
+15-1212.00 Information Security Analysts, SOC 15-1255.00 Web & Digital
+Interface Designers). Three honesty guarantees:
+
+- every row is tagged `source="synthetic-onet"` in the CSV (real rows:
+  `source="real"`), so the provenance is auditable;
+- `train.py` additionally reports a **real-only** test evaluation, so the
+  real-world numbers are never conflated with synthetic ones — the
+  per-class scores for these two classes measure *recovery of the
+  documented O*NET profile*, not validated real-world accuracy;
+- personality traits are zeroed in synthetic rows (real surveys don't
+  measure them either), so the model cannot learn a spurious
+  "any personality signal ⇒ Designer/Security" shortcut.
 
 **Why v3 exists — the leakage audit.** Earlier versions trained on a Kaggle
 "CS students" dataset whose preprocessing copied each row's career label into
@@ -74,11 +87,13 @@ feature is ever derived from, floored by, or imputed from the label.**
 
 **Honest limitations** (state these in the report — they are features of
 honesty, not bugs):
-- The 6 personality traits, `networking_security`, and `ui_ux_design` have no
-  counterpart in the survey; they are constant 0 in training, so the ML model
-  ignores them (the in-app offline scorer still uses them). Consequently the
-  model cannot identify **Cybersecurity Analysts** or **UI/UX Designers** —
-  those rely on the offline scorer path.
+- The 6 personality traits have no counterpart in any survey; they are
+  constant 0 in training (including synthetic rows, deliberately), so the ML
+  model ignores them — only the in-app offline scorer uses them.
+  `networking_security` and `ui_ux_design` are populated **only** in the
+  synthetic O*NET rows, which is exactly the disclosed mechanism that lets
+  the model identify Cybersecurity Analysts and UI/UX Designers from those
+  self-ratings.
 - Survey features are binary "have used" flags; the app sends 0–1
   self-ratings. Tree splits tolerate this shift, but it is a real
   train/serve distribution difference.
@@ -97,12 +112,16 @@ honesty, not bugs):
   Gradient Boosting is selected by highest CV accuracy (the
   interpretability-preference policy only overrides within 2 pp of Random
   Forest; RF stays too far behind).
-- **Baseline context:** majority-class baseline is 15.2% (four classes tie
-  at the 4,000-row cap), random guess 10%. 58.5% test accuracy = **~3.8× the
-  majority baseline** — real signal, honestly measured. Per-class F1:
-  Mobile 0.82, Data Scientist 0.69, Frontend 0.64, Data Analyst 0.60 (was
-  0.00 pre-merge), Cloud/DevOps 0.56 (was 0.18 on single-year data),
-  ML Engineer 0.53 (was 0.00), Full Stack 0.44, Backend 0.42.
+- **Baseline context:** majority-class baseline is ~13.6%, random guess 10%.
+  **Two numbers, always reported together:** 61.2% accuracy / macro-F1 0.64
+  on the full test set (includes synthetic-class rows), and **56.8%
+  accuracy on the real-only test subset** — the honest real-world figure.
+  Per-class F1 (full test): Mobile 0.79, Data Scientist 0.68, Frontend
+  0.63, ML Engineer 0.59 (was 0.00 pre-merge), Data Analyst 0.56 (was
+  0.00), Cloud/DevOps 0.55 (was 0.18 single-year), Full Stack 0.41,
+  Backend 0.39, plus Cybersecurity 0.89 and UI/UX 0.95 — those last two
+  measure O*NET-profile recovery (see Dataset section), not validated
+  real-world accuracy.
 - **Calibration:** the winner is wrapped in `CalibratedClassifierCV`
   (isotonic, 5-fold) so the probabilities shown as "match %" are calibrated
   (test log-loss 1.13 across 10 classes).
@@ -117,9 +136,10 @@ honesty, not bugs):
   currently inert in the ML model — see limitations above).
 - **Classes (10):** Data Scientist, ML Engineer, Data Analyst, Frontend,
   Backend, Full Stack, Cybersecurity, Cloud/DevOps, Mobile, UI/UX.
-- **Performance:** 0.585 test accuracy, 0.592 mean 5-fold CV, macro-F1 0.47
-  (dragged down by Cybersecurity Analyst and UI/UX Designer, which no real
-  dataset can currently support — report per-class).
+- **Performance:** 0.612 test accuracy (0.568 real-only), 0.617 mean 5-fold
+  CV, macro-F1 0.64. The currently selected algorithm is **Random Forest**
+  (CV 0.617, within the 2 pp interpretability-preference window of Gradient
+  Boosting's 0.633).
 
 `python train.py --data real_dataset_so.csv` prints the algorithm comparison,
 classification report, confusion matrix, and feature importances.
@@ -154,6 +174,10 @@ curl -L -o data/kaggle_survey_2020_responses.csv \
   https://raw.githubusercontent.com/chawla201/Kaggle-ML-DS-Survey-2020-Analysis/master/data/kaggle_survey_2020_responses.csv
 python preprocess_kaggle_da.py    # -> real_dataset_so.csv grows to 25,266 rows
 python preprocess_kaggle_mle.py   # -> real_dataset_so.csv grows to 26,306 rows
+
+# 3b. Add the disclosed synthetic O*NET-profile rows for the two classes no
+#     real survey covers (tagged source="synthetic-onet" in the CSV):
+python augment_profiles.py        # -> real_dataset_so.csv grows to 29,306 rows
 
 # 4. Train, compare, calibrate, save:
 python train.py --data real_dataset_so.csv   # -> career_model.pkl + model_meta.json

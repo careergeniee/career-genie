@@ -103,10 +103,23 @@ def main() -> None:
 
     X = df[FEATURE_ORDER].values
     y = df["career"].values
+    # Row provenance (real survey vs synthetic O*NET-profile rows added by
+    # augment_profiles.py). Carried through the split so we can ALSO report
+    # metrics on real rows alone -- synthetic-class scores only measure
+    # profile recovery and must never be conflated with real-world accuracy.
+    source = df["source"].values if "source" in df.columns else None
     print(f"  {X.shape[0]} samples x {X.shape[1]} features, {len(CAREER_LABELS)} classes")
+    if source is not None:
+        n_synth = int((source != "real").sum())
+        print(f"  ({X.shape[0] - n_synth} real rows, {n_synth} synthetic profile rows)")
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, stratify=y, random_state=42)
+    if source is not None:
+        X_train, X_test, y_train, y_test, _, source_test = train_test_split(
+            X, y, source, test_size=0.2, stratify=y, random_state=42)
+    else:
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, stratify=y, random_state=42)
+        source_test = None
 
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
@@ -161,6 +174,15 @@ def main() -> None:
     print(classification_report(y_test, pred))
     print("Confusion matrix (rows=true, cols=pred):")
     print(confusion_matrix(y_test, pred, labels=CAREER_LABELS))
+
+    if source_test is not None:
+        real_mask = source_test == "real"
+        real_acc = accuracy_score(y_test[real_mask], pred[real_mask])
+        print(f"\nREAL-ONLY test subset ({int(real_mask.sum())} rows) -- the "
+              f"honest real-world number (synthetic-class scores above only "
+              f"measure O*NET-profile recovery):")
+        print(f"  Real-only accuracy: {real_acc:.4f}")
+        print(classification_report(y_test[real_mask], pred[real_mask]))
 
     # ---- 4. Feature importance (from a RandomForest on full data) -------
     rf = RandomForestClassifier(
