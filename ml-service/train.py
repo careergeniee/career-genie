@@ -175,14 +175,33 @@ def main() -> None:
     print("Confusion matrix (rows=true, cols=pred):")
     print(confusion_matrix(y_test, pred, labels=CAREER_LABELS))
 
+    real_only_meta = None
     if source_test is not None:
         real_mask = source_test == "real"
         real_acc = accuracy_score(y_test[real_mask], pred[real_mask])
+        real_macro_f1 = f1_score(y_test[real_mask], pred[real_mask], average="macro")
+        real_ll = log_loss(y_test[real_mask], proba[real_mask], labels=model.classes_)
         print(f"\nREAL-ONLY test subset ({int(real_mask.sum())} rows) -- the "
               f"honest real-world number (synthetic-class scores above only "
               f"measure O*NET-profile recovery):")
         print(f"  Real-only accuracy: {real_acc:.4f}")
         print(classification_report(y_test[real_mask], pred[real_mask]))
+        # Persisted (not just printed) so report/figure generation never has to
+        # rely on someone still having train.py's terminal output open -- see
+        # augment_profiles.py's honesty guarantees.
+        real_only_meta = {
+            "note": ("Computed on real survey rows only, excluding the disclosed "
+                     "synthetic O*NET rows (source=synthetic-onet) added by "
+                     "augment_profiles.py for Cybersecurity Analyst and UI/UX "
+                     "Designer. This is the honest real-world number -- the "
+                     "top-level test_accuracy/macro_f1 above include synthetic "
+                     "rows and measure O*NET-profile recovery for those two "
+                     "classes, not validated real-world accuracy."),
+            "test_accuracy": round(float(real_acc), 4),
+            "macro_f1": round(float(real_macro_f1), 4),
+            "log_loss": round(float(real_ll), 4),
+            "test_samples": int(real_mask.sum()),
+        }
 
     # ---- 4. Feature importance (from a RandomForest on full data) -------
     rf = RandomForestClassifier(
@@ -213,6 +232,7 @@ def main() -> None:
         "algorithm_comparison": comparison,
         "feature_importance": {n: round(float(i), 4) for n, i in ranked},
         "trained_samples": int(X_train.shape[0]),
+        "real_only": real_only_meta,
     }
     with open(f"{HERE}/model_meta.json", "w") as fh:
         json.dump(meta, fh, indent=2)

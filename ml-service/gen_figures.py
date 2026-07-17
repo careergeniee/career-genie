@@ -10,7 +10,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 from career_data import generate_dataset, FEATURE_ORDER, CAREER_LABELS
 
-OUT = "/home/claude/Merajfyp/docs-figures"
+HERE = os.path.dirname(os.path.abspath(__file__))
+OUT = os.path.normpath(os.path.join(HERE, "..", "docs-figures"))
 os.makedirs(OUT, exist_ok=True)
 
 NAVY = "#0f2a4a"
@@ -86,15 +87,48 @@ if comp:
     fig, ax = plt.subplots(figsize=(8.0, 4.2))
     bars = ax.barh(names, accs, xerr=errs, color=colors, edgecolor=NAVY,
                    linewidth=0.5, capsize=4)
-    ax.set_xlim(90, 100)
-    ax.set_xlabel("5-fold CV accuracy (%)", fontsize=10, fontweight="bold")
+    lo = max(0, min(accs) - max(errs) - 3)
+    hi = min(100, max(accs) + max(errs) + 3)
+    ax.set_xlim(lo, hi)
+    ax.set_xlabel("5-fold CV accuracy (%) -- real + disclosed synthetic rows",
+                  fontsize=10, fontweight="bold")
     ax.set_title("Algorithm Comparison (chosen model in gold)",
                  fontsize=11, fontweight="bold", color=NAVY, pad=12)
     for b, a in zip(bars, accs):
-        ax.text(a + 0.15, b.get_y() + b.get_height()/2, f"{a:.1f}%",
+        ax.text(a + (hi - lo) * 0.01, b.get_y() + b.get_height()/2, f"{a:.1f}%",
                 va="center", fontsize=9, color=NAVY)
     ax.spines[["top", "right"]].set_visible(False)
     plt.tight_layout()
     plt.savefig(f"{OUT}/fig_algorithm_comparison.png", dpi=150, bbox_inches="tight")
     plt.close()
     print("saved algorithm comparison chart")
+
+# ---- honest full-vs-real-only comparison (only if augment_profiles.py has run) ----
+real_only = meta.get("real_only")
+if real_only:
+    labels = ["Test accuracy", "Macro F1"]
+    full_vals = [meta["test_accuracy"] * 100, meta["macro_f1"] * 100]
+    real_vals = [real_only["test_accuracy"] * 100, real_only["macro_f1"] * 100]
+    x = np.arange(len(labels))
+    width = 0.32
+    fig, ax = plt.subplots(figsize=(6.4, 4.2))
+    b1 = ax.bar(x - width / 2, full_vals, width, label="Full (incl. synthetic O*NET rows)",
+                color=GOLD, edgecolor=NAVY, linewidth=0.5)
+    b2 = ax.bar(x + width / 2, real_vals, width, label="Real-only (honest real-world number)",
+                color="#5b7aa3", edgecolor=NAVY, linewidth=0.5)
+    for bars in (b1, b2):
+        for b in bars:
+            ax.text(b.get_x() + b.get_width() / 2, b.get_height() + 0.6,
+                     f"{b.get_height():.1f}%", ha="center", fontsize=9, color=NAVY)
+    ax.set_xticks(x); ax.set_xticklabels(labels, fontsize=10)
+    ax.set_ylabel("%", fontsize=10, fontweight="bold")
+    ax.set_ylim(0, max(full_vals + real_vals) + 10)
+    ax.set_title("Full vs. Real-Only Evaluation\n(Cybersecurity/UI-UX scores in "
+                 "\"Full\" measure O*NET-profile recovery, not real-world accuracy)",
+                 fontsize=10.5, fontweight="bold", color=NAVY, pad=12)
+    ax.legend(fontsize=8, loc="lower right")
+    ax.spines[["top", "right"]].set_visible(False)
+    plt.tight_layout()
+    plt.savefig(f"{OUT}/fig_full_vs_real_only.png", dpi=150, bbox_inches="tight")
+    plt.close()
+    print("saved full-vs-real-only comparison chart")

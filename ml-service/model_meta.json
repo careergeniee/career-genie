@@ -50,25 +50,25 @@
       "algorithm": "Gradient Boosting",
       "cv_accuracy_mean": 0.6334,
       "cv_accuracy_std": 0.0036,
-      "cv_time_sec": 348.52
+      "cv_time_sec": 331.35
     },
     {
       "algorithm": "Logistic Regression",
       "cv_accuracy_mean": 0.6265,
       "cv_accuracy_std": 0.005,
-      "cv_time_sec": 3.52
+      "cv_time_sec": 4.53
     },
     {
       "algorithm": "Random Forest",
       "cv_accuracy_mean": 0.6171,
       "cv_accuracy_std": 0.0016,
-      "cv_time_sec": 82.42
+      "cv_time_sec": 50.45
     },
     {
       "algorithm": "K-Nearest Neighbors",
       "cv_accuracy_mean": 0.579,
       "cv_accuracy_std": 0.0049,
-      "cv_time_sec": 11.14
+      "cv_time_sec": 6.66
     }
   ],
   "feature_importance": {
@@ -94,5 +94,12 @@
     "analytical": 0.0,
     "teamwork": 0.0
   },
-  "trained_samples": 23444
+  "trained_samples": 23444,
+  "real_only": {
+    "note": "Computed on real survey rows only, excluding the disclosed synthetic O*NET rows (source=synthetic-onet) added by augment_profiles.py for Cybersecurity Analyst and UI/UX Designer. This is the honest real-world number -- the top-level test_accuracy/macro_f1 above include synthetic rows and measure O*NET-profile recovery for those two classes, not validated real-world accuracy.",
+    "test_accuracy": 0.5683,
+    "macro_f1": 0.4599,
+    "log_loss": 1.2114,
+    "test_samples": 5265
+  }
 }
