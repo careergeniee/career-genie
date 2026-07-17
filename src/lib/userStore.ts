@@ -1,5 +1,5 @@
 import { auth, db } from "@/lib/firebase";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc, deleteField } from "firebase/firestore";
 
 /** Central registry of all localStorage key names — avoids magic strings across files. */
 export const KEYS = {
@@ -91,6 +91,13 @@ export function removeData(key: string): void {
         localStorage.removeItem(fullKey(key));
     } catch {
         /* noop */
+    }
+    // Mirror the deletion to Firestore — without this, a cleared key just
+    // resurrects on the next login/device from the still-present remote copy.
+    const userId = auth.currentUser?.uid;
+    if (userId) {
+        updateDoc(doc(db, "users", userId), { [key]: deleteField() })
+            .catch((err) => console.warn("CareerGenie: Firestore delete failed —", err));
     }
 }
 

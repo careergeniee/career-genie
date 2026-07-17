@@ -11,10 +11,15 @@ vi.mock("@/lib/firebase", () => ({
     },
     db: {},
 }));
+const { updateDocMock } = vi.hoisted(() => ({
+    updateDocMock: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("firebase/firestore", () => ({
     doc: vi.fn(),
     setDoc: vi.fn().mockResolvedValue(undefined),
     getDoc: vi.fn().mockResolvedValue({ exists: () => false, data: () => ({}) }),
+    updateDoc: updateDocMock,
+    deleteField: vi.fn(() => "DELETE_FIELD_SENTINEL"),
 }));
 
 import { loadData, saveData, removeData, clearUserData, KEYS, todayKey, dayDiff } from "@/lib/userStore";
@@ -23,6 +28,7 @@ describe("userStore", () => {
     beforeEach(() => {
         localStorage.clear();
         currentUserRef.current = null;
+        updateDocMock.mockClear();
     });
 
     it("round-trips data through loadData/saveData", () => {
@@ -64,6 +70,19 @@ describe("userStore", () => {
         removeData(KEYS.chat);
         expect(loadData(KEYS.chat, null)).toBeNull();
         expect(loadData(KEYS.resume, null)).toEqual({ name: "Taha" });
+    });
+
+    it("removeData also deletes the field from Firestore for a signed-in user, so a cleared key can't resurrect on the next login", () => {
+        currentUserRef.current = { uid: "user-a" };
+        removeData(KEYS.chat);
+        expect(updateDocMock).toHaveBeenCalledTimes(1);
+        expect(updateDocMock).toHaveBeenCalledWith(undefined, { [KEYS.chat]: "DELETE_FIELD_SENTINEL" });
+    });
+
+    it("removeData does not touch Firestore for an anonymous visitor", () => {
+        currentUserRef.current = null;
+        removeData(KEYS.chat);
+        expect(updateDocMock).not.toHaveBeenCalled();
     });
 
     it("gives every unauthenticated visitor the same stable per-browser anonymous id", () => {
