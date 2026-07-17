@@ -67,10 +67,13 @@ honesty, not bugs):
 - **Calibration:** the winner is wrapped in `CalibratedClassifierCV`
   (isotonic, 5-fold) so the probabilities shown as "match %" are calibrated
   (test log-loss 1.23 across 10 classes).
-- **Explainability:** SHAP `TreeExplainer` when the deployed model supports it
-  (e.g. Random Forest); otherwise a batched single-feature **ablation**
-  fallback (~16 ms) with the same signed-contribution semantics, so
-  `/predict.explanation` works for any model.
+- **Explainability:** a batched single-feature **ablation** fallback
+  (~16 ms) — zero out one feature at a time and measure how much it moves
+  P(top_career) — so `/predict.explanation` works for any model regardless
+  of type. (Previously tried SHAP's `TreeExplainer` first, but the deployed
+  Gradient Boosting model is multiclass, which SHAP's TreeExplainer rejects
+  outright, so that path never once succeeded and only added an unused
+  dependency; removed.)
 - **Features (21):** 6 personality traits + 15 skills, all 0–1 (traits are
   currently inert in the ML model — see limitations above).
 - **Classes (10):** Data Scientist, ML Engineer, Data Analyst, Frontend,
@@ -131,19 +134,18 @@ returns 401.
 ## Explainability
 
 Every `/predict` response includes an `explanation`: the top 5 features (of
-the 21) that most pushed the model toward the predicted career, via SHAP
-(`shap.TreeExplainer` over the underlying Random Forest, bypassing the
-isotonic-calibration wrapper it can't see through). `contribution` is signed
-— positive pushes toward the predicted career, negative pushes away. This is
-`null` if SHAP fails or the deployed model isn't a supported tree ensemble;
-it never blocks the prediction itself.
+the 21) that most pushed the model toward the predicted career, via batched
+single-feature ablation (zero out one feature at a time, measure how much
+P(top_career) drops). `contribution` is signed — positive pushes toward the
+predicted career, negative pushes away. This is `null` only if the ablation
+call itself raises; it never blocks the prediction itself.
 
 ## Endpoints
 
 - `GET /health` → status, model version, algorithm, CV accuracy (no auth)
 - `GET /meta` → feature order, labels, full algorithm comparison, metrics (no auth)
 - `POST /predict` → ranked careers, calibrated probabilities, confidence, `uncertain`,
-  SHAP `explanation` (**requires** `Authorization: Bearer <Firebase ID token>`)
+  feature `explanation` (**requires** `Authorization: Bearer <Firebase ID token>`)
 
 ## Run locally
 

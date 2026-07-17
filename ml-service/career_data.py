@@ -32,7 +32,6 @@ IMPORTANT: FEATURE_ORDER must stay identical to src/lib/mlSchema.ts
 
 from __future__ import annotations
 import numpy as np
-import pandas as pd
 
 # --------------------------------------------------------------------------
 # 1. FEATURES  (order matters — mirrored in src/lib/mlSchema.ts)
@@ -286,6 +285,9 @@ def generate_dataset(
     are rarely perfect across the board). This produces overlapping but
     separable clusters — exactly what a Random Forest is good at.
     """
+    import pandas as pd  # only this synthetic-data path needs it; keep it out
+                          # of app.py's import graph so serving doesn't pay for it
+
     rng = np.random.default_rng(seed)
     rows, labels = [], []
 

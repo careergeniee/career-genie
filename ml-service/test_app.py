@@ -1,8 +1,8 @@
 """
 Tests for the Career Genie ML service.   Run:  pytest -q
 Covers health, prediction correctness, input validation, clamping,
-determinism, metadata, auth, and the SHAP explanation. Requires
-career_model.pkl (run train.py first).
+determinism, metadata, auth, and the feature-contribution explanation.
+Requires career_model.pkl (run train.py first).
 """
 from fastapi.testclient import TestClient
 import app as A
@@ -56,8 +56,7 @@ def test_predict_data_scientist():
 
 
 def test_predict_includes_explanation():
-    # SHAP for supported tree ensembles, batched ablation otherwise -- either
-    # way /predict must carry a well-formed explanation for this profile.
+    # /predict must carry a well-formed ablation-based explanation for this profile.
     r = client.post("/predict", json={"features": DATA_SCIENTIST, "top_k": 5})
     body = r.json()
     explanation = body["explanation"]
