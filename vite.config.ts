@@ -89,6 +89,12 @@ export default defineConfig(({ mode }) => ({
           if (id.includes("@emailjs")) return "emailjs";
           if (id.includes("sonner")) return "sonner";
           if (id.includes("react-dom")) return "react-dom";
+          // gsap/ogl are only used by homepage/dashboard-shell decorative
+          // animations (Index.tsx, DashboardLayout.tsx), both already lazy
+          // routes -- returning undefined here (instead of lumping them into
+          // "vendor" below) lets Rollup's default heuristic keep them inside
+          // those routes' own async chunks instead of shipping on every page.
+          if (id.includes("/gsap/") || id.includes("/ogl/")) return undefined;
           if (id.includes("node_modules")) return "vendor";
         },
       },
