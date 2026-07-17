@@ -11,24 +11,27 @@ vi.mock("@/lib/firebase", () => ({
     },
     db: {},
 }));
-const { updateDocMock } = vi.hoisted(() => ({
+const { updateDocMock, getDocMock } = vi.hoisted(() => ({
     updateDocMock: vi.fn().mockResolvedValue(undefined),
+    getDocMock: vi.fn().mockResolvedValue({ exists: () => false, data: () => ({}) }),
 }));
 vi.mock("firebase/firestore", () => ({
     doc: vi.fn(),
     setDoc: vi.fn().mockResolvedValue(undefined),
-    getDoc: vi.fn().mockResolvedValue({ exists: () => false, data: () => ({}) }),
+    getDoc: getDocMock,
     updateDoc: updateDocMock,
     deleteField: vi.fn(() => "DELETE_FIELD_SENTINEL"),
 }));
 
-import { loadData, saveData, removeData, clearUserData, KEYS, todayKey, dayDiff } from "@/lib/userStore";
+import { loadData, saveData, removeData, clearUserData, initUserData, KEYS, todayKey, dayDiff } from "@/lib/userStore";
 
 describe("userStore", () => {
     beforeEach(() => {
         localStorage.clear();
         currentUserRef.current = null;
         updateDocMock.mockClear();
+        getDocMock.mockClear();
+        getDocMock.mockResolvedValue({ exists: () => false, data: () => ({}) });
     });
 
     it("round-trips data through loadData/saveData", () => {
@@ -109,6 +112,35 @@ describe("userStore", () => {
         expect(loadData(KEYS.resume, null)).toBeNull();
         currentUserRef.current = { uid: "user-b" };
         expect(loadData(KEYS.resume, null)).toEqual({ name: "B" });
+    });
+
+    it("initUserData retries a transient failure and hydrates localStorage once a later attempt succeeds", async () => {
+        currentUserRef.current = { uid: "user-a" };
+        getDocMock
+            .mockRejectedValueOnce(new Error("client is offline"))
+            .mockResolvedValueOnce({ exists: () => true, data: () => ({ resume: '{"name":"Taha"}' }) });
+
+        vi.useFakeTimers();
+        const p = initUserData();
+        await vi.runAllTimersAsync();
+        await p;
+        vi.useRealTimers();
+
+        expect(getDocMock).toHaveBeenCalledTimes(2);
+        expect(loadData(KEYS.resume, null)).toEqual({ name: "Taha" });
+    });
+
+    it("initUserData gives up after 3 consecutive failures instead of retrying forever", async () => {
+        currentUserRef.current = { uid: "user-a" };
+        getDocMock.mockRejectedValue(new Error("client is offline"));
+
+        vi.useFakeTimers();
+        const p = initUserData();
+        await vi.runAllTimersAsync();
+        await p;
+        vi.useRealTimers();
+
+        expect(getDocMock).toHaveBeenCalledTimes(3);
     });
 
     it("todayKey returns a YYYY-MM-DD string", () => {

@@ -120,27 +120,46 @@ export function clearUserData(targetUid?: string): void {
     }
 }
 
-/** Pull all user data from Firestore and hydrate localStorage. Called on login. */
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Pull all user data from Firestore and hydrate localStorage. Called on login.
+ * Retries a few times with backoff: right after sign-in, Firestore's SDK may
+ * not have finished establishing its connection yet and getDoc() can reject
+ * with "client is offline" even though the network and rules are both fine —
+ * a single failed attempt here shouldn't permanently strand the user without
+ * their data for the rest of the session (the caller marks hydration "done"
+ * for this uid regardless of outcome, so there's no retry above this layer).
+ */
 export async function initUserData(): Promise<void> {
     const userId = auth.currentUser?.uid;
     if (!userId) return;
-    try {
-        const snap = await getDoc(doc(db, "users", userId));
-        if (snap.exists()) {
-            const remote = snap.data();
-            const keys = Object.keys(remote);
-            Object.entries(remote).forEach(([key, val]) => {
-                localStorage.setItem(`cg:${userId}:${key}`, val as string);
-            });
-            console.info(`CareerGenie: hydrated ${keys.length} field(s) from Firestore —`, keys);
-        } else {
-            console.info("CareerGenie: no Firestore document found for this user yet");
+    const MAX_ATTEMPTS = 3;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        try {
+            const snap = await getDoc(doc(db, "users", userId));
+            if (snap.exists()) {
+                const remote = snap.data();
+                const keys = Object.keys(remote);
+                Object.entries(remote).forEach(([key, val]) => {
+                    localStorage.setItem(`cg:${userId}:${key}`, val as string);
+                });
+                console.info(`CareerGenie: hydrated ${keys.length} field(s) from Firestore —`, keys);
+            } else {
+                console.info("CareerGenie: no Firestore document found for this user yet");
+            }
+            return;
+        } catch (err) {
+            if (attempt === MAX_ATTEMPTS) {
+                // Firestore unavailable or rules not configured — localStorage still works,
+                // but logging this is the only way to tell "no remote data yet" apart from
+                // "every sync is silently being rejected" (e.g. undeployed security rules).
+                console.warn(`CareerGenie: Firestore hydration failed after ${MAX_ATTEMPTS} attempts —`, err);
+                return;
+            }
+            console.warn(`CareerGenie: Firestore hydration attempt ${attempt} failed, retrying —`, err);
+            await sleep(attempt * 800);
         }
-    } catch (err) {
-        // Firestore unavailable or rules not configured — localStorage still works,
-        // but logging this is the only way to tell "no remote data yet" apart from
-        // "every sync is silently being rejected" (e.g. undeployed security rules).
-        console.warn("CareerGenie: Firestore hydration failed —", err);
     }
 }
 
