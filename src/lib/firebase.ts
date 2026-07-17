@@ -22,12 +22,15 @@ export const auth = initializeAuth(app, {
 // or mangled on some restrictive networks/proxies/browser extensions, which
 // surfaces as getDoc() rejecting with "Failed to get document because the
 // client is offline" even though the network and Firestore rules are both
-// fine (reproduced live: same account, same rules, ad-blocker disabled —
-// still failed). auto-detecting long-polling falls back to plain HTTP
-// long-polling, which is far more compatible with those environments, at a
-// small latency cost only paid when the default transport actually fails.
+// fine (reproduced live: same account, same rules, ad-blocker disabled,
+// navigator.onLine true, firestore.googleapis.com itself reachable —
+// still failed every time). experimentalAutoDetectLongPolling only switches
+// transport *after* detecting the default one failed, and that live repro
+// kept failing even with it on — so the detection probe itself likely hits
+// the same wall this network puts up. Forcing long-polling unconditionally
+// skips that probe and always uses the fallback-compatible connection method.
 export const db = initializeFirestore(app, {
-    experimentalAutoDetectLongPolling: true,
+    experimentalForceLongPolling: true,
 });
 
 export default app;
