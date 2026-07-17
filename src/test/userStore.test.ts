@@ -209,6 +209,101 @@ describe("userStore", () => {
         expect(loadData(KEYS.roadmap, null)).toEqual({ step: "new-from-other-device" });
     });
 
+    it("a failed Firestore delete is queued for retry and applied once flushed", async () => {
+        currentUserRef.current = { uid: "user-a" };
+        saveData(KEYS.chat, ["hello"]);
+        await flushMicrotasks();
+
+        updateDocMock.mockRejectedValueOnce(new Error("offline"));
+        removeData(KEYS.chat);
+        await flushMicrotasks();
+        expect(getPendingCount()).toBe(1);
+
+        updateDocMock.mockClear();
+        updateDocMock.mockResolvedValue(undefined);
+        getDocMock.mockResolvedValueOnce({ exists: () => false, data: () => ({}) });
+
+        await flushPendingWrites();
+
+        expect(updateDocMock).toHaveBeenCalledWith(undefined, { [KEYS.chat]: "DELETE_FIELD_SENTINEL" });
+        expect(getPendingCount()).toBe(0);
+    });
+
+    it("an older save's late failure does not re-queue stale data over a newer save that already succeeded", async () => {
+        currentUserRef.current = { uid: "user-a" };
+        const nowSpy = vi.spyOn(Date, "now");
+        try {
+            nowSpy.mockReturnValueOnce(1000); // v1 — older
+            let rejectV1: (err: Error) => void = () => {};
+            setDocMock.mockReturnValueOnce(new Promise((_, reject) => { rejectV1 = reject; }));
+            saveData(KEYS.resume, { name: "v1" });
+
+            nowSpy.mockReturnValueOnce(2000); // v2 — newer, succeeds immediately
+            setDocMock.mockResolvedValueOnce(undefined);
+            saveData(KEYS.resume, { name: "v2" });
+            await flushMicrotasks();
+            expect(getPendingCount()).toBe(0);
+
+            // v1's setDoc call finally fails, arriving after v2 already synced.
+            rejectV1(new Error("offline"));
+            await flushMicrotasks();
+
+            expect(getPendingCount()).toBe(0);
+            expect(loadData(KEYS.resume, null)).toEqual({ name: "v2" });
+        } finally {
+            nowSpy.mockRestore();
+        }
+    });
+
+    it("an older save's late success does not erase a newer save's still-pending queue entry", async () => {
+        currentUserRef.current = { uid: "user-a" };
+        const nowSpy = vi.spyOn(Date, "now");
+        try {
+            nowSpy.mockReturnValueOnce(1000); // v1 — older, resolves late
+            let resolveV1: () => void = () => {};
+            setDocMock.mockReturnValueOnce(new Promise<void>((resolve) => { resolveV1 = resolve; }));
+            saveData(KEYS.resume, { name: "v1" });
+
+            nowSpy.mockReturnValueOnce(2000); // v2 — newer, fails immediately
+            setDocMock.mockRejectedValueOnce(new Error("offline"));
+            saveData(KEYS.resume, { name: "v2" });
+            await flushMicrotasks();
+            expect(getPendingCount()).toBe(1);
+
+            resolveV1();
+            await flushMicrotasks();
+
+            // v1's late success must not clear v2's still-pending entry.
+            expect(getPendingCount()).toBe(1);
+        } finally {
+            nowSpy.mockRestore();
+        }
+    });
+
+    it("flushPendingWrites does not drop a pending entry added for a different key while it was in flight", async () => {
+        currentUserRef.current = { uid: "user-a" };
+        setDocMock.mockRejectedValueOnce(new Error("offline"));
+        saveData(KEYS.resume, { name: "v1" });
+        await flushMicrotasks();
+        expect(getPendingCount()).toBe(1);
+
+        let resolveGetDoc: (v: unknown) => void = () => {};
+        getDocMock.mockReturnValueOnce(new Promise((resolve) => { resolveGetDoc = resolve; }));
+        setDocMock.mockResolvedValue(undefined);
+        const flushPromise = flushPendingWrites();
+
+        // While the flush is awaiting getDoc, a different key's save fails and queues.
+        setDocMock.mockRejectedValueOnce(new Error("offline"));
+        saveData(KEYS.roadmap, { step: 1 });
+        await flushMicrotasks();
+
+        resolveGetDoc({ exists: () => false, data: () => ({}) });
+        await flushPromise;
+
+        // roadmap's entry, queued while resume's flush was in flight, must survive.
+        expect(getPendingCount()).toBe(1);
+    });
+
     it("initUserData does not downgrade a key that has a newer unsynced local write than Firestore", async () => {
         currentUserRef.current = { uid: "user-a" };
 

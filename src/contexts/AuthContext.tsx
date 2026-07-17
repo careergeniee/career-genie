@@ -14,7 +14,7 @@ import {
     browserSessionPersistence,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { initUserData, clearUserData } from "@/lib/userStore";
+import { initUserData, clearUserData, flushPendingWrites } from "@/lib/userStore";
 
 interface AuthContextType {
     user: User | null;
@@ -112,6 +112,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const logout = async () => {
         const outgoingUid = auth.currentUser?.uid;
+        // Best-effort: give any offline edits still sitting in the retry queue a
+        // real chance to reach Firestore before signing out. clearUserData below
+        // wipes the queue along with everything else (it's just another
+        // cg:{uid}:* key) — without this, an edit made while offline and never
+        // retried before logout is lost for good, not just delayed.
+        await flushPendingWrites();
         await signOut(auth);
         // Data is namespaced per uid, but still leaves it readable in localStorage on
         // shared/public machines until cleared — remove it now that the session is over.

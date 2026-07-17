@@ -85,6 +85,23 @@ const wrap = <T>(value: T, updatedAt: number): Envelope<T> => ({ __cg: true, val
 /** Extracts the updatedAt from a raw (already-parsed) stored value; -1 for pre-envelope/unrecognized data. */
 const envelopeTimestamp = (raw: unknown): number => (isEnvelope(raw) ? raw.updatedAt : -1);
 
+/**
+ * Shared last-write-wins comparison, used by both flushPendingWrites() (a
+ * queued write racing a possibly-newer remote value) and initUserData()'s
+ * hydration (a possibly-newer local pending write racing a remote value) —
+ * same decision either direction, so both call sites feed it their own
+ * updatedAt/remote pair instead of re-deriving the comparison independently.
+ */
+const localWins = (localUpdatedAt: number, remoteRaw: unknown): boolean => {
+    let remoteUpdatedAt = -1;
+    if (typeof remoteRaw === "string") {
+        try {
+            remoteUpdatedAt = envelopeTimestamp(JSON.parse(remoteRaw));
+        } catch { /* unparseable remote value — treat as oldest, local wins */ }
+    }
+    return localUpdatedAt >= remoteUpdatedAt;
+};
+
 export function loadData<T>(key: string, fallback: T): T {
     try {
         const raw = localStorage.getItem(fullKey(key));
@@ -102,8 +119,10 @@ export function loadData<T>(key: string, fallback: T): T {
 // cloud copy stale. Failed writes go in here, keyed by data key (only the
 // latest value per key is kept — no need to replay history, just the most
 // recent state), and get retried when connectivity looks like it's back.
+// Deletes (removeData) can fail and queue the same way, distinguished by
+// `deleted: true` instead of carrying a value.
 // ---------------------------------------------------------------------------
-type PendingEntry = { raw: string; updatedAt: number };
+type PendingEntry = { raw: string; updatedAt: number } | { deleted: true; updatedAt: number };
 const pendingStorageKey = () => `cg:${uid()}:_pending`;
 
 const getPending = (): Record<string, PendingEntry> => {
@@ -158,30 +177,39 @@ export async function flushPendingWrites(): Promise<void> {
         const snap = await getDoc(doc(db, "users", userId));
         const remote: Record<string, unknown> = snap.exists() ? snap.data() : {};
         const toWrite: Record<string, string> = {};
+        const toDelete: string[] = [];
 
         for (const key of keys) {
             const entry = pending[key];
             const remoteRaw = remote[key];
-            let remoteUpdatedAt = -1;
-            if (typeof remoteRaw === "string") {
-                try {
-                    remoteUpdatedAt = envelopeTimestamp(JSON.parse(remoteRaw));
-                } catch { /* unparseable remote value — treat as oldest, our queued write wins */ }
+            if (!localWins(entry.updatedAt, remoteRaw)) {
+                // Remote is newer — another device already flushed a later write (or
+                // delete). This device's queued entry is stale; adopt remote instead
+                // of pushing over it.
+                if (typeof remoteRaw === "string") localStorage.setItem(`cg:${userId}:${key}`, remoteRaw);
+                else localStorage.removeItem(`cg:${userId}:${key}`);
+                console.info(`CareerGenie: discarded stale queued ${"deleted" in entry ? "delete" : "write"} for "${key}" — a newer version was already synced`);
+                continue;
             }
-            if (entry.updatedAt >= remoteUpdatedAt) {
-                toWrite[key] = entry.raw;
-            } else if (typeof remoteRaw === "string") {
-                // Remote is newer — another device already flushed a later write.
-                // This device's queued value is stale; adopt remote instead of pushing over it.
-                localStorage.setItem(`cg:${userId}:${key}`, remoteRaw);
-                console.info(`CareerGenie: discarded stale queued write for "${key}" — a newer version was already synced`);
-            }
+            if ("deleted" in entry) toDelete.push(key);
+            else toWrite[key] = entry.raw;
         }
 
         if (Object.keys(toWrite).length > 0) {
             await setDoc(doc(db, "users", userId), toWrite, { merge: true });
         }
-        setPending({});
+        if (toDelete.length > 0) {
+            const deletePayload: Record<string, ReturnType<typeof deleteField>> = {};
+            toDelete.forEach((k) => { deletePayload[k] = deleteField(); });
+            await updateDoc(doc(db, "users", userId), deletePayload);
+        }
+
+        // Only clear the keys this flush actually resolved — a saveData()/removeData()
+        // failure that queued a *different* key while the getDoc/setDoc above were in
+        // flight must survive, not get wiped by a blind reset.
+        const stillPending = getPending();
+        keys.forEach((k) => delete stillPending[k]);
+        setPending(stillPending);
         console.info(`CareerGenie: flushed ${keys.length} pending write(s)`);
     } catch (err) {
         console.warn("CareerGenie: pending-write flush failed, will retry later —", err);
@@ -217,8 +245,24 @@ export function saveData<T>(key: string, value: T): void {
     const userId = auth.currentUser?.uid;
     if (!userId) return; // guests: local-only, nothing to mirror or queue
 
+    // Two saves to the same key can resolve out of order (a slow older write's
+    // .then/.catch firing after a faster newer one's). Only let this call's
+    // outcome touch the pending queue if it's still the most recent local
+    // write for `key` — otherwise an older save's late success could erase a
+    // newer save's still-pending entry, or its late failure could re-queue
+    // stale data over a newer save that already succeeded.
+    const isCurrentWrite = () => {
+        try {
+            const current = JSON.parse(localStorage.getItem(fullKey(key)) ?? "null");
+            return isEnvelope(current) && current.updatedAt === updatedAt;
+        } catch {
+            return false;
+        }
+    };
+
     setDoc(doc(db, "users", userId), { [key]: raw }, { merge: true })
         .then(() => {
+            if (!isCurrentWrite()) return;
             const pending = getPending();
             if (pending[key]) {
                 delete pending[key];
@@ -227,6 +271,7 @@ export function saveData<T>(key: string, value: T): void {
         })
         .catch((err) => {
             console.warn("CareerGenie: Firestore sync failed, queued for retry —", err);
+            if (!isCurrentWrite()) return;
             const pending = getPending();
             pending[key] = { raw, updatedAt };
             setPending(pending);
@@ -240,6 +285,7 @@ export function removeData(key: string): void {
     } catch {
         /* noop */
     }
+    const updatedAt = Date.now();
     const pending = getPending();
     if (pending[key]) {
         delete pending[key];
@@ -248,10 +294,18 @@ export function removeData(key: string): void {
     // Mirror the deletion to Firestore — without this, a cleared key just
     // resurrects on the next login/device from the still-present remote copy.
     const userId = auth.currentUser?.uid;
-    if (userId) {
-        updateDoc(doc(db, "users", userId), { [key]: deleteField() })
-            .catch((err) => console.warn("CareerGenie: Firestore delete failed —", err));
-    }
+    if (!userId) return;
+    updateDoc(doc(db, "users", userId), { [key]: deleteField() })
+        .catch((err) => {
+            console.warn("CareerGenie: Firestore delete failed, queued for retry —", err);
+            // If a newer save already re-created this key locally, this delete is
+            // stale — don't queue it over data the user has since written back.
+            if (localStorage.getItem(fullKey(key))) return;
+            const p = getPending();
+            p[key] = { deleted: true, updatedAt };
+            setPending(p);
+            scheduleRetry();
+        });
 }
 
 /**
@@ -302,13 +356,7 @@ export async function initUserData(): Promise<void> {
                 let applied = 0;
                 Object.entries(remote).forEach(([key, val]) => {
                     const pendingEntry = pending[key];
-                    if (pendingEntry) {
-                        let remoteUpdatedAt = -1;
-                        try {
-                            remoteUpdatedAt = envelopeTimestamp(JSON.parse(val as string));
-                        } catch { /* unparseable remote — local pending write wins */ }
-                        if (pendingEntry.updatedAt >= remoteUpdatedAt) return; // keep the newer local value
-                    }
+                    if (pendingEntry && localWins(pendingEntry.updatedAt, val)) return; // keep the newer local value (or pending delete)
                     localStorage.setItem(`cg:${userId}:${key}`, val as string);
                     applied++;
                 });
