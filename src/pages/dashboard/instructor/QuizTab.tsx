@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Brain, CheckCircle2, Loader2, Sparkles, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -13,10 +13,18 @@ export const QuizTab = ({ persona, ctx }: TabProps) => {
     const [loading, setLoading] = useState(false);
 
     const suggestions = ctx.topics.slice(0, 8);
+    // The input's Enter handler isn't gated by `loading`, so retyping and
+    // re-submitting a new topic while a prior generateQuiz() is still in
+    // flight starts a second, overlapping call -- with no cancellation,
+    // whichever promise resolves last wins the setQuestions() write, which
+    // can leave a topic's heading mismatched with a different topic's
+    // questions if the requests resolve out of order.
+    const requestIdRef = useRef(0);
 
     const start = async (t: string) => {
         const chosen = t.trim();
         if (!chosen) return;
+        const requestId = ++requestIdRef.current;
         setTopic(chosen);
         setLoading(true);
         setQuestions([]);
@@ -24,12 +32,13 @@ export const QuizTab = ({ persona, ctx }: TabProps) => {
         setSubmitted(false);
         try {
             const qs = await generateQuiz(chosen, persona, ctx);
+            if (requestId !== requestIdRef.current) return; // superseded by a newer request
             if (qs.length === 0) { toast.error("Couldn't build a quiz on that. Try another topic."); return; }
             setQuestions(qs);
         } catch {
-            toast.error("Quiz generation failed. Try again.");
+            if (requestId === requestIdRef.current) toast.error("Quiz generation failed. Try again.");
         } finally {
-            setLoading(false);
+            if (requestId === requestIdRef.current) setLoading(false);
         }
     };
 
@@ -59,7 +68,7 @@ export const QuizTab = ({ persona, ctx }: TabProps) => {
                     <input
                         value={topic}
                         onChange={(e) => setTopic(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && start(topic)}
+                        onKeyDown={(e) => e.key === "Enter" && !loading && start(topic)}
                         placeholder="…or type any topic (e.g. React hooks, SQL joins)"
                         className="flex-1 bg-secondary/50 border border-border/60 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary/60"
                     />

@@ -19,6 +19,7 @@ import {
     loadAssessmentDraft, saveAssessmentDraft, clearAssessmentDraft,
     warmMlService,
 } from "@/lib/careerEngine";
+import { useEffectSkipMount } from "@/hooks/useEffectSkipMount";
 
 const LIKERT = ["Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree"];
 const LEVELS = ["None", "Beginner", "Intermediate", "Advanced", "Expert"];
@@ -61,7 +62,14 @@ const AssessmentPage = () => {
 
     // Persist progress as the user answers, so a refresh or switching device/tab
     // mid-quiz doesn't lose it. Debounced since this fires on every click.
-    useEffect(() => {
+    // useEffectSkipMount (not plain useEffect) because `answers`/`skills`/
+    // `touchedSkills` are seeded from localStorage synchronously at mount --
+    // before Firestore hydration (initUserData) necessarily lands. Firing on
+    // that first render pushed whatever stale local draft this device had
+    // back to Firestore with a fresh timestamp, silently overwriting more
+    // recent progress made on another device (see the identical fix already
+    // applied this session to Resume/Interview/Chat/DailyTaskTab/MentorTab/Roadmap).
+    useEffectSkipMount(() => {
         if (answeredCount === 0 && touchedSkills.size === 0) return;
         const t = setTimeout(() => {
             saveAssessmentDraft({
