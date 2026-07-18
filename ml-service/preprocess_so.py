@@ -163,8 +163,8 @@ def build_row(row: pd.Series) -> dict[str, float]:
     out["sql"]                = 1.0 if "sql" in langs else 0.0
     out["html_css"]           = 1.0 if "html/css" in langs else 0.0
     out["react"]              = graded(len(REACT_TECH & (web | misc)), 1)
-    out["backend_apis"]       = graded(len(BACKEND_FRAMEWORKS & web))
-    out["databases"]          = graded(len(dbs), 3)
+    out["backend_apis"]       = graded(len(BACKEND_FRAMEWORKS & web), 3)
+    out["databases"]          = graded(len(dbs), 5)
     out["cloud"]              = graded(len(CLOUD_PLATFORMS & plats))
     out["linux_devops"]       = 0.6 * graded(len(DEVOPS_TOOLS & tools)) + \
                                 0.4 * (1.0 if any(h in opsys for h in LINUX_HINTS) else 0.0)

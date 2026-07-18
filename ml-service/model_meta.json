@@ -2,7 +2,7 @@
   "model_version": "3.0",
   "dataset": "real_dataset_so.csv",
   "chosen_algorithm": "Random Forest",
-  "selected_for": "Random Forest chosen for interpretability; its CV accuracy (0.6171) is within 2% of the best (Gradient Boosting, 0.6334)",
+  "selected_for": "Random Forest chosen for interpretability; its CV accuracy (0.6186) is within 2% of the best (Gradient Boosting, 0.6232)",
   "best_by_accuracy": "Gradient Boosting",
   "calibration": "isotonic",
   "feature_order": [
@@ -40,66 +40,68 @@
     "Mobile App Developer",
     "UI/UX Designer"
   ],
-  "test_accuracy": 0.6122,
-  "macro_f1": 0.6438,
-  "log_loss": 1.0888,
-  "cv_accuracy_mean": 0.6171,
-  "cv_accuracy_std": 0.0016,
+  "test_accuracy": 0.6127,
+  "macro_f1": 0.6332,
+  "log_loss": 1.065,
+  "cv_accuracy_mean": 0.6186,
+  "cv_accuracy_std": 0.0036,
   "algorithm_comparison": [
     {
       "algorithm": "Gradient Boosting",
-      "cv_accuracy_mean": 0.6334,
-      "cv_accuracy_std": 0.0036,
-      "cv_time_sec": 331.35
-    },
-    {
-      "algorithm": "Logistic Regression",
-      "cv_accuracy_mean": 0.6265,
-      "cv_accuracy_std": 0.005,
-      "cv_time_sec": 4.53
+      "cv_accuracy_mean": 0.6232,
+      "cv_accuracy_std": 0.0037,
+      "cv_time_sec": 95.61
     },
     {
       "algorithm": "Random Forest",
-      "cv_accuracy_mean": 0.6171,
-      "cv_accuracy_std": 0.0016,
-      "cv_time_sec": 50.45
+      "cv_accuracy_mean": 0.6186,
+      "cv_accuracy_std": 0.0036,
+      "cv_time_sec": 34.04
+    },
+    {
+      "algorithm": "Logistic Regression",
+      "cv_accuracy_mean": 0.6174,
+      "cv_accuracy_std": 0.0038,
+      "cv_time_sec": 9.56
     },
     {
       "algorithm": "K-Nearest Neighbors",
-      "cv_accuracy_mean": 0.579,
-      "cv_accuracy_std": 0.0049,
-      "cv_time_sec": 6.66
+      "cv_accuracy_mean": 0.6021,
+      "cv_accuracy_std": 0.0025,
+      "cv_time_sec": 2.53
     }
   ],
   "feature_importance": {
-    "linux_devops": 0.1204,
-    "mobile_dev": 0.102,
-    "ui_ux_design": 0.092,
-    "networking_security": 0.081,
-    "machine_learning": 0.0769,
-    "data_visualization": 0.069,
-    "html_css": 0.0672,
-    "statistics": 0.0656,
-    "databases": 0.0645,
-    "python": 0.0532,
-    "backend_apis": 0.0509,
-    "javascript": 0.048,
-    "cloud": 0.0477,
-    "sql": 0.039,
-    "react": 0.0225,
-    "leadership": 0.0,
-    "creativity": 0.0,
-    "communication": 0.0,
-    "problem_solving": 0.0,
-    "analytical": 0.0,
-    "teamwork": 0.0
+    "linux_devops": 0.0988,
+    "mobile_dev": 0.0838,
+    "ui_ux_design": 0.0756,
+    "databases": 0.0702,
+    "networking_security": 0.0672,
+    "machine_learning": 0.0586,
+    "html_css": 0.054,
+    "data_visualization": 0.0524,
+    "statistics": 0.0502,
+    "backend_apis": 0.049,
+    "javascript": 0.0477,
+    "python": 0.0397,
+    "communication": 0.0394,
+    "cloud": 0.0375,
+    "sql": 0.031,
+    "leadership": 0.0293,
+    "analytical": 0.0267,
+    "teamwork": 0.0261,
+    "creativity": 0.0234,
+    "problem_solving": 0.0206,
+    "react": 0.0188
   },
-  "trained_samples": 23444,
+  "trained_samples": 26644,
   "real_only": {
-    "note": "Computed on real survey rows only, excluding the disclosed synthetic O*NET rows (source=synthetic-onet) added by augment_profiles.py for Cybersecurity Analyst and UI/UX Designer. This is the honest real-world number -- the top-level test_accuracy/macro_f1 above include synthetic rows and measure O*NET-profile recovery for those two classes, not validated real-world accuracy.",
-    "test_accuracy": 0.5683,
-    "macro_f1": 0.4599,
-    "log_loss": 1.2114,
-    "test_samples": 5265
+    "note": "Computed on real survey rows only, excluding BOTH synthetic source tags: (1) source='synthetic-onet' added by augment_profiles.py for Cybersecurity Analyst and UI/UX Designer (skill-only signal, personality zeroed), and (2) source='synthetic-onet-personality' added by augment_personality.py for all 10 classes (personality-only signal, skills zeroed to BASELINE). This is the honest real-world number -- top-level test_accuracy/macro_f1 above include all synthetic rows and measure O*NET-profile recovery, not validated real-world accuracy.",
+    "test_accuracy": 0.5853,
+    "macro_f1": 0.4696,
+    "log_loss": 1.1639,
+    "test_samples": 5300,
+    "excluded_synthetic_onet": 599,
+    "excluded_synthetic_onet_personality": 763
   }
 }

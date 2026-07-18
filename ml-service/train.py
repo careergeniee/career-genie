@@ -32,6 +32,7 @@ from sklearn.calibration import CalibratedClassifierCV
 from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
+from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.metrics import (
     accuracy_score, classification_report, confusion_matrix,
     log_loss, f1_score,
@@ -52,7 +53,7 @@ TOLERANCE = 0.02  # 2 percentage points
 
 def build_candidates() -> dict[str, Pipeline]:
     """Each candidate is a scaler + classifier pipeline."""
-    return {
+    cands = {
         "Random Forest": Pipeline([
             ("scaler", StandardScaler()),
             ("clf", RandomForestClassifier(
@@ -73,6 +74,19 @@ def build_candidates() -> dict[str, Pipeline]:
             ("clf", LogisticRegression(max_iter=2000, C=1.0, random_state=42)),
         ]),
     }
+
+    params_path = os.path.join(HERE, "tuned_params.json")
+    if os.path.exists(params_path):
+        try:
+            with open(params_path, "r") as f:
+                tuned = json.load(f)
+            for name, pipe in cands.items():
+                if name in tuned:
+                    pipe.named_steps["clf"].set_params(**tuned[name])
+        except Exception as e:
+            print(f"Warning: could not load tuned_params.json: {e}")
+
+    return cands
 
 
 def main() -> None:
@@ -103,19 +117,43 @@ def main() -> None:
 
     X = df[FEATURE_ORDER].values
     y = df["career"].values
-    # Row provenance (real survey vs synthetic O*NET-profile rows added by
-    # augment_profiles.py). Carried through the split so we can ALSO report
-    # metrics on real rows alone -- synthetic-class scores only measure
-    # profile recovery and must never be conflated with real-world accuracy.
+    # Row provenance (real survey vs synthetic rows added by
+    # augment_profiles.py and/or augment_personality.py). Carried through the
+    # split so we can ALSO report metrics on real rows alone -- synthetic-class
+    # scores only measure O*NET-profile recovery and must never be conflated
+    # with real-world accuracy.
     source = df["source"].values if "source" in df.columns else None
     print(f"  {X.shape[0]} samples x {X.shape[1]} features, {len(CAREER_LABELS)} classes")
     if source is not None:
-        n_synth = int((source != "real").sum())
-        print(f"  ({X.shape[0] - n_synth} real rows, {n_synth} synthetic profile rows)")
+        n_real = int((source == "real").sum())
+        n_onet = int((source == "synthetic-onet").sum())
+        n_pers = int((source == "synthetic-onet-personality").sum())
+        print(f"  ({n_real} real, {n_onet} synthetic-onet, {n_pers} synthetic-onet-personality)")
 
     if source is not None:
-        X_train, X_test, y_train, y_test, _, source_test = train_test_split(
+        X_train, X_test, y_train, y_test, source_train, source_test = train_test_split(
             X, y, source, test_size=0.2, stratify=y, random_state=42)
+            
+        from sklearn.utils import resample
+        oversample_target = int(os.environ.get("OVERSAMPLE_TARGET", "0"))
+        if oversample_target > 0:
+            new_X, new_y, new_source = [X_train], [y_train], [source_train]
+            for label in CAREER_LABELS:
+                mask = (y_train == label) & (source_train == "real")
+                count = mask.sum()
+                if 0 < count < oversample_target:
+                    n_samples = oversample_target - count
+                    X_res, y_res, s_res = resample(
+                        X_train[mask], y_train[mask], source_train[mask],
+                        replace=True, n_samples=n_samples, random_state=42
+                    )
+                    new_X.append(X_res)
+                    new_y.append(y_res)
+                    new_source.append(s_res)
+            X_train = np.vstack(new_X)
+            y_train = np.concatenate(new_y)
+            source_train = np.concatenate(new_source)
+
     else:
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, stratify=y, random_state=42)
@@ -159,7 +197,12 @@ def main() -> None:
     print("Calibrating probabilities (isotonic, 5-fold) ...")
     base = build_candidates()[best_name]
     model = CalibratedClassifierCV(base, method="isotonic", cv=5, ensemble=False)
-    model.fit(X_train, y_train)
+    # Gradient Boosting has no native class_weight param; pass sample_weight
+    # to .fit() so CalibratedClassifierCV forwards it to the base estimator.
+    # For other algorithms that already have class_weight="balanced", the
+    # sample_weight is redundant but harmless (the two mechanisms compose).
+    sw = compute_sample_weight("balanced", y_train)
+    model.fit(X_train, y_train, sample_weight=sw)
 
     # ---- 3. Evaluate ----------------------------------------------------
     pred = model.predict(X_test)
@@ -177,30 +220,43 @@ def main() -> None:
 
     real_only_meta = None
     if source_test is not None:
+        # Explicitly exclude BOTH synthetic source tags from the "real-only"
+        # test set. The == "real" check already achieves this (anything that
+        # isn't "real" is excluded), but we name both tags explicitly in
+        # the printed output and persisted metadata for full transparency.
         real_mask = source_test == "real"
+        n_excluded_onet = int((source_test == "synthetic-onet").sum())
+        n_excluded_pers = int((source_test == "synthetic-onet-personality").sum())
         real_acc = accuracy_score(y_test[real_mask], pred[real_mask])
         real_macro_f1 = f1_score(y_test[real_mask], pred[real_mask], average="macro")
         real_ll = log_loss(y_test[real_mask], proba[real_mask], labels=model.classes_)
         print(f"\nREAL-ONLY test subset ({int(real_mask.sum())} rows) -- the "
-              f"honest real-world number (synthetic-class scores above only "
-              f"measure O*NET-profile recovery):")
+              f"honest real-world number (excluding {n_excluded_onet} "
+              f"synthetic-onet + {n_excluded_pers} synthetic-onet-personality "
+              f"rows; synthetic scores above only measure O*NET-profile "
+              f"recovery):")
         print(f"  Real-only accuracy: {real_acc:.4f}")
         print(classification_report(y_test[real_mask], pred[real_mask]))
         # Persisted (not just printed) so report/figure generation never has to
         # rely on someone still having train.py's terminal output open -- see
-        # augment_profiles.py's honesty guarantees.
+        # augment_profiles.py and augment_personality.py's honesty guarantees.
         real_only_meta = {
-            "note": ("Computed on real survey rows only, excluding the disclosed "
-                     "synthetic O*NET rows (source=synthetic-onet) added by "
-                     "augment_profiles.py for Cybersecurity Analyst and UI/UX "
-                     "Designer. This is the honest real-world number -- the "
-                     "top-level test_accuracy/macro_f1 above include synthetic "
-                     "rows and measure O*NET-profile recovery for those two "
-                     "classes, not validated real-world accuracy."),
+            "note": ("Computed on real survey rows only, excluding BOTH "
+                     "synthetic source tags: (1) source='synthetic-onet' added "
+                     "by augment_profiles.py for Cybersecurity Analyst and "
+                     "UI/UX Designer (skill-only signal, personality zeroed), "
+                     "and (2) source='synthetic-onet-personality' added by "
+                     "augment_personality.py for all 10 classes (personality-only "
+                     "signal, skills zeroed to BASELINE). This is the honest "
+                     "real-world number -- top-level test_accuracy/macro_f1 above "
+                     "include all synthetic rows and measure O*NET-profile "
+                     "recovery, not validated real-world accuracy."),
             "test_accuracy": round(float(real_acc), 4),
             "macro_f1": round(float(real_macro_f1), 4),
             "log_loss": round(float(real_ll), 4),
             "test_samples": int(real_mask.sum()),
+            "excluded_synthetic_onet": n_excluded_onet,
+            "excluded_synthetic_onet_personality": n_excluded_pers,
         }
 
     # ---- 4. Feature importance (from a RandomForest on full data) -------
