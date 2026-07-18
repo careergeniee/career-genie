@@ -11,6 +11,17 @@ interface State {
     message?: string;
 }
 
+// Nearly every route in App.tsx is lazy(). Chunk filenames are content-hashed,
+// and Vercel only serves the current deployment's assets -- so a tab left open
+// across a deploy (very likely for a PWA) that then navigates to a not-yet-
+// loaded route requests an old-hashed chunk that now 404s. Browsers report
+// that as a dynamic-import rejection with one of these messages depending on
+// engine; usePwaUpdatePrompt's toast doesn't cover this because it only fires
+// once *this* tab's service worker notices an update, which can lag behind
+// the CDN already having dropped the old build's files.
+const CHUNK_LOAD_ERROR_RE = /Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed/i;
+const CHUNK_RELOAD_FLAG = "cg:chunk-reload-attempted";
+
 /**
  * Catches render-time errors anywhere in the tree below it and shows a
  * recoverable fallback instead of a blank white screen. This keeps the
@@ -26,6 +37,23 @@ export class ErrorBoundary extends Component<Props, State> {
     componentDidCatch(error: Error, info: unknown) {
         // Log for debugging; in production this could report to a service.
         console.error("ErrorBoundary caught an error:", error, info);
+
+        // A full reload fetches the fresh index.html (new chunk hashes) and
+        // fixes this on its own -- do it once automatically instead of
+        // showing a scary "something went wrong" screen for what's really
+        // just a stale build. Guarded by a per-tab flag so a genuine repeat
+        // failure (real bug, not staleness) falls through to the normal
+        // fallback UI instead of reload-looping.
+        if (CHUNK_LOAD_ERROR_RE.test(error.message)) {
+            try {
+                if (!sessionStorage.getItem(CHUNK_RELOAD_FLAG)) {
+                    sessionStorage.setItem(CHUNK_RELOAD_FLAG, "1");
+                    window.location.reload();
+                }
+            } catch {
+                /* sessionStorage unavailable (e.g. some private-browsing modes) -- fall through to manual UI */
+            }
+        }
     }
 
     private reset = () => this.setState({ hasError: false, message: undefined });
