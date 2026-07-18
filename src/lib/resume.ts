@@ -193,12 +193,21 @@ Resume:
 ${flat}`;
 
     const res = await aiJson<AtsResult>(system, user, { maxTokens: 1200 });
-    // Clamp + guard against malformed output.
+    // Clamp + guard against malformed output. aiJson only guarantees the
+    // response parses as JSON, not that its fields match the requested
+    // shape: a malformed score (e.g. "8/10") used to silently coerce to the
+    // worst possible score via `Number(...) || 0`, and non-string
+    // strengths/improvements/missingKeywords entries (e.g. a nested object)
+    // would flow into fields typed `string[]` and crash when rendered as a
+    // JSX child in ResumeForm.tsx.
+    const rawScore = Number(res.score);
+    const asStringArray = (v: unknown): string[] =>
+        Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
     return {
-        score: Math.max(0, Math.min(100, Math.round(Number(res.score) || 0))),
-        summary: res.summary || "",
-        strengths: Array.isArray(res.strengths) ? res.strengths : [],
-        improvements: Array.isArray(res.improvements) ? res.improvements : [],
-        missingKeywords: Array.isArray(res.missingKeywords) ? res.missingKeywords : [],
+        score: Number.isFinite(rawScore) ? Math.max(0, Math.min(100, Math.round(rawScore))) : 50,
+        summary: typeof res.summary === "string" ? res.summary : "",
+        strengths: asStringArray(res.strengths),
+        improvements: asStringArray(res.improvements),
+        missingKeywords: asStringArray(res.missingKeywords),
     };
 }
