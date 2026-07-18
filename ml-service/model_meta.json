@@ -40,9 +40,9 @@
     "Mobile App Developer",
     "UI/UX Designer"
   ],
-  "test_accuracy": 0.6127,
-  "macro_f1": 0.6332,
-  "log_loss": 1.065,
+  "test_accuracy": 0.6126,
+  "macro_f1": 0.6311,
+  "log_loss": 1.0678,
   "cv_accuracy_mean": 0.6186,
   "cv_accuracy_std": 0.0036,
   "algorithm_comparison": [
@@ -50,25 +50,25 @@
       "algorithm": "Gradient Boosting",
       "cv_accuracy_mean": 0.6232,
       "cv_accuracy_std": 0.0037,
-      "cv_time_sec": 95.61
+      "cv_time_sec": 118.56
     },
     {
       "algorithm": "Random Forest",
       "cv_accuracy_mean": 0.6186,
       "cv_accuracy_std": 0.0036,
-      "cv_time_sec": 34.04
+      "cv_time_sec": 43.79
     },
     {
       "algorithm": "Logistic Regression",
       "cv_accuracy_mean": 0.6174,
       "cv_accuracy_std": 0.0038,
-      "cv_time_sec": 9.56
+      "cv_time_sec": 11.16
     },
     {
       "algorithm": "K-Nearest Neighbors",
       "cv_accuracy_mean": 0.6021,
       "cv_accuracy_std": 0.0025,
-      "cv_time_sec": 2.53
+      "cv_time_sec": 2.3
     }
   ],
   "feature_importance": {
@@ -97,9 +97,9 @@
   "trained_samples": 26644,
   "real_only": {
     "note": "Computed on real survey rows only, excluding BOTH synthetic source tags: (1) source='synthetic-onet' added by augment_profiles.py for Cybersecurity Analyst and UI/UX Designer (skill-only signal, personality zeroed), and (2) source='synthetic-onet-personality' added by augment_personality.py for all 10 classes (personality-only signal, skills zeroed to BASELINE). This is the honest real-world number -- top-level test_accuracy/macro_f1 above include all synthetic rows and measure O*NET-profile recovery, not validated real-world accuracy.",
-    "test_accuracy": 0.5853,
-    "macro_f1": 0.4696,
-    "log_loss": 1.1639,
+    "test_accuracy": 0.5849,
+    "macro_f1": 0.4667,
+    "log_loss": 1.1706,
     "test_samples": 5300,
     "excluded_synthetic_onet": 599,
     "excluded_synthetic_onet_personality": 763

@@ -197,12 +197,22 @@ def main() -> None:
     print("Calibrating probabilities (isotonic, 5-fold) ...")
     base = build_candidates()[best_name]
     model = CalibratedClassifierCV(base, method="isotonic", cv=5, ensemble=False)
-    # Gradient Boosting has no native class_weight param; pass sample_weight
-    # to .fit() so CalibratedClassifierCV forwards it to the base estimator.
-    # For other algorithms that already have class_weight="balanced", the
-    # sample_weight is redundant but harmless (the two mechanisms compose).
+    # Gradient Boosting has no native class_weight param, so it depends
+    # entirely on sample_weight for balanced learning. `base` is a Pipeline
+    # (scaler + clf), and CalibratedClassifierCV.fit's own `sample_weight=`
+    # kwarg only forwards to the base estimator if `"sample_weight" in
+    # signature(estimator.fit).parameters` -- Pipeline.fit's signature is
+    # just `**fit_params`, so that check fails and the weight silently gets
+    # used for calibration only, never for the actual classifier fit
+    # (confirmed via sklearn's own source + the UserWarning it emits, which
+    # links to https://github.com/scikit-learn/scikit-learn/issues/21134).
+    # Passing it as `clf__sample_weight` instead routes through Pipeline's
+    # own step-prefix convention, which Pipeline.fit's **fit_params DOES
+    # understand -- the same prefixed form tune.py already uses correctly.
+    # For algorithms that already have class_weight="balanced" (RF, LR),
+    # this is redundant but harmless (the two mechanisms compose).
     sw = compute_sample_weight("balanced", y_train)
-    model.fit(X_train, y_train, sample_weight=sw)
+    model.fit(X_train, y_train, clf__sample_weight=sw)
 
     # ---- 3. Evaluate ----------------------------------------------------
     pred = model.predict(X_test)
