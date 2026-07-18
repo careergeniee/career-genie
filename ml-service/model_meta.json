@@ -50,25 +50,25 @@
       "algorithm": "Gradient Boosting",
       "cv_accuracy_mean": 0.6232,
       "cv_accuracy_std": 0.0037,
-      "cv_time_sec": 118.56
+      "cv_time_sec": 79.64
     },
     {
       "algorithm": "Random Forest",
       "cv_accuracy_mean": 0.6186,
       "cv_accuracy_std": 0.0036,
-      "cv_time_sec": 43.79
+      "cv_time_sec": 33.66
     },
     {
       "algorithm": "Logistic Regression",
       "cv_accuracy_mean": 0.6174,
       "cv_accuracy_std": 0.0038,
-      "cv_time_sec": 11.16
+      "cv_time_sec": 8.66
     },
     {
       "algorithm": "K-Nearest Neighbors",
       "cv_accuracy_mean": 0.6021,
       "cv_accuracy_std": 0.0025,
-      "cv_time_sec": 2.3
+      "cv_time_sec": 2.11
     }
   ],
   "feature_importance": {

@@ -47,8 +47,11 @@ def get_param_distributions():
             "clf__metric": ["euclidean", "manhattan"]
         },
         "Logistic Regression": {
+            # penalty deliberately not searched: LogisticRegression's default
+            # is already "l2", a single-value grid entry was a no-op search,
+            # and explicitly setting it triggers a sklearn 1.8+ FutureWarning
+            # (the param is slated for removal in 1.10 in favor of l1_ratio/C).
             "clf__C": [0.01, 0.1, 1.0, 10.0, 100.0],
-            "clf__penalty": ["l2"],
             "clf__solver": ["lbfgs", "saga"]
         }
     }

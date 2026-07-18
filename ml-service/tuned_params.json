@@ -18,7 +18,6 @@
   },
   "Logistic Regression": {
     "solver": "lbfgs",
-    "penalty": "l2",
     "C": 100.0
   }
 }
