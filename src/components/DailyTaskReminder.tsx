@@ -65,7 +65,18 @@ export const DailyTaskReminder = () => {
     const career = buildUserContext(user?.displayName || undefined).career;
 
     const markDone = () => {
-        const next = loadTasks().map((t) =>
+        const current = loadTasks();
+        // `today` (this banner) is a stale closure from whatever render last
+        // computed it -- if the date rolled over since then with the banner
+        // left open across midnight, there's no task for the new todayKey()
+        // yet. Refresh instead of silently no-oping so the banner correctly
+        // falls through to the "get today's task" prompt rather than
+        // pretending a task that doesn't exist got marked done.
+        if (!current.some((t) => t.date === todayKey())) {
+            setTasks(current);
+            return;
+        }
+        const next = current.map((t) =>
             t.date === todayKey() ? { ...t, done: true, completedAt: Date.now() } : t
         );
         saveTasks(next);

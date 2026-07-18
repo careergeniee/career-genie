@@ -3,6 +3,7 @@ import { FileText, Download, Sparkles, Loader2, RotateCcw } from "lucide-react";
 import { aiText } from "@/lib/ai";
 import { useAuth } from "@/contexts/AuthContext";
 import { loadData, saveData } from "@/lib/userStore";
+import { useEffectSkipMount } from "@/hooks/useEffectSkipMount";
 import { ResumeData, TemplateId, AtsResult, emptyResume, sampleResume, scoreResume } from "@/lib/resume";
 import { ResumePreview } from "@/components/resume/ResumePreview";
 import { ResumeForm } from "./ResumeForm";
@@ -24,7 +25,12 @@ const ResumePage = () => {
     const dataRef = useRef(data);
     useEffect(() => { dataRef.current = data; }, [data]);
 
-    useEffect(() => {
+    // Skips arming the debounce timer on mount, so the placeholder/sample data
+    // loadData() seeds before Firestore hydration lands never gets pushed —
+    // see useEffectSkipMount. (Since no timer gets armed on that skipped
+    // first render, the unmount-flush effect below also correctly no-ops if
+    // the component unmounts before any real edit happens.)
+    useEffectSkipMount(() => {
         if (saveTimer.current) clearTimeout(saveTimer.current);
         saveTimer.current = setTimeout(() => {
             saveData(KEY, data);
@@ -40,8 +46,8 @@ const ResumePage = () => {
             if (saveTimer.current) saveData(KEY, dataRef.current);
         };
     }, []);
-    useEffect(() => saveData("resume_tpl", template), [template]);
-    useEffect(() => saveData("resume_role", targetRole), [targetRole]);
+    useEffectSkipMount(() => saveData("resume_tpl", template), [template]);
+    useEffectSkipMount(() => saveData("resume_role", targetRole), [targetRole]);
 
     const rewriteBullets = async (expId: string) => {
         const exp = data.experience.find((e) => e.id === expId);

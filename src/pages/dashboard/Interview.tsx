@@ -7,6 +7,7 @@ import {
 import { InterviewSession as InterviewSessionView } from "./InterviewSession";
 import { cn } from "@/lib/utils";
 import { loadData, saveData } from "@/lib/userStore";
+import { useEffectSkipMount } from "@/hooks/useEffectSkipMount";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -65,7 +66,10 @@ const InterviewPage = () => {
         else startVoice();
     }, [listening, startVoice, stopVoice]);
 
-    useEffect(() => saveData(KEY, sessions), [sessions]);
+    // Skips the save that would otherwise fire on mount with whatever sessions
+    // loadData() happened to seed (e.g. [] on a device Firestore hasn't
+    // hydrated yet) — see useEffectSkipMount's doc comment.
+    useEffectSkipMount(() => saveData(KEY, sessions), [sessions]);
 
     /* ---------- timer ---------- */
     const stopTimer = useCallback(() => {

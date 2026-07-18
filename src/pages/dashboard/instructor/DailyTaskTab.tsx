@@ -17,6 +17,17 @@ export const DailyTaskTab = ({ persona, ctx }: TabProps) => {
     const [loading, setLoading] = useState(false);
     const [reminderTime, setReminderTime] = useState(loadReminderTime());
     const generatedRef = useRef(false);
+    // Firestore hydration can still be in flight when this component mounts
+    // (loadTasks() above may have seeded from an empty/uncached device), and
+    // the dataVersion-triggered remount that normally protects other pages
+    // doesn't help here: generate()'s AI call is an async side effect that
+    // keeps running (and would still save its result) even after the
+    // component that started it has unmounted. Guard both the mount status
+    // and, more importantly, re-check for a real task right before saving.
+    const isMountedRef = useRef(true);
+    useEffect(() => {
+        return () => { isMountedRef.current = false; };
+    }, []);
 
     const today = getTodayTask(tasks);
     const streak = taskStreak(tasks);
@@ -26,14 +37,22 @@ export const DailyTaskTab = ({ persona, ctx }: TabProps) => {
         setLoading(true);
         try {
             const task = await generateDailyTask(persona, ctx);
-            const next = [...loadTasks().filter((t) => t.date !== todayKey()), task];
+            const current = loadTasks();
+            if (current.some((t) => t.date === todayKey())) {
+                // A real task for today showed up while this generation was in
+                // flight (Firestore hydration landing mid-request, most likely)
+                // -- don't clobber it with a redundant generated one.
+                if (isMountedRef.current) setTasks(current);
+                return;
+            }
+            const next = [...current, task];
             saveTasks(next);
-            setTasks(next);
+            if (isMountedRef.current) setTasks(next);
             signalUpdate();
         } catch {
-            toast.error("Could not assign a task. Check your connection and try again.");
+            if (isMountedRef.current) toast.error("Could not assign a task. Check your connection and try again.");
         } finally {
-            setLoading(false);
+            if (isMountedRef.current) setLoading(false);
         }
     };
 
@@ -46,7 +65,19 @@ export const DailyTaskTab = ({ persona, ctx }: TabProps) => {
     }, []);
 
     const setDone = (done: boolean) => {
-        const next = loadTasks().map((t) =>
+        const current = loadTasks();
+        // `today` (the checkbox this handler was bound to) is a stale closure
+        // from whatever render last computed it -- if the date has rolled over
+        // since then (component left open across midnight) with no re-render
+        // in between, there's no task for the new todayKey() yet. Proceeding
+        // anyway would silently no-op (.map() matches nothing) while still
+        // claiming success and permanently leaving yesterday's task undone.
+        if (!current.some((t) => t.date === todayKey())) {
+            toast.error("The date has changed since this loaded — refreshing.");
+            setTasks(current);
+            return;
+        }
+        const next = current.map((t) =>
             t.date === todayKey() ? { ...t, done, completedAt: done ? Date.now() : undefined } : t
         );
         saveTasks(next);

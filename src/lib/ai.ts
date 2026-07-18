@@ -60,7 +60,17 @@ export async function aiChat(
     return callProxy(messages, opts);
 }
 
-/** Plain text completion (with one retry and a timeout). */
+/**
+ * Plain text completion (with one retry and a timeout).
+ * Throws (after the retry) rather than swallowing the error — every current
+ * caller (Careers.tsx, Resume.tsx, instructor.ts's instructorChat) already
+ * wraps its call in its own try/catch with a real fallback (a canned blurb,
+ * an error toast, leaving the original bullets untouched). Silently
+ * resolving to "" here made all of those catch blocks unreachable dead code:
+ * a failed request looked identical to a real "the model said nothing" reply,
+ * so callers displayed and even *persisted* an empty/placeholder result as if
+ * it were a successful one instead of reporting the failure.
+ */
 export async function aiText(
     system: string,
     user: string,
@@ -73,11 +83,7 @@ export async function aiText(
     try {
         return await callProxy(messages, opts);
     } catch {
-        try {
-            return await callProxy(messages, opts); // single retry on timeout/transient error
-        } catch {
-            return "";
-        }
+        return await callProxy(messages, opts); // single retry on timeout/transient error; let this one's error propagate
     }
 }
 

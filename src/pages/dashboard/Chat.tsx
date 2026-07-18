@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { aiChat, AiProxyError } from "@/lib/ai";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { loadData, saveData, removeData, KEYS } from "@/lib/userStore";
+import { useEffectSkipMount } from "@/hooks/useEffectSkipMount";
 import { loadAssessment, loadPrediction, traitScore, analyzeSkillGap, strongSkillsText } from "@/lib/careerEngine";
 import { PERSONALITY, TRAIT_LABEL } from "@/lib/mlSchema";
 import type { Roadmap } from "@/lib/roadmap";
@@ -159,7 +160,10 @@ const ChatPage = () => {
     const longPressRef = useRef<{ timer: ReturnType<typeof setTimeout> | null; x: number; y: number }>({ timer: null, x: 0, y: 0 });
     useEffect(() => { messagesRef.current = messages; }, [messages]);
 
-    useEffect(() => {
+    // Skips the save that would otherwise fire on mount with whatever
+    // messages loadData() happened to seed (e.g. the canned greeting on a
+    // device Firestore hasn't hydrated yet) — see useEffectSkipMount.
+    useEffectSkipMount(() => {
         saveData(KEYS.chat, messages.slice(-100));
     }, [messages]);
 

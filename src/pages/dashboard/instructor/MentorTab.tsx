@@ -3,6 +3,7 @@ import { Loader2, MessageSquare, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { instructorChat, loadChat, saveChat, type ChatMsg } from "@/lib/instructor";
+import { useEffectSkipMount } from "@/hooks/useEffectSkipMount";
 import type { TabProps } from "./types";
 
 const STARTERS = [
@@ -17,8 +18,12 @@ export const MentorTab = ({ persona, ctx }: TabProps) => {
     const [loading, setLoading] = useState(false);
     const endRef = useRef<HTMLDivElement>(null);
 
+    // Skips the save that would otherwise fire on mount with whatever messages
+    // loadChat() happened to seed (e.g. [] on a device Firestore hasn't
+    // hydrated yet) — see useEffectSkipMount. Scrolling into view is safe to
+    // run on every render including the first, so it stays a separate effect.
+    useEffectSkipMount(() => saveChat(messages), [messages]);
     useEffect(() => {
-        saveChat(messages);
         endRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
