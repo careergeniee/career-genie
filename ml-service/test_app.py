@@ -133,6 +133,82 @@ def test_unknown_features_ignored():
     assert r.status_code == 200
 
 
+def test_confidence_is_independent_of_top_k():
+    # confidence/uncertain describe the true top-1 vs top-2 margin across all
+    # classes -- they must not change just because the caller asked for fewer
+    # results back. (Previously, top_k=1 turned "confidence" into the raw
+    # top-1 probability instead of a margin, since it was computed from the
+    # top_k-truncated list rather than the full ranked one.)
+    full = client.post("/predict", json={"features": DATA_SCIENTIST, "top_k": 5}).json()
+    narrow = client.post("/predict", json={"features": DATA_SCIENTIST, "top_k": 1}).json()
+    assert narrow["confidence"] == full["confidence"]
+    assert narrow["uncertain"] == full["uncertain"]
+    assert len(narrow["predictions"]) == 1
+
+
+# ---------------------------------------------------------------------------
+# Model-missing: every endpoint must respond with the same clean 503, not a
+# mix of 503s and an unhandled 500 depending which one is hit first.
+# ---------------------------------------------------------------------------
+
+def _simulate_missing_model():
+    from fastapi import HTTPException
+
+    def _raise():
+        raise HTTPException(status_code=503, detail="career_model.pkl not found. Run `python train.py` first.")
+
+    A.app.dependency_overrides[A.require_model] = _raise
+
+
+def _restore_model_override():
+    A.app.dependency_overrides.pop(A.require_model, None)
+
+
+def test_health_returns_503_when_model_missing():
+    _simulate_missing_model()
+    try:
+        r = client.get("/health")
+    finally:
+        _restore_model_override()
+    assert r.status_code == 503
+
+
+def test_meta_returns_503_when_model_missing():
+    _simulate_missing_model()
+    try:
+        r = client.get("/meta")
+    finally:
+        _restore_model_override()
+    assert r.status_code == 503
+
+
+def test_predict_returns_503_when_model_missing():
+    _simulate_missing_model()
+    try:
+        r = client.post("/predict", json={"features": DATA_SCIENTIST})
+    finally:
+        _restore_model_override()
+    assert r.status_code == 503
+
+
+def test_require_model_maps_any_load_failure_to_503():
+    # Unit-level check of require_model() itself, independent of dependency
+    # override plumbing: any exception from get_model() (missing file,
+    # corrupt pickle, etc.) must become a 503, never an unhandled 500.
+    from fastapi import HTTPException
+    import app as A2
+
+    original = A2.get_model
+    A2.get_model = lambda: (_ for _ in ()).throw(RuntimeError("corrupt pickle"))
+    try:
+        A2.require_model()
+        assert False, "expected require_model to raise"
+    except HTTPException as exc:
+        assert exc.status_code == 503
+    finally:
+        A2.get_model = original
+
+
 # ---------------------------------------------------------------------------
 # Auth: temporarily drop the module-level override (see top of file) to
 # verify /predict's guard actually rejects requests, instead of just trusting

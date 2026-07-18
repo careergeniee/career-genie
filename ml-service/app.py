@@ -16,8 +16,10 @@ Endpoints:
                        (auth required -- see auth.py)
 
 Reliability features:
-    * Strict input validation (feature values clamped to [0,1], NaN/inf rejected).
-    * Model loaded once and cached; clear 503 if it is missing.
+    * Strict input validation (feature values clamped to [0,1]; missing/NaN/inf
+      values are coerced to 0 rather than rejected, so malformed input never
+      crashes the service or 4xx's a real user mid-assessment).
+    * Model loaded once and cached; clear 503 from every endpoint if it is missing.
     * Confidence signal (margin between top-2) and an `uncertain` flag so the
       UI can warn when a prediction is a close call.
     * Works whether the saved model is a plain Pipeline or a CalibratedClassifierCV.
@@ -30,7 +32,7 @@ Security:
 """
 
 from __future__ import annotations
-import json, math, os, logging
+import json, math, os, logging, threading
 import joblib
 import numpy as np
 from fastapi import FastAPI, HTTPException, Header, Depends
@@ -60,28 +62,52 @@ app.add_middleware(
 
 _model = None
 _meta: dict = {}
+# FastAPI runs sync `def` endpoints in a threadpool, so two requests can hit
+# get_model() concurrently on a cold start. Without a lock, one request can
+# see _model already set by the other while _meta is still being assigned a
+# few lines later, momentarily serving a real model paired with an empty/stale
+# meta dict (wrong model_version/algorithm in the response).
+_model_lock = threading.Lock()
 
 
 def get_model():
     global _model, _meta
     if _model is None:
-        if not os.path.exists(MODEL_PATH):
-            raise FileNotFoundError("career_model.pkl not found. Run `python train.py` first.")
-        _model = joblib.load(MODEL_PATH)
-        if os.path.exists(META_PATH):
-            with open(META_PATH) as fh:
-                _meta = json.load(fh)
-        log.info("Model loaded: %s v%s",
-                 _meta.get("chosen_algorithm", "?"), _meta.get("model_version", "?"))
+        with _model_lock:
+            if _model is None:  # re-check: another thread may have loaded it while we waited
+                if not os.path.exists(MODEL_PATH):
+                    raise FileNotFoundError("career_model.pkl not found. Run `python train.py` first.")
+                loaded_meta = {}
+                if os.path.exists(META_PATH):
+                    with open(META_PATH) as fh:
+                        loaded_meta = json.load(fh)
+                _model = joblib.load(MODEL_PATH)
+                _meta = loaded_meta
+                log.info("Model loaded: %s v%s",
+                         _meta.get("chosen_algorithm", "?"), _meta.get("model_version", "?"))
     return _model
 
 
-def explain_top_class(vec: np.ndarray, top_class: str, top_n: int = 5) -> list[dict] | None:
+def require_model():
+    """FastAPI dependency: get_model(), or a clean 503 -- shared by every
+    endpoint so a missing/corrupt model produces the same response everywhere
+    instead of /health and /predict 503'ing while /meta 500's."""
+    try:
+        return get_model()
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
+
+
+def explain_top_class(
+    model, vec: np.ndarray, idx: int, base: float, top_n: int = 5
+) -> list[dict] | None:
     """
-    Per-prediction feature contributions toward `top_class`, ranked by
+    Per-prediction feature contributions toward the class at `idx`, ranked by
     |contribution| descending. Model-agnostic: zero out one feature at a time
-    (as a single batched predict_proba call) and measure how much P(top_class)
-    drops. Positive contribution = the feature pushes toward the predicted
+    (as a single batched predict_proba call) and measure how much P(class)
+    drops from `base` (the caller's already-computed P(class) for the full
+    vector -- passed in rather than recomputed here, since predict() already
+    has it). Positive contribution = the feature pushes toward the predicted
     career. Returns None (never raises) -- explainability is a nice-to-have
     and must never break the prediction.
 
@@ -93,10 +119,6 @@ def explain_top_class(vec: np.ndarray, top_class: str, top_n: int = 5) -> list[d
     every real request.)
     """
     try:
-        model = get_model()
-        classes = list(model.classes_)
-        idx = classes.index(top_class)
-        base = float(model.predict_proba(vec)[0][idx])
         n = vec.shape[1]
         batch = np.repeat(vec, n, axis=0)
         for i in range(n):
@@ -151,32 +173,26 @@ class PredictResponse(BaseModel):
 
 
 @app.get("/health")
-def health():
-    try:
-        get_model()
-        return {
-            "status": "ok",
-            "model_version": _meta.get("model_version"),
-            "algorithm": _meta.get("chosen_algorithm"),
-            "cv_accuracy": _meta.get("cv_accuracy_mean"),
-        }
-    except Exception as exc:
-        raise HTTPException(status_code=503, detail=str(exc))
+def health(_model=Depends(require_model)):
+    return {
+        "status": "ok",
+        "model_version": _meta.get("model_version"),
+        "algorithm": _meta.get("chosen_algorithm"),
+        "cv_accuracy": _meta.get("cv_accuracy_mean"),
+    }
 
 
 @app.get("/meta")
-def meta():
-    get_model()
+def meta(_model=Depends(require_model)):
+    # _meta (from model_meta.json) is spread last so its own feature_order/labels
+    # -- what the loaded model was actually trained on -- win over the fallback
+    # defaults on the left when present, which is the common case; the explicit
+    # keys only matter for a model_meta.json that predates those fields.
     return {"feature_order": FEATURE_ORDER, "labels": CAREER_LABELS, **_meta}
 
 
 @app.post("/predict", response_model=PredictResponse)
-def predict(req: PredictRequest, uid: str = Depends(verify_auth)):
-    try:
-        model = get_model()
-    except FileNotFoundError as exc:
-        raise HTTPException(status_code=503, detail=str(exc))
-
+def predict(req: PredictRequest, uid: str = Depends(verify_auth), model=Depends(require_model)):
     # Build the ordered vector the model expects. Each value is coerced to a
     # finite number, then clamped to [0,1]. Unknown feature names are ignored;
     # missing or non-finite values default to 0 (never crashes the service).
@@ -192,11 +208,18 @@ def predict(req: PredictRequest, uid: str = Depends(verify_auth)):
     classes = list(model.classes_)
     ranked = sorted(zip(classes, proba), key=lambda t: -t[1])
 
+    # Confidence is always the margin between the true top-1 and top-2 across
+    # every class, regardless of top_k -- computed from the full ranked list,
+    # not the top_k-truncated slice returned to the caller. (Truncating first
+    # meant top_k=1 turned "confidence" into the raw top-1 probability instead
+    # of a margin, which could flip `uncertain` for the same prediction purely
+    # based on how many results were asked for.)
+    confidence = round(float(ranked[0][1] - (ranked[1][1] if len(ranked) > 1 else 0.0)), 4)
     top = ranked[: req.top_k]
-    confidence = round(float(top[0][1] - (top[1][1] if len(top) > 1 else 0.0)), 4)
     preds = [Prediction(career=c, probability=round(float(p), 4)) for c, p in top]
 
-    explanation = explain_top_class(vec, preds[0].career)
+    top_idx = classes.index(preds[0].career)
+    explanation = explain_top_class(model, vec, top_idx, float(proba[top_idx]))
 
     return PredictResponse(
         predictions=preds,

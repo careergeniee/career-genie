@@ -226,6 +226,41 @@ describe("predictCareers (authenticated ML API call)", () => {
         expect(fetchMock).not.toHaveBeenCalled();
         expect(result.source).toBe("local");
     });
+
+    it("recomputes `uncertain` (not just `confidence`) when label drift filters out the backend's top prediction", async () => {
+        // Backend's own top-1 is an unrecognized career (label drift between the
+        // ML service and the frontend's catalog), so its confidence/uncertain
+        // reflect a comparison the frontend can't actually show the user.
+        // Backend: top1="UnknownXYZ" 0.5, top2="Data Scientist" 0.45 -> margin
+        // 0.05 -> uncertain=true. After filtering "UnknownXYZ" out, the real
+        // comparison is "Data Scientist" 0.45 vs "Mobile App Developer" 0.05 ->
+        // margin 0.4 -> should NOT be uncertain. The stale backend flag must not
+        // leak through once filtering has invalidated it.
+        const fetchMock = global.fetch as ReturnType<typeof vi.fn>;
+        fetchMock.mockClear();
+        fetchMock.mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({
+                predictions: [
+                    { career: "UnknownXYZ", probability: 0.5 },
+                    { career: "Data Scientist", probability: 0.45 },
+                    { career: "Mobile App Developer", probability: 0.05 },
+                ],
+                top_career: "UnknownXYZ",
+                confidence: 0.05,
+                uncertain: true,
+                algorithm: "Random Forest",
+            }),
+        });
+        mutableAuth.currentUser = { getIdToken: vi.fn().mockResolvedValue("fake-id-token") };
+
+        const result = await predictCareers(zeroFeatures);
+
+        expect(result.predictions.map((p) => p.career)).toEqual(["Data Scientist", "Mobile App Developer"]);
+        expect(result.topCareer).toBe("Data Scientist");
+        expect(result.confidence).toBeCloseTo(0.4);
+        expect(result.uncertain).toBe(false);
+    });
 });
 
 describe("warmMlService", () => {

@@ -213,7 +213,7 @@ export async function predictCareers(
                                 source: "ml-api",
                                 confidence: Math.max(0, Math.round(confidence * 1000) / 1000),
                                 uncertain:
-                                    typeof data.uncertain === "boolean"
+                                    typeof data.uncertain === "boolean" && !wasFiltered
                                         ? data.uncertain
                                         : confidence < UNCERTAIN_MARGIN,
                                 algorithm: data.algorithm || "ML model",
