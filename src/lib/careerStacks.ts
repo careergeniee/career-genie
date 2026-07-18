@@ -129,11 +129,33 @@ export function stackToPromptText(stack: StackGroup[]): string {
 export function isKnown(tech: string, skillsText: string): boolean {
     if (!skillsText) return false;
     const hay = skillsText.toLowerCase();
+    const lower = tech.toLowerCase();
+
     // A stack item may bundle several technologies ("Node.js + Express",
-    // "Python/FastAPI"). Split on separators including '+' and check each
-    // core token independently — knowing any one of them counts as known.
-    const withoutParens = tech.toLowerCase().replace(/\(.*?\)/g, "");
-    const cores = withoutParens.split(/[/&,+]/).map((s) => s.trim()).filter((s) => s.length >= 2);
+    // "Python/FastAPI"), and/or list alternatives inside parens ("State
+    // management (Redux/Zustand)"). Only a parenthetical that itself contains
+    // a separator is treated as an alternatives list to extract — a
+    // single-word parenthetical ("(alternative)", "(advanced)", "(optional)")
+    // is a qualifier, not a technology name, and extracting it would make
+    // generic words falsely "known" whenever they happen to appear anywhere
+    // in the user's skills text.
+    const parenGroups = [...lower.matchAll(/\(([^)]*)\)/g)].map((m) => m[1]);
+    const extractedFromParens = parenGroups
+        .filter((g) => /[/&,+]/.test(g))
+        .flatMap((g) => g.split(/[/&,+]/));
+
+    const withoutParens = lower.replace(/\(.*?\)/g, "");
+    const outerCores = withoutParens.split(/[/&,+]/);
+
+    // Split on separators including '+' and check each core token
+    // independently — knowing any one of them counts as known. A minimum
+    // length of 1 (not 2) so single-letter language names like "R" are still
+    // matchable; the word-boundary regex below already prevents a lone
+    // letter from matching inside an unrelated word.
+    const cores = [...outerCores, ...extractedFromParens]
+        .map((s) => s.trim())
+        .filter((s) => s.length >= 1);
+
     return cores.some((core) => {
         const esc = core.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         // Word-boundary match so "java" doesn't match inside "javascript".

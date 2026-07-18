@@ -120,15 +120,24 @@ const InterviewPage = () => {
         }
     };
 
+    // Set by quitToSetup so an in-flight submitAnswer() (the AI scoring call is
+    // an async side effect that keeps running after the user navigates away --
+    // quitting doesn't cancel it) discards its result instead of applying it:
+    // silently finishing the session and yanking the user back to "result",
+    // or restarting the 120s timer, after they already left the interview.
+    const cancelSubmitRef = useRef(false);
+
     const submitAnswer = async () => {
         if (!session || evaluating) return;
         stopVoice();
         setEvaluating(true);
         stopTimer();
+        cancelSubmitRef.current = false;
         const timeUsed = SECONDS_PER_Q - timeLeft;
         const question = session.questions[qIndex];
         try {
             const evald = await evaluateAnswer(session.role, session.difficulty, question, answer);
+            if (cancelSubmitRef.current) return; // user quit while this was in flight -- discard the result
             const ans: Answer = { question, answer, timeUsed, ...evald };
             const updated: InterviewSession = {
                 ...session,
@@ -145,7 +154,7 @@ const InterviewPage = () => {
                 startTimer();
             }
         } catch {
-            toast.error("Couldn't score your answer. Please try submitting again.");
+            if (!cancelSubmitRef.current) toast.error("Couldn't score your answer. Please try submitting again.");
         } finally {
             setEvaluating(false);
         }
@@ -172,6 +181,7 @@ const InterviewPage = () => {
     }, [timeLeft, view]);
 
     const quitToSetup = () => {
+        cancelSubmitRef.current = true;
         stopVoice();
         stopTimer();
         setSession(null);

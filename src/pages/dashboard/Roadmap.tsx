@@ -40,7 +40,12 @@ const RoadmapPage = () => {
     }, [location.state]);
 
     useEffect(() => {
-        if (roadmap) saveData(KEY, roadmap);
+        if (roadmap) {
+            saveData(KEY, roadmap);
+            // Lets DashboardLayout's sidebar streak widget refresh immediately
+            // instead of only on some unrelated re-render.
+            window.dispatchEvent(new Event("roadmap:update"));
+        }
     }, [roadmap]);
 
     const effectiveGoal = (customGoal.trim() || goal).trim();

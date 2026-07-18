@@ -34,6 +34,24 @@ export const DashboardLayout = () => {
     const navigate = useNavigate();
     const pendingSyncCount = useSyncStatus();
 
+    // instructorPending/streak below are recomputed from localStorage on every
+    // render, but nothing was triggering a render when a task got marked done
+    // or a roadmap item got checked off on the *current* page — the sidebar
+    // badge and streak number only refreshed incidentally, whenever some
+    // unrelated state change (e.g. toggling the sidebar) happened to force
+    // one. DailyTaskTab/DailyTaskReminder already dispatch "instructor:update"
+    // on every save; Roadmap now dispatches "roadmap:update" the same way.
+    const [, forceRefresh] = useState(0);
+    useEffect(() => {
+        const bump = () => forceRefresh((n) => n + 1);
+        window.addEventListener("instructor:update", bump);
+        window.addEventListener("roadmap:update", bump);
+        return () => {
+            window.removeEventListener("instructor:update", bump);
+            window.removeEventListener("roadmap:update", bump);
+        };
+    }, []);
+
     const handleLogout = async () => {
         await logout();
         toast.success("Logged out successfully");
