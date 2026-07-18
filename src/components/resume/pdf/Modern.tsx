@@ -74,7 +74,7 @@ export const Modern = ({ d }: { d: ResumeData }) => (
                 </>
             )}
 
-            {d.education.some((e) => e.school) && (
+            {d.education.some((e) => e.school || e.degree) && (
                 <>
                     <Text style={modern.sideHead}>Education</Text>
                     {d.education

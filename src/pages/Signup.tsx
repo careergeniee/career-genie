@@ -41,7 +41,7 @@ const Signup = () => {
         }
         setLoading(true);
         try {
-            await signup(email, password);
+            await signup(email, password, name);
             setDone(true);
         } catch (err) {
             toast.error(getAuthErrorMessage(err, err.message || "Signup failed. Try again."));

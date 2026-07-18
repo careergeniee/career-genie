@@ -1,6 +1,7 @@
 import { Component, type ReactNode } from "react";
 import { AlertTriangle, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { clearUserData } from "@/lib/userStore";
 
 interface Props {
     children: ReactNode;
@@ -29,6 +30,17 @@ export class ErrorBoundary extends Component<Props, State> {
 
     private reset = () => this.setState({ hasError: false, message: undefined });
 
+    // "Try again" alone just re-renders the same subtree against the same
+    // state -- if the crash is caused by corrupted data sitting in
+    // localStorage (not a one-off timing fluke), it re-throws instantly and
+    // there is no way out of the fallback screen. Firestore is the source of
+    // truth (see userStore's sync queue), so wiping the local cache and
+    // reloading is safe -- the next sign-in re-hydrates from Firestore.
+    private resetLocalData = () => {
+        clearUserData();
+        window.location.assign("/dashboard");
+    };
+
     render() {
         if (!this.state.hasError) return this.props.children;
         return (
@@ -45,7 +57,7 @@ export class ErrorBoundary extends Component<Props, State> {
                             {this.state.message}
                         </p>
                     )}
-                    <div className="flex gap-3 justify-center">
+                    <div className="flex flex-wrap gap-3 justify-center">
                         <Button variant="hero" onClick={this.reset}>
                             <RotateCcw className="w-4 h-4" /> Try again
                         </Button>
@@ -53,6 +65,12 @@ export class ErrorBoundary extends Component<Props, State> {
                             Go to dashboard
                         </Button>
                     </div>
+                    <button
+                        onClick={this.resetLocalData}
+                        className="mt-4 text-xs text-muted-foreground/70 hover:text-destructive transition-colors underline"
+                    >
+                        Still broken? Reset local data and reload
+                    </button>
                 </div>
             </div>
         );

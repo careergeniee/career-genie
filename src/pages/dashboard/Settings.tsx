@@ -31,6 +31,12 @@ const DATA_KEYS: { key: keyof typeof KEYS; label: string }[] = [
     { key: "prediction", label: "Career prediction results" },
     { key: "roadmap", label: "Career roadmap" },
     { key: "instructorTasks", label: "Instructor progress" },
+    // These two were missing entirely: "Clear all data" claimed to wipe
+    // everything but silently left them behind, so a stale reminder time /
+    // last-notified date kept driving DailyTaskReminder's notification logic
+    // after the user was told their data was cleared.
+    { key: "instructorReminder", label: "Daily reminder time" },
+    { key: "instructorLastNotified", label: "Last notification date" },
 ];
 
 const SettingsPage = () => {

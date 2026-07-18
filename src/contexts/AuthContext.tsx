@@ -8,6 +8,7 @@ import {
     signOut,
     sendPasswordResetEmail,
     sendEmailVerification,
+    updateProfile,
     onAuthStateChanged,
     setPersistence,
     browserLocalPersistence,
@@ -29,7 +30,7 @@ interface AuthContextType {
      * Consumers should key a remount (or re-run their load) off this value.
      */
     dataVersion: number;
-    signup: (email: string, password: string) => Promise<void>;
+    signup: (email: string, password: string, name?: string) => Promise<void>;
     login: (email: string, password: string, remember?: boolean) => Promise<void>;
     loginWithGoogle: () => Promise<void>;
     logout: () => Promise<void>;
@@ -88,8 +89,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return unsub;
     }, []);
 
-    const signup = async (email: string, password: string) => {
+    const signup = async (email: string, password: string, name?: string) => {
         const cred = await createUserWithEmailAndPassword(auth, email, password);
+        // Signup.tsx requires the user to type a name before this runs, but it
+        // was never actually persisted anywhere -- every user's
+        // displayName stayed null forever, silently blanking Settings'
+        // "Display name" field and anything else that reads it.
+        if (name?.trim()) {
+            await updateProfile(cred.user, { displayName: name.trim() });
+        }
         await sendEmailVerification(cred.user);
     };
 
@@ -101,8 +109,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
         const cred = await signInWithEmailAndPassword(auth, email, password);
         if (!cred.user.emailVerified) {
+            // Covers the case where signup's own sendEmailVerification call failed
+            // (e.g. auth/too-many-requests) -- without this, that account has no
+            // verified email and no in-app way to ever get one, since the user is
+            // signed out immediately below and there's no separate "resend" UI.
+            // Best-effort: Firebase's own rate limiting already guards against abuse.
+            try {
+                await sendEmailVerification(cred.user);
+            } catch (resendErr) {
+                console.warn("CareerGenie: verification email resend failed —", resendErr);
+            }
             await signOut(auth);
-            throw new Error("Please verify your email before logging in. Check your inbox.");
+            throw new Error("Please verify your email before logging in. We've sent a new link — check your inbox.");
         }
     };
 

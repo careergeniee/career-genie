@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { GlowOrbs } from "@/components/GlowOrbs";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { isValidEmail } from "@/lib/authErrors";
+import { isValidEmail, getAuthErrorMessage } from "@/lib/authErrors";
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState("");
@@ -24,8 +24,11 @@ const ForgotPassword = () => {
         try {
             await resetPassword(email);
             setSent(true);
-        } catch {
-            toast.error("Could not send reset email. Check the address.");
+        } catch (err) {
+            // Was a blanket "check the address" regardless of actual cause --
+            // a rate-limit or network error looks identical to a bad email,
+            // so users kept retrying the exact same (correct) address.
+            toast.error(getAuthErrorMessage(err, "Could not send reset email. Try again."));
         } finally {
             setLoading(false);
         }
