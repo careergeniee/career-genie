@@ -7,6 +7,7 @@ import {
 import genieLogo3 from "@/assets/genie-logo3.png";
 import { cn } from "@/lib/utils";
 import { loadData, saveData, removeData, todayKey } from "@/lib/userStore";
+import { useEffectSkipMount } from "@/hooks/useEffectSkipMount";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -39,7 +40,13 @@ const RoadmapPage = () => {
          
     }, [location.state]);
 
-    useEffect(() => {
+    // Every other page's save-on-change effect uses useEffectSkipMount --
+    // this one was missed. On mount, `roadmap` is whatever this device's
+    // localStorage had *before* Firestore hydration (initUserData) lands, so
+    // firing on that first render pushed stale local state back to Firestore
+    // with a fresh timestamp, winning last-write-wins over genuinely newer
+    // progress made on another device.
+    useEffectSkipMount(() => {
         if (roadmap) {
             saveData(KEY, roadmap);
             // Lets DashboardLayout's sidebar streak widget refresh immediately
