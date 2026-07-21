@@ -120,7 +120,7 @@ const Index = () => {
             },
             {
               n: "02", title: "Match",
-              desc: "Discover career paths aligned with your strengths, backed by ML models trained on 3,625 real student data points.",
+              desc: "Discover career paths aligned with your strengths, backed by ML models trained on 26,306 real developer survey responses.",
             },
             {
               n: "03", title: "Master",

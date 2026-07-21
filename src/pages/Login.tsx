@@ -88,7 +88,7 @@ const Login = () => {
             >
               <BlurText text="The only platform" animateBy="words" direction="top" delay={120} />
               <BlurText text="built for the" animateBy="words" direction="top" delay={120} />
-              <BlurText text="Pakistani CS student." animateBy="words" direction="top" delay={120} />
+              <BlurText text="Pakistani student." animateBy="words" direction="top" delay={120} />
             </h1>
           </div>
           <div className="rounded-2xl bg-white/10 backdrop-blur-sm border border-white/15 p-6 max-w-sm">
