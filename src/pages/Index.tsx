@@ -70,7 +70,7 @@ const Index = () => {
               </div>
               <TextType
                 as="p"
-                text="The definitive platform for ambitious Pakistani Computer Science students — map careers, master skills, land top-tier tech roles."
+                text="The definitive platform for ambitious Pakistani students — map careers, master skills, land top-tier tech roles."
                 className="text-muted-foreground max-w-md mb-10 text-[15px] leading-relaxed"
                 typingSpeed={18}
                 initialDelay={600}
