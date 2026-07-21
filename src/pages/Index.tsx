@@ -68,19 +68,31 @@ const Index = () => {
                 />
                 <BlurText text="with confidence." animateBy="words" direction="top" delay={150} />
               </div>
-              <TextType
-                as="p"
-                text="The definitive platform for ambitious Pakistani students — map careers, master skills, land top-tier tech roles."
-                className="text-foreground/80 font-medium max-w-md mb-10 text-[15px] leading-relaxed"
-                typingSpeed={18}
-                initialDelay={600}
-                loop={false}
-                showCursor={true}
-                hideCursorWhileTyping={false}
-                cursorCharacter="|"
-                cursorClassName="text-primary"
-                startOnVisible={true}
-              />
+              <div
+                className="rounded-[10px] px-5 py-4 mb-10 max-w-md min-h-[88px] flex items-center"
+                style={{ backgroundColor: "#3a2418" }}
+              >
+                <TextType
+                  as="p"
+                  text={[
+                    "Your dream tech career is closer than you think — let's map the path together.",
+                    "Stop guessing your future. Start building it, one skill at a time.",
+                    "Turn your ambition into an offer letter — CareerGenie shows you how.",
+                    "You have the drive. We have the roadmap. Let's go.",
+                    "Backed by 26,306 real developer profiles — your path, grounded in data.",
+                  ]}
+                  className="text-background font-medium text-[15px] leading-relaxed"
+                  typingSpeed={18}
+                  initialDelay={600}
+                  pauseDuration={2200}
+                  loop={true}
+                  showCursor={true}
+                  hideCursorWhileTyping={false}
+                  cursorCharacter="|"
+                  cursorClassName="text-primary"
+                  startOnVisible={true}
+                />
+              </div>
               <div className="flex flex-wrap items-center gap-4">
                 <AnimatedContent direction="horizontal" distance={40} duration={0.8} delay={0.1} threshold={0}>
                   <Button asChild size="lg"
