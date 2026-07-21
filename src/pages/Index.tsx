@@ -89,9 +89,10 @@ const Index = () => {
                   </Button>
                 </AnimatedContent>
                 <AnimatedContent direction="horizontal" distance={40} duration={0.8} delay={0.25} threshold={0}>
-                  <Link to="/login" className="text-sm text-foreground font-semibold hover:text-primary transition-colors underline underline-offset-4 decoration-primary/40">
-                    Already have an account?
-                  </Link>
+                  <Button asChild size="lg" variant="outline"
+                    className="rounded-[10px] px-8 h-14 text-[16px] font-semibold border-foreground/25 text-foreground hover:border-primary hover:text-primary hover:bg-primary/5">
+                    <Link to="/login">Already have an account?</Link>
+                  </Button>
                 </AnimatedContent>
               </div>
             </div>
