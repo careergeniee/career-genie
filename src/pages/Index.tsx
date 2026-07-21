@@ -71,7 +71,7 @@ const Index = () => {
               <TextType
                 as="p"
                 text="The definitive platform for ambitious Pakistani students — map careers, master skills, land top-tier tech roles."
-                className="text-muted-foreground max-w-md mb-10 text-[15px] leading-relaxed"
+                className="text-foreground/80 font-medium max-w-md mb-10 text-[15px] leading-relaxed"
                 typingSpeed={18}
                 initialDelay={600}
                 loop={false}
@@ -89,7 +89,7 @@ const Index = () => {
                   </Button>
                 </AnimatedContent>
                 <AnimatedContent direction="horizontal" distance={40} duration={0.8} delay={0.25} threshold={0}>
-                  <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4">
+                  <Link to="/login" className="text-sm text-foreground font-semibold hover:text-primary transition-colors underline underline-offset-4 decoration-primary/40">
                     Already have an account?
                   </Link>
                 </AnimatedContent>
